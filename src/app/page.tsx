@@ -204,7 +204,7 @@ export default function Home() {
                     {banners[currentBannerIndex]?.subtitle || 'Experience the game in peak performance gear. Engineered for the fans, designed for the pros.'}
                   </p>
                   <button 
-                    onClick={() => navigate(banners[currentBannerIndex]?.linkUrl || '/')}
+                    onClick={() => navigate.push(banners[currentBannerIndex]?.linkUrl || '/')}
                     className="bg-brand-primary hover:bg-brand-primary-hover text-white px-12 py-5 rounded-2xl font-sans font-bold uppercase tracking-[0.2em] text-xs transition-all hover:scale-[1.05] shadow-2xl shadow-brand-primary/40 cursor-pointer active:scale-95"
                   >
                     {banners[currentBannerIndex]?.buttonText || 'Shop Now'}

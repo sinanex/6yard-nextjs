@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   try {
     await dbConnect();
     const auth = verifyAuth(req);
-    const orders = await Order.find({ user: auth.user.userId }).sort({ createdAt: -1 });
+    const orders = await (Order as any).find({ user: auth.user.userId }).sort({ createdAt: -1 });
     return NextResponse.json(orders);
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });

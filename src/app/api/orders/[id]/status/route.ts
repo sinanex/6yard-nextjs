@@ -9,9 +9,15 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const auth = verifyAuth(req);
     if (!auth.isAdmin) return NextResponse.json({ message: 'Unauthorized' }, { status: 403 });
 
-    const { status } = await req.json();
+    const { status, trackingId } = await req.json();
     const id = (await params).id;
-    const order = await Order.findByIdAndUpdate(id, { status }, { new: true });
+    
+    const updateData: any = { status };
+    if (trackingId !== undefined) {
+      updateData.trackingId = trackingId;
+    }
+    
+    const order = await (Order as any).findByIdAndUpdate(id, updateData, { new: true });
     return NextResponse.json(order);
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 400 });

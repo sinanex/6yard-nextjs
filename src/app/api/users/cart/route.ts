@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   try {
     await dbConnect();
     const auth = verifyAuth(req);
-    const user = await User.findById(auth.user.userId).populate('cart.product');
+    const user = await (User as any).findById(auth.user.userId).populate('cart.product');
     if (!user) return NextResponse.json({ message: 'User not found' }, { status: 404 });
     return NextResponse.json(user.cart);
   } catch (error: any) {
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     await dbConnect();
     const auth = verifyAuth(req);
     const { productId, size, quantity } = await req.json();
-    const user = await User.findById(auth.user.userId);
+    const user = await (User as any).findById(auth.user.userId);
     if (!user) return NextResponse.json({ message: 'User not found' }, { status: 404 });
     
     const existingItem = user.cart.find((item: any) => 
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     }
 
     await user.save();
-    const updatedUser = await User.findById(auth.user.userId).populate('cart.product');
+    const updatedUser = await (User as any).findById(auth.user.userId).populate('cart.product');
     return NextResponse.json(updatedUser.cart);
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 400 });

@@ -127,11 +127,18 @@ export default function Orders() {
                     </div>
 
                     <div className="flex justify-between items-center mt-auto pt-6 border-t border-brand-surface-normal">
-                      <div className="flex items-center gap-2 text-brand-primary">
-                        <Truck size={18} />
-                        <span className="font-sans text-xs font-black uppercase tracking-widest">
-                          {order.status === 'Delivered' ? 'Return available' : 'On the way'}
-                        </span>
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2 text-brand-primary">
+                          <Truck size={18} />
+                          <span className="font-sans text-xs font-black uppercase tracking-widest">
+                            {order.status === 'Delivered' ? 'Return available' : 'On the way'}
+                          </span>
+                        </div>
+                        {order.trackingId && (
+                          <p className="font-sans text-[10px] font-bold text-brand-on-surface-variant opacity-80 uppercase tracking-widest">
+                            Tracking: <span className="text-brand-on-surface select-all">{order.trackingId}</span>
+                          </p>
+                        )}
                       </div>
                       <p className="font-h text-2xl font-black text-brand-on-surface">
                         ₹{order.totalAmount?.toFixed(2)}

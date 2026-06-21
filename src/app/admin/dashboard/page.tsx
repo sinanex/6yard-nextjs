@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import {
+import { Menu, 
   LayoutDashboard,
   PackagePlus,
   Tags,
@@ -21,7 +21,8 @@ import {
   Package,
   Bell,
   Search,
-  Menu
+  ImagePlus,
+  Link2
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { API_BASE_URL } from '@/config';
@@ -212,6 +213,7 @@ const SearchableMultiDropdown = ({
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const [banners, setBanners] = useState<any[]>([]);
@@ -780,46 +782,46 @@ const AdminDashboard = () => {
     switch (activeTab) {
       case 'dashboard':
         return (
-          <div className="space-y-10">
-            <h2 className="font-h text-3xl font-black text-brand-on-surface uppercase tracking-tight">Sales & CRM Overview</h2>
+          <div className="space-y-6">
+            <h2 className="font-h text-base font-bold text-brand-on-surface uppercase tracking-tight">Sales & CRM Overview</h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <motion.div whileHover={{ y: -5 }} className="bg-white p-8 rounded-[32px] shadow-xl shadow-brand-primary/5 border border-brand-surface-normal flex items-center gap-6 group">
-                <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <motion.div whileHover={{ y: -5 }} className="bg-white p-5 rounded-xl shadow-xl shadow-brand-primary/5 border border-brand-surface-normal flex items-center gap-4 md:p-6 group">
+                <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-md flex items-center justify-center group-hover:scale-110 transition-transform">
                   <Package size={28} />
                 </div>
                 <div>
-                  <p className="font-sans text-[10px] uppercase tracking-widest font-black text-brand-on-surface-variant opacity-60 mb-1">Total Products</p>
-                  <p className="font-h text-4xl font-black text-brand-on-surface">{products.length}</p>
+                  <p className="font-sans text-[10px] uppercase tracking-widest font-bold text-brand-on-surface-variant opacity-60 mb-1">Total Products</p>
+                  <p className="font-h text-4xl font-bold text-brand-on-surface">{products.length}</p>
                 </div>
               </motion.div>
 
-              <motion.div whileHover={{ y: -5 }} className="bg-white p-8 rounded-[32px] shadow-xl shadow-brand-primary/5 border border-brand-surface-normal flex items-center gap-6 group">
-                <div className="w-16 h-16 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <motion.div whileHover={{ y: -5 }} className="bg-white p-5 rounded-xl shadow-xl shadow-brand-primary/5 border border-brand-surface-normal flex items-center gap-4 md:p-6 group">
+                <div className="w-10 h-10 bg-green-50 text-green-600 rounded-md flex items-center justify-center group-hover:scale-110 transition-transform">
                   <ShoppingCart size={28} />
                 </div>
                 <div>
-                  <p className="font-sans text-[10px] uppercase tracking-widest font-black text-brand-on-surface-variant opacity-60 mb-1">Total Orders</p>
-                  <p className="font-h text-4xl font-black text-brand-on-surface">{orders.length}</p>
+                  <p className="font-sans text-[10px] uppercase tracking-widest font-bold text-brand-on-surface-variant opacity-60 mb-1">Total Orders</p>
+                  <p className="font-h text-4xl font-bold text-brand-on-surface">{orders.length}</p>
                 </div>
               </motion.div>
 
-              <motion.div whileHover={{ y: -5 }} className="bg-white p-8 rounded-[32px] shadow-xl shadow-brand-primary/5 border border-brand-surface-normal flex items-center gap-6 group">
-                <div className="w-16 h-16 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <motion.div whileHover={{ y: -5 }} className="bg-white p-5 rounded-xl shadow-xl shadow-brand-primary/5 border border-brand-surface-normal flex items-center gap-4 md:p-6 group">
+                <div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-md flex items-center justify-center group-hover:scale-110 transition-transform">
                   <Users size={28} />
                 </div>
                 <div>
-                  <p className="font-sans text-[10px] uppercase tracking-widest font-black text-brand-on-surface-variant opacity-60 mb-1">Registered Users</p>
-                  <p className="font-h text-4xl font-black text-brand-on-surface">{users.length}</p>
+                  <p className="font-sans text-[10px] uppercase tracking-widest font-bold text-brand-on-surface-variant opacity-60 mb-1">Registered Users</p>
+                  <p className="font-h text-4xl font-bold text-brand-on-surface">{users.length}</p>
                 </div>
               </motion.div>
             </div>
 
-            <div className="bg-white p-10 rounded-[32px] shadow-xl border border-brand-surface-normal">
-              <h3 className="font-h text-2xl font-bold mb-8">Recently Added Products</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+            <div className="bg-white p-4 md:p-6 rounded-xl shadow-xl border border-brand-surface-normal">
+              <h3 className="font-h text-lg font-bold mb-8">Recently Added Products</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:p-6">
                 {products.slice(0, 5).map(product => (
-                  <div key={product._id} className="group flex flex-col bg-brand-surface-low rounded-2xl overflow-hidden hover:shadow-xl transition-all border border-brand-surface-normal hover:border-brand-primary/20">
+                  <div key={product._id} className="group flex flex-col bg-brand-surface-low rounded-md overflow-hidden hover:shadow-xl transition-all border border-brand-surface-normal hover:border-brand-primary/20">
                     <div className="aspect-square bg-white flex items-center justify-center overflow-hidden">
                       {product.images?.[0] ? (
                         <img src={product.images[0]} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="" />
@@ -828,9 +830,9 @@ const AdminDashboard = () => {
                       )}
                     </div>
                     <div className="p-4 flex flex-col flex-grow">
-                      <p className="font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-1 line-clamp-1">{product.team || product.category}</p>
+                      <p className="font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-1 line-clamp-1">{product.team || product.category}</p>
                       <p className="font-h text-sm font-bold text-brand-on-surface line-clamp-2 mb-3">{product.name}</p>
-                      <p className="font-h text-lg font-black text-brand-primary mt-auto">₹{product.price}</p>
+                      <p className="font-h text-lg font-bold text-brand-primary mt-auto">₹{product.price}</p>
                     </div>
                   </div>
                 ))}
@@ -840,47 +842,47 @@ const AdminDashboard = () => {
         );
       case 'products':
         return (
-          <div className="space-y-8 max-w-6xl mx-auto">
-            <div className="flex justify-between items-center bg-white p-6 rounded-[24px] shadow-sm border border-brand-surface-normal">
+          <div className="space-y-5 max-w-6xl mx-auto">
+            <div className="flex justify-between items-center bg-white p-4 md:p-6 rounded-lg shadow-sm border border-brand-surface-normal">
               <div>
-                <h2 className="font-h text-3xl font-black text-brand-on-surface uppercase tracking-tight">{isEditMode ? 'Edit Product' : 'Add New Products'}</h2>
-                <p className="font-sans text-xs font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60 mt-1">{isEditMode ? 'Modify existing product details' : 'Add up to 5 products at once'}</p>
+                <h2 className="font-h text-base font-bold text-brand-on-surface uppercase tracking-tight">{isEditMode ? 'Edit Product' : 'Add New Products'}</h2>
+                <p className="text-sm text-gray-500 text-brand-on-surface-variant opacity-60 mt-1">{isEditMode ? 'Modify existing product details' : 'Add up to 5 products at once'}</p>
               </div>
               {!isEditMode && (
                 <button
                   onClick={addFormRow}
                   disabled={productForms.length >= 5}
-                  className="bg-brand-primary text-white text-sm px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-black transition-colors disabled:opacity-50 shadow-lg shadow-brand-primary/20"
+                  className="bg-brand-primary text-white text-sm px-4 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-black transition-colors disabled:opacity-50 shadow-lg shadow-brand-primary/20"
                 >
                   <Plus size={18} /> Add Another Product
                 </button>
               )}
             </div>
 
-            <form onSubmit={handleFormSubmit} className="space-y-10">
+            <form onSubmit={handleFormSubmit} className="space-y-6">
               {productForms.map((form, index) => (
-                <div key={index} className="bg-white p-10 rounded-[32px] shadow-xl border border-brand-surface-normal relative group">
+                <div key={index} className="bg-white p-4 md:p-6 rounded-xl shadow-xl border border-brand-surface-normal relative group">
                   {productForms.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removeFormRow(index)}
-                      className="absolute top-6 right-6 bg-red-50 text-red-600 hover:bg-red-100 p-3 rounded-full transition-all hover:scale-110 shadow-sm"
+                      className="absolute top-4 md:p-6 right-6 bg-red-50 text-red-600 hover:bg-red-100 p-3 rounded-full transition-all hover:scale-110 shadow-sm"
                     >
                       <Trash2 size={20} />
                     </button>
                   )}
 
                   <div className="mb-8 border-b border-brand-surface-normal pb-4">
-                    <h3 className="font-h text-2xl font-bold text-brand-on-surface">{isEditMode ? 'Product Details' : `Product #${index + 1}`}</h3>
+                    <h3 className="font-h text-lg font-bold text-brand-on-surface">{isEditMode ? 'Product Details' : `Product #${index + 1}`}</h3>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                     <div className="col-span-1 md:col-span-2 lg:col-span-1">
-                      <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Product Name*</label>
-                      <input name="name" value={form.name} onChange={(e) => handleInputChange(index, e)} type="text" className="w-full px-5 py-4 bg-brand-surface rounded-2xl border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all" placeholder="e.g. Argentina Home Jersey" required />
+                      <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Product Name*</label>
+                      <input name="name" value={form.name} onChange={(e) => handleInputChange(index, e)} type="text" className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all" placeholder="e.g. Argentina Home Jersey" required />
                     </div>
                     <div>
-                      <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Team (Country/Club)</label>
+                      <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Team (Country/Club)</label>
                       <SearchableDropdown
                         options={teams.map(t => t.name)}
                         value={form.team}
@@ -889,7 +891,7 @@ const AdminDashboard = () => {
                       />
                     </div>
                     <div>
-                      <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Category*</label>
+                      <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Category*</label>
                       <SearchableDropdown
                         options={categories.map(c => c.name)}
                         value={form.category}
@@ -898,7 +900,7 @@ const AdminDashboard = () => {
                       />
                     </div>
                     <div>
-                      <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Subcategory</label>
+                      <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Subcategory</label>
                       <SearchableDropdown
                         options={(() => {
                           const parentCat = categories.find(c => c.name === form.category);
@@ -910,22 +912,22 @@ const AdminDashboard = () => {
                       />
                     </div>
                     <div>
-                      <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Price (INR)*</label>
-                      <input name="price" value={form.price} onChange={(e) => handleInputChange(index, e)} type="number" className="w-full px-5 py-4 bg-brand-surface rounded-2xl border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all" placeholder="e.g. 1999" required />
+                      <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Price (INR)*</label>
+                      <input name="price" value={form.price} onChange={(e) => handleInputChange(index, e)} type="number" className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all" placeholder="e.g. 1999" required />
                     </div>
                     <div>
-                      <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Discount Price</label>
-                      <input name="discount_price" value={form.discount_price} onChange={(e) => handleInputChange(index, e)} type="number" className="w-full px-5 py-4 bg-brand-surface rounded-2xl border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all" placeholder="e.g. 1499" />
+                      <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Discount Price</label>
+                      <input name="discount_price" value={form.discount_price} onChange={(e) => handleInputChange(index, e)} type="number" className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all" placeholder="e.g. 1499" />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-8">
                     <div>
-                      <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Stock</label>
-                      <input name="stock" value={form.stock} onChange={(e) => handleInputChange(index, e)} type="number" className="w-full px-5 py-4 bg-brand-surface rounded-2xl border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all" placeholder="e.g. 50" />
+                      <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Stock</label>
+                      <input name="stock" value={form.stock} onChange={(e) => handleInputChange(index, e)} type="number" className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all" placeholder="e.g. 50" />
                     </div>
                     <div className="col-span-1 lg:col-span-2">
-                      <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Sizes Available</label>
+                      <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Sizes Available</label>
                       <div className="flex flex-wrap gap-3">
                         {['S', 'M', 'L', 'XL', 'XXL', 'XXXL'].map(size => {
                           const sizeList = form.sizes ? form.sizes.split(',').map(s => s.trim()).filter(s => s !== '') : [];
@@ -944,7 +946,7 @@ const AdminDashboard = () => {
                                 handleDirectFieldChange(index, 'sizes', newSizes);
                               }}
                               className={cn(
-                                "w-14 h-14 rounded-2xl font-h font-black text-lg transition-all active:scale-95 flex items-center justify-center border-2",
+                                "w-14 h-14 rounded-md font-bold text-lg transition-all active:scale-95 flex items-center justify-center border-2",
                                 isSelected
                                   ? 'bg-brand-primary text-white border-brand-primary shadow-lg shadow-brand-primary/20'
                                   : 'bg-brand-surface text-brand-on-surface-variant border-transparent hover:border-brand-primary/30'
@@ -958,9 +960,9 @@ const AdminDashboard = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-8">
                     <div>
-                      <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Colors (Select options)</label>
+                      <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Colors (Select options)</label>
                       <SearchableMultiDropdown
                         options={['Red', 'Blue', 'White', 'Black', 'Yellow', 'Green', 'Orange', 'Purple', 'Grey', 'Gold', 'Silver', 'Navy Blue', 'Sky Blue', 'Pink', 'Burgundy', 'Maroon']}
                         selectedValues={form.colors ? form.colors.split(',').map(c => c.trim()).filter(c => c !== '') : []}
@@ -970,7 +972,7 @@ const AdminDashboard = () => {
                         placeholder="Search & Select Colors..."
                       />
                     </div>
-                    <div className="flex items-center gap-8 bg-brand-surface p-4 rounded-2xl">
+                    <div className="flex items-center gap-5 bg-brand-surface p-4 rounded-md">
                       <label className="flex items-center gap-3 cursor-pointer group">
                         <div className={cn("w-6 h-6 rounded flex items-center justify-center transition-colors", form.isAvailable ? "bg-brand-primary text-white" : "bg-white border border-brand-surface-normal group-hover:border-brand-primary")}>
                           {form.isAvailable && <Check size={16} strokeWidth={3} />}
@@ -989,13 +991,13 @@ const AdminDashboard = () => {
                   </div>
 
                   <div className="mt-8">
-                    <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Description*</label>
-                    <textarea name="description" value={form.description} onChange={(e) => handleInputChange(index, e)} className="w-full px-5 py-4 bg-brand-surface rounded-2xl border-none focus:ring-2 focus:ring-brand-primary outline-none font-sans text-brand-on-surface transition-all resize-y min-h-[120px]" placeholder="Detailed product description..." required></textarea>
+                    <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Description*</label>
+                    <textarea name="description" value={form.description} onChange={(e) => handleInputChange(index, e)} className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none font-sans text-brand-on-surface transition-all resize-y min-h-[120px]" placeholder="Detailed product description..." required></textarea>
                   </div>
 
                   <div className="mt-10">
-                    <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-4 ml-2">Product Images (First is Main)</label>
-                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-6">
+                    <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-4 ml-2">Product Images (First is Main)</label>
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 md:p-6">
                       {Array(5).fill(null).map((_, slotIndex) => {
                         const file = form.tempImages[slotIndex];
                         const existingUrl = form.existingImages?.[slotIndex];
@@ -1006,7 +1008,7 @@ const AdminDashboard = () => {
                           <div
                             key={slotIndex}
                             className={cn(
-                              "relative aspect-[3/4] rounded-[24px] flex flex-col items-center justify-center overflow-hidden transition-all duration-300 group cursor-pointer border-2",
+                              "relative aspect-[3/4] rounded-lg flex flex-col items-center justify-center overflow-hidden transition-all duration-300 group cursor-pointer border-2",
                               previewUrl ? "border-transparent shadow-md" : isMain ? "border-brand-primary bg-brand-primary/5 hover:bg-brand-primary/10" : "border-dashed border-brand-surface-normal bg-brand-surface hover:bg-brand-surface-low"
                             )}
                           >
@@ -1014,7 +1016,7 @@ const AdminDashboard = () => {
                               <>
                                 <img src={previewUrl} alt={`Slot ${slotIndex + 1}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-                                  <span className="text-[10px] font-sans font-black uppercase tracking-widest text-white">{isMain ? 'Main Image' : `Sub Image ${slotIndex}`}</span>
+                                  <span className="text-[10px] font-sans font-bold uppercase tracking-widest text-white">{isMain ? 'Main Image' : `Sub Image ${slotIndex}`}</span>
                                   <span className="text-white/70 text-xs font-bold">{file ? 'New Upload' : 'Existing'}</span>
                                 </div>
                                 <button
@@ -1028,10 +1030,10 @@ const AdminDashboard = () => {
                             ) : (
                               <label className="cursor-pointer w-full h-full flex flex-col items-center justify-center p-4 text-center">
                                 <input type="file" accept="image/*" onChange={(e) => handleSlotImageChange(index, slotIndex, e)} className="hidden" />
-                                <div className={cn("w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-transform group-hover:scale-110 group-active:scale-95", isMain ? "bg-brand-primary text-white shadow-lg shadow-brand-primary/30" : "bg-white text-brand-on-surface shadow-sm")}>
+                                <div className={cn("w-8 h-8 rounded-full flex items-center justify-center mb-3 transition-transform group-hover:scale-110 group-active:scale-95", isMain ? "bg-brand-primary text-white shadow-lg shadow-brand-primary/30" : "bg-white text-brand-on-surface shadow-sm")}>
                                   <Plus size={20} strokeWidth={3} />
                                 </div>
-                                <span className={cn("text-[10px] font-black uppercase tracking-widest", isMain ? "text-brand-primary" : "text-brand-on-surface-variant opacity-60")}>
+                                <span className={cn("text-xs font-medium text-gray-500", isMain ? "text-brand-primary" : "text-brand-on-surface-variant opacity-60")}>
                                   {isMain ? 'Add Main' : `Add Image ${slotIndex}`}
                                 </span>
                               </label>
@@ -1044,7 +1046,7 @@ const AdminDashboard = () => {
                 </div>
               ))}
 
-              <div className="flex gap-6 sticky bottom-6 z-20">
+              <div className="flex gap-4 md:p-6 sticky bottom-6 z-20">
                 {isEditMode && (
                   <button
                     type="button"
@@ -1054,7 +1056,7 @@ const AdminDashboard = () => {
                       setProductForms([initialProductState]);
                       setActiveTab('all-products');
                     }}
-                    className="flex-1 bg-white border border-brand-surface-normal text-brand-on-surface px-8 py-5 rounded-[24px] font-h font-black uppercase tracking-widest hover:bg-brand-surface-low transition-all shadow-xl hover:shadow-2xl active:scale-95"
+                    className="flex-1 bg-white border border-brand-surface-normal text-brand-on-surface px-8 py-2.5 rounded-lg font-semibold hover:bg-brand-surface-low transition-all shadow-xl hover:shadow-2xl active:scale-95"
                   >
                     Cancel Edit
                   </button>
@@ -1063,7 +1065,7 @@ const AdminDashboard = () => {
                   type="submit"
                   disabled={loading}
                   className={cn(
-                    "px-8 py-5 rounded-[24px] font-h font-black uppercase tracking-widest transition-all shadow-xl shadow-brand-primary/30 active:scale-95 text-lg",
+                    "px-8 py-2.5 rounded-lg font-semibold transition-all shadow-xl shadow-brand-primary/30 active:scale-95 text-lg",
                     loading ? "opacity-70 cursor-not-allowed" : "hover:shadow-2xl hover:shadow-brand-primary/40",
                     isEditMode ? "flex-[2] bg-brand-primary text-white" : "w-full bg-brand-primary text-white"
                   )}
@@ -1079,39 +1081,39 @@ const AdminDashboard = () => {
         );
       case 'categories':
         return (
-          <div className="space-y-8 max-w-7xl mx-auto">
-            <div className="flex justify-between items-center bg-white p-6 rounded-[24px] shadow-sm border border-brand-surface-normal">
+          <div className="space-y-5 max-w-7xl mx-auto">
+            <div className="flex justify-between items-center bg-white p-4 md:p-6 rounded-lg shadow-sm border border-brand-surface-normal">
               <div>
-                <h2 className="font-h text-3xl font-black text-brand-on-surface uppercase tracking-tight">Categories Matrix</h2>
-                <p className="font-sans text-xs font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60 mt-1">Manage product classification and hierarchy</p>
+                <h2 className="font-h text-base font-bold text-brand-on-surface uppercase tracking-tight">Categories Matrix</h2>
+                <p className="text-sm text-gray-500 text-brand-on-surface-variant opacity-60 mt-1">Manage product classification and hierarchy</p>
               </div>
-              <div className="bg-brand-primary text-white text-sm px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-brand-primary/20">
+              <div className="bg-brand-primary text-white text-sm px-4 py-2 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-brand-primary/20">
                 <Tags size={18} />
                 {categories.length} Active Categories
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               {/* Create Category */}
-              <div className="bg-white p-8 rounded-[32px] shadow-xl border border-brand-surface-normal flex flex-col justify-between group hover:border-brand-primary/30 transition-colors">
+              <div className="bg-white p-5 rounded-xl shadow-xl border border-brand-surface-normal flex flex-col justify-between group hover:border-brand-primary/30 transition-colors">
                 <div>
-                  <h3 className="font-h text-2xl font-bold text-brand-on-surface mb-2">Create Root Category</h3>
-                  <p className="font-sans text-xs font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-8">Add a new high-level classification</p>
+                  <h3 className="font-h text-lg font-bold text-brand-on-surface mb-2">Create Root Category</h3>
+                  <p className="text-sm text-gray-500 text-brand-on-surface-variant opacity-60 mb-8">Add a new high-level classification</p>
                   <form onSubmit={handleCreateCategory} className="space-y-6">
                     <div>
-                      <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Category Name*</label>
+                      <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Category Name*</label>
                       <input
                         type="text"
                         value={newCategoryName}
                         onChange={(e) => setNewCategoryName(e.target.value)}
-                        className="w-full px-5 py-4 bg-brand-surface rounded-2xl border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all"
+                        className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all"
                         placeholder="e.g. Jerseys, Footwear, Accessories"
                         required
                       />
                     </div>
                     <button
                       type="submit"
-                      className="bg-brand-primary hover:bg-black text-white px-6 py-4 rounded-2xl font-h font-black uppercase tracking-widest w-full transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-brand-primary/20"
+                      className="bg-brand-primary hover:bg-black text-white px-4 py-2 rounded-md font-semibold w-full transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-brand-primary/20"
                     >
                       <Plus size={20} strokeWidth={3} /> Add Category
                     </button>
@@ -1120,18 +1122,18 @@ const AdminDashboard = () => {
               </div>
 
               {/* Create Subcategory */}
-              <div className="bg-white p-8 rounded-[32px] shadow-xl border border-brand-surface-normal flex flex-col justify-between group hover:border-brand-primary/30 transition-colors">
+              <div className="bg-white p-5 rounded-xl shadow-xl border border-brand-surface-normal flex flex-col justify-between group hover:border-brand-primary/30 transition-colors">
                 <div>
-                  <h3 className="font-h text-2xl font-bold text-brand-on-surface mb-2">Create Subcategory</h3>
-                  <p className="font-sans text-xs font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-8">Group products under a root category</p>
+                  <h3 className="font-h text-lg font-bold text-brand-on-surface mb-2">Create Subcategory</h3>
+                  <p className="text-sm text-gray-500 text-brand-on-surface-variant opacity-60 mb-8">Group products under a root category</p>
                   <form onSubmit={handleCreateSubcategory} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:p-6">
                       <div>
-                        <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Parent Category*</label>
+                        <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Parent Category*</label>
                         <select
                           value={selectedParentCategoryId}
                           onChange={(e) => setSelectedParentCategoryId(e.target.value)}
-                          className="w-full px-5 py-4 bg-brand-surface rounded-2xl border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all appearance-none cursor-pointer"
+                          className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all appearance-none cursor-pointer"
                           required
                         >
                           <option value="">Select Parent...</option>
@@ -1141,12 +1143,12 @@ const AdminDashboard = () => {
                         </select>
                       </div>
                       <div>
-                        <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Subcategory Name*</label>
+                        <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Subcategory Name*</label>
                         <input
                           type="text"
                           value={newSubcategoryName}
                           onChange={(e) => setNewSubcategoryName(e.target.value)}
-                          className="w-full px-5 py-4 bg-brand-surface rounded-2xl border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all"
+                          className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all"
                           placeholder="e.g. Premier League"
                           required
                         />
@@ -1154,7 +1156,7 @@ const AdminDashboard = () => {
                     </div>
                     <button
                       type="submit"
-                      className="bg-brand-primary hover:bg-black text-white px-6 py-4 rounded-2xl font-h font-black uppercase tracking-widest w-full transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-brand-primary/20 mt-6"
+                      className="bg-brand-primary hover:bg-black text-white px-4 py-2 rounded-md font-semibold w-full transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-brand-primary/20 mt-6"
                     >
                       <Plus size={20} strokeWidth={3} /> Add Subcategory
                     </button>
@@ -1164,36 +1166,36 @@ const AdminDashboard = () => {
             </div>
 
             {/* List & Manage */}
-            <div className="bg-white p-8 rounded-[32px] shadow-xl border border-brand-surface-normal">
+            <div className="bg-white p-5 rounded-xl shadow-xl border border-brand-surface-normal">
               <div className="flex items-center gap-3 mb-8 border-b border-brand-surface-normal pb-4">
                 <div className="w-10 h-10 bg-brand-surface-low rounded-xl flex items-center justify-center text-brand-primary">
                   <Tags size={20} strokeWidth={3} />
                 </div>
-                <h3 className="font-h text-2xl font-bold text-brand-on-surface">Directory Structure</h3>
+                <h3 className="font-h text-lg font-bold text-brand-on-surface">Directory Structure</h3>
               </div>
 
               {categories.length === 0 ? (
-                <div className="text-center py-16 bg-brand-surface rounded-2xl border-2 border-dashed border-brand-surface-normal">
-                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-brand-on-surface-variant opacity-40">
+                <div className="text-center py-16 bg-brand-surface rounded-md border-2 border-dashed border-brand-surface-normal">
+                  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-brand-on-surface-variant opacity-40">
                     <Tags size={32} />
                   </div>
-                  <p className="font-h text-xl font-bold text-brand-on-surface">No Categories Found</p>
-                  <p className="font-sans text-xs font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60 mt-2">Create your first category above</p>
+                  <p className="font-h text-base font-bold text-brand-on-surface">No Categories Found</p>
+                  <p className="text-sm text-gray-500 text-brand-on-surface-variant opacity-60 mt-2">Create your first category above</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:p-6">
                   {categories.map((cat) => (
                     <div
                       key={cat._id}
-                      className="bg-brand-surface rounded-[24px] p-6 flex flex-col justify-between hover:shadow-lg transition-all duration-300 group relative overflow-hidden"
+                      className="bg-brand-surface rounded-lg p-4 md:p-6 flex flex-col justify-between hover:shadow-lg transition-all duration-300 group relative overflow-hidden"
                     >
                       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-brand-primary/5 to-transparent rounded-bl-full -z-10 transition-transform group-hover:scale-150"></div>
 
                       <div>
                         <div className="flex justify-between items-start mb-6">
                           <div>
-                            <h4 className="font-h text-xl font-black text-brand-on-surface">{cat.name}</h4>
-                            <span className="font-sans text-[10px] font-black uppercase tracking-widest text-brand-primary bg-brand-primary/10 px-2 py-1 rounded-md mt-2 inline-block">
+                            <h4 className="font-h text-base font-bold text-brand-on-surface">{cat.name}</h4>
+                            <span className="font-sans text-xs font-medium text-gray-500 text-brand-primary bg-brand-primary/10 px-2 py-1 rounded-md mt-2 inline-block">
                               {cat.subcategories.length} {cat.subcategories.length === 1 ? 'Sub' : 'Subs'}
                             </span>
                           </div>
@@ -1206,10 +1208,10 @@ const AdminDashboard = () => {
                           </button>
                         </div>
 
-                        <div className="bg-white rounded-2xl p-4 border border-brand-surface-normal h-48 overflow-y-auto custom-scrollbar">
+                        <div className="bg-white rounded-md p-4 border border-brand-surface-normal h-48 overflow-y-auto custom-scrollbar">
                           {cat.subcategories.length === 0 ? (
                             <div className="h-full flex flex-col items-center justify-center text-center opacity-50">
-                              <span className="font-sans text-[10px] font-black uppercase tracking-widest">No Subcategories</span>
+                              <span className="font-sans text-xs font-medium text-gray-500">No Subcategories</span>
                             </div>
                           ) : (
                             <div className="space-y-2">
@@ -1241,11 +1243,11 @@ const AdminDashboard = () => {
         );
       case 'all-products':
         return (
-          <div className="space-y-8">
-            <div className="flex justify-between items-center bg-white p-6 rounded-[24px] shadow-sm border border-brand-surface-normal">
+          <div className="space-y-5">
+            <div className="flex justify-between items-center bg-white p-4 md:p-6 rounded-lg shadow-sm border border-brand-surface-normal">
               <div>
-                <h2 className="font-h text-3xl font-black text-brand-on-surface uppercase tracking-tight">Manage Products</h2>
-                <p className="font-sans text-xs font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60 mt-1">View, edit or delete existing inventory</p>
+                <h2 className="font-h text-base font-bold text-brand-on-surface uppercase tracking-tight">Manage Products</h2>
+                <p className="text-sm text-gray-500 text-brand-on-surface-variant opacity-60 mt-1">View, edit or delete existing inventory</p>
               </div>
               <button
                 onClick={() => {
@@ -1253,29 +1255,29 @@ const AdminDashboard = () => {
                   setIsEditMode(false);
                   setActiveTab('products');
                 }}
-                className="bg-brand-primary text-white text-sm px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-black transition-colors shadow-lg shadow-brand-primary/20"
+                className="bg-brand-primary text-white text-sm px-4 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-black transition-colors shadow-lg shadow-brand-primary/20"
               >
                 <Plus size={18} />
                 Add New Product
               </button>
             </div>
 
-            <div className="bg-white rounded-[32px] shadow-xl border border-brand-surface-normal overflow-hidden">
+            <div className="bg-white rounded-xl shadow-xl border border-brand-surface-normal overflow-hidden">
               <table className="w-full text-left">
                 <thead className="bg-brand-surface-low border-b border-brand-surface-normal">
                   <tr>
-                    <th className="px-6 py-5 font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 rounded-tl-2xl w-24">Image</th>
-                    <th className="px-6 py-5 font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60">Product Details</th>
-                    <th className="px-6 py-5 font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60">Category & Team</th>
-                    <th className="px-6 py-5 font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60">Price</th>
-                    <th className="px-6 py-5 font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 rounded-tr-2xl text-right">Actions</th>
+                    <th className="px-6 py-2.5 font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 rounded-tl-2xl w-24">Image</th>
+                    <th className="px-6 py-2.5 font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60">Product Details</th>
+                    <th className="px-6 py-2.5 font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60">Category & Team</th>
+                    <th className="px-6 py-2.5 font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60">Price</th>
+                    <th className="px-6 py-2.5 font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 rounded-tr-2xl text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-brand-surface-normal">
                   {products.map((product) => (
                     <tr key={product._id} className="hover:bg-brand-surface-low/50 transition-colors group">
-                      <td className="px-6 py-4">
-                        <div className="w-16 h-16 rounded-xl overflow-hidden bg-brand-surface-low border border-brand-surface-normal">
+                      <td className="px-4 py-2">
+                        <div className="w-10 h-10 rounded-xl overflow-hidden bg-brand-surface-low border border-brand-surface-normal">
                           {product.images?.[0] ? (
                             <img src={product.images[0]} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="" />
                           ) : (
@@ -1283,28 +1285,28 @@ const AdminDashboard = () => {
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-2">
                         <p className="font-h text-sm font-bold text-brand-on-surface line-clamp-2">{product.name}</p>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-2">
                         <div className="flex flex-col gap-1">
-                          <span className="font-sans text-xs font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-80">{product.category}</span>
-                          <span className="font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-40">{product.team || 'No Team'}</span>
+                          <span className="text-sm text-gray-500 text-brand-on-surface-variant opacity-80">{product.category}</span>
+                          <span className="font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-40">{product.team || 'No Team'}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-2">
                         <div className="flex flex-col gap-1">
                           {product.discount_price ? (
                             <>
-                              <span className="font-h text-base font-black text-brand-on-surface">₹{product.discount_price}</span>
+                              <span className="font-h text-base font-bold text-brand-on-surface">₹{product.discount_price}</span>
                               <span className="font-sans text-[10px] font-bold line-through text-brand-on-surface-variant opacity-40">₹{product.price}</span>
                             </>
                           ) : (
-                            <span className="font-h text-base font-black text-brand-on-surface">₹{product.price}</span>
+                            <span className="font-h text-base font-bold text-brand-on-surface">₹{product.price}</span>
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-2">
                         <div className="flex justify-end gap-3">
                           <button
                             onClick={() => {
@@ -1368,28 +1370,28 @@ const AdminDashboard = () => {
         );
       case 'orders':
         return (
-          <div className="space-y-8">
-            <div className="flex justify-between items-center bg-white p-6 rounded-[24px] shadow-sm border border-brand-surface-normal">
+          <div className="space-y-5">
+            <div className="flex justify-between items-center bg-white p-4 md:p-6 rounded-lg shadow-sm border border-brand-surface-normal">
               <div>
-                <h2 className="font-h text-3xl font-black text-brand-on-surface uppercase tracking-tight">Customer Orders</h2>
-                <p className="font-sans text-xs font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60 mt-1">Manage and track all shipments</p>
+                <h2 className="font-h text-base font-bold text-brand-on-surface uppercase tracking-tight">Customer Orders</h2>
+                <p className="text-sm text-gray-500 text-brand-on-surface-variant opacity-60 mt-1">Manage and track all shipments</p>
               </div>
-              <div className="bg-brand-primary text-white text-sm px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-brand-primary/20">
+              <div className="bg-brand-primary text-white text-sm px-4 py-2 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-brand-primary/20">
                 <ShoppingCart size={18} />
                 {orders.length} Orders Total
               </div>
             </div>
 
-            <div className="bg-white rounded-[32px] shadow-xl border border-brand-surface-normal overflow-hidden overflow-x-auto p-4">
+            <div className="bg-white rounded-xl shadow-xl border border-brand-surface-normal overflow-hidden overflow-x-auto p-4">
               <table className="w-full text-left min-w-[1000px]">
                 <thead className="bg-brand-surface-low border-b border-brand-surface-normal">
                   <tr>
-                    <th className="px-6 py-5 font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 rounded-tl-2xl">Order ID & Date</th>
-                    <th className="px-6 py-5 font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60">Customer</th>
-                    <th className="px-6 py-5 font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60">Items</th>
-                    <th className="px-6 py-5 font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60">Address</th>
-                    <th className="px-6 py-5 font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60">Total & Payment</th>
-                    <th className="px-6 py-5 font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 rounded-tr-2xl">Status</th>
+                    <th className="px-6 py-2.5 font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 rounded-tl-2xl">Order ID & Date</th>
+                    <th className="px-6 py-2.5 font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60">Customer</th>
+                    <th className="px-6 py-2.5 font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60">Items</th>
+                    <th className="px-6 py-2.5 font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60">Address</th>
+                    <th className="px-6 py-2.5 font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60">Total & Payment</th>
+                    <th className="px-6 py-2.5 font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 rounded-tr-2xl">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-brand-surface-normal">
@@ -1429,9 +1431,9 @@ const AdminDashboard = () => {
                       </td>
                       <td className="px-6 py-6">
                         <div className="flex flex-col gap-1.5">
-                          <span className="text-base font-h font-black text-brand-on-surface">₹{order.totalAmount}</span>
+                          <span className="text-base font-bold text-brand-on-surface">₹{order.totalAmount}</span>
                           <span className={cn(
-                            "text-[9px] uppercase tracking-widest font-black px-2 py-1 rounded-md inline-block w-max",
+                            "text-[9px] uppercase tracking-widest font-bold px-2 py-1 rounded-md inline-block w-max",
                             order.paymentMethod === 'cod' ? "bg-orange-50 text-orange-600" : "bg-green-50 text-green-600"
                           )}>
                             {order.paymentMethod === 'cod' ? 'CASH ON DELIVERY' : 'ONLINE PAID'}
@@ -1439,31 +1441,57 @@ const AdminDashboard = () => {
                         </div>
                       </td>
                       <td className="px-6 py-6">
-                        <select
-                          value={order.status}
-                          onChange={async (e) => {
-                            const newStatus = e.target.value;
-                            const token = localStorage.getItem('adminToken');
-                            await fetch(`${API_BASE_URL}/api/orders/${order._id}/status`, {
-                              method: 'PUT',
-                              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                              body: JSON.stringify({ status: newStatus })
-                            });
-                            fetchOrders();
-                          }}
-                          className={cn(
-                            "text-xs font-bold px-4 py-2.5 rounded-xl border outline-none cursor-pointer hover:shadow-md transition-all appearance-none",
-                            order.status === 'Processing' ? "bg-blue-50 text-blue-600 border-blue-200 hover:border-blue-300" :
-                              order.status === 'Shipped' ? "bg-amber-50 text-amber-600 border-amber-200 hover:border-amber-300" :
-                                order.status === 'Delivered' ? "bg-green-50 text-green-600 border-green-200 hover:border-green-300" :
-                                  "bg-red-50 text-red-600 border-red-200 hover:border-red-300"
-                          )}
-                        >
-                          <option value="Processing">⏳ Processing</option>
-                          <option value="Shipped">🚚 Shipped</option>
-                          <option value="Delivered">✅ Delivered</option>
-                          <option value="Cancelled">❌ Cancelled</option>
-                        </select>
+                        <div className="flex flex-col gap-3">
+                          <select
+                            value={order.status}
+                            onChange={async (e) => {
+                              const newStatus = e.target.value;
+                              const token = localStorage.getItem('adminToken');
+                              await fetch(`${API_BASE_URL}/api/orders/${order._id}/status`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                body: JSON.stringify({ status: newStatus })
+                              });
+                              fetchOrders();
+                            }}
+                            className={cn(
+                              "text-xs font-bold px-4 py-2.5 rounded-xl border outline-none cursor-pointer hover:shadow-md transition-all appearance-none",
+                              order.status === 'Processing' ? "bg-blue-50 text-blue-600 border-blue-200 hover:border-blue-300" :
+                                order.status === 'Shipped' ? "bg-amber-50 text-amber-600 border-amber-200 hover:border-amber-300" :
+                                  order.status === 'Delivered' ? "bg-green-50 text-green-600 border-green-200 hover:border-green-300" :
+                                    "bg-red-50 text-red-600 border-red-200 hover:border-red-300"
+                            )}
+                          >
+                            <option value="Processing">⏳ Processing</option>
+                            <option value="Shipped">🚚 Shipped</option>
+                            <option value="Delivered">✅ Delivered</option>
+                            <option value="Cancelled">❌ Cancelled</option>
+                          </select>
+                          
+                          <input
+                            type="text"
+                            placeholder="Enter Tracking ID..."
+                            defaultValue={order.trackingId || ''}
+                            onBlur={async (e) => {
+                              if (e.target.value !== order.trackingId) {
+                                const token = localStorage.getItem('adminToken');
+                                await fetch(`${API_BASE_URL}/api/orders/${order._id}/status`, {
+                                  method: 'PUT',
+                                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                  body: JSON.stringify({ status: order.status, trackingId: e.target.value })
+                                });
+                                fetchOrders();
+                              }
+                            }}
+                            className="text-xs px-3 py-2.5 border border-brand-surface-normal rounded-xl outline-none focus:ring-2 focus:ring-brand-primary w-full transition-all"
+                            title="Press Enter or click outside to save"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.currentTarget.blur();
+                              }
+                            }}
+                          />
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -1474,13 +1502,13 @@ const AdminDashboard = () => {
         );
       case 'banner':
         return (
-          <div className="space-y-8 max-w-7xl mx-auto">
-            <div className="flex justify-between items-center bg-white p-6 rounded-[24px] shadow-sm border border-brand-surface-normal">
+          <div className="space-y-5 max-w-7xl mx-auto">
+            <div className="flex justify-between items-center bg-white p-4 md:p-6 rounded-lg shadow-sm border border-brand-surface-normal">
               <div>
-                <h2 className="font-h text-3xl font-black text-brand-on-surface uppercase tracking-tight">
+                <h2 className="font-h text-base font-bold text-brand-on-surface uppercase tracking-tight">
                   {isBannerEditMode ? 'Edit Banner' : editingBannerId === 'new' ? 'Create Banner' : 'Home Banners'}
                 </h2>
-                <p className="font-sans text-xs font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60 mt-1">
+                <p className="text-sm text-gray-500 text-brand-on-surface-variant opacity-60 mt-1">
                   {isBannerEditMode || editingBannerId === 'new' ? 'Configure banner details and image' : 'Manage your storefront hero section'}
                 </p>
               </div>
@@ -1493,7 +1521,7 @@ const AdminDashboard = () => {
                       setBannerData({ title: '', subtitle: '', buttonText: '', imageUrl: '', linkUrl: '' });
                       setBannerImage(null);
                     }}
-                    className="bg-brand-primary text-white text-sm px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-black transition-colors shadow-lg shadow-brand-primary/20"
+                    className="bg-brand-primary text-white text-sm px-4 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-black transition-colors shadow-lg shadow-brand-primary/20"
                   >
                     <Plus size={18} /> New Banner
                   </button>
@@ -1504,7 +1532,7 @@ const AdminDashboard = () => {
                       setIsBannerEditMode(false);
                       setEditingBannerId(null);
                     }}
-                    className="bg-brand-surface text-brand-on-surface hover:bg-brand-surface-low text-sm px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-colors border border-brand-surface-normal"
+                    className="bg-brand-surface text-brand-on-surface hover:bg-brand-surface-low text-sm px-4 py-2 rounded-xl font-bold flex items-center gap-2 transition-colors border border-brand-surface-normal"
                   >
                     <X size={18} /> Cancel
                   </button>
@@ -1513,50 +1541,50 @@ const AdminDashboard = () => {
             </div>
 
             {isBannerEditMode || editingBannerId === 'new' ? (
-              <div className="bg-white p-10 rounded-[32px] shadow-xl border border-brand-surface-normal">
-                <form onSubmit={handleBannerSubmit} className="space-y-10">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                    <div className="space-y-8">
+              <div className="bg-white p-4 md:p-6 rounded-xl shadow-xl border border-brand-surface-normal">
+                <form onSubmit={handleBannerSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:p-6">
+                    <div className="space-y-5">
                       <div>
-                        <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Banner Title*</label>
+                        <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Banner Title*</label>
                         <input
                           type="text"
                           value={bannerData.title}
                           onChange={(e) => setBannerData({ ...bannerData, title: e.target.value })}
-                          className="w-full px-5 py-4 bg-brand-surface rounded-2xl border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-xl transition-all"
+                          className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-base transition-all"
                           placeholder="e.g. Wear Your Passion"
                           required
                         />
                       </div>
                       <div>
-                        <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Banner Subtitle / Details*</label>
+                        <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Banner Subtitle / Details*</label>
                         <textarea
                           rows={4}
                           value={bannerData.subtitle}
                           onChange={(e) => setBannerData({ ...bannerData, subtitle: e.target.value })}
-                          className="w-full px-5 py-4 bg-brand-surface rounded-2xl border-none focus:ring-2 focus:ring-brand-primary outline-none resize-none font-sans text-brand-on-surface transition-all"
+                          className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none resize-none font-sans text-brand-on-surface transition-all"
                           placeholder="Enter engaging banner details here..."
                           required
                         />
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:p-6">
                         <div>
-                          <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Call to Action (Button)</label>
+                          <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Call to Action (Button)</label>
                           <input
                             type="text"
                             value={bannerData.buttonText}
                             onChange={(e) => setBannerData({ ...bannerData, buttonText: e.target.value })}
-                            className="w-full px-5 py-4 bg-brand-surface rounded-2xl border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all"
+                            className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all"
                             placeholder="e.g. Shop Now"
                           />
                         </div>
                         <div>
-                          <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Redirect Link (Path)</label>
+                          <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Redirect Link (Path)</label>
                           <input
                             type="text"
                             value={bannerData.linkUrl}
                             onChange={(e) => setBannerData({ ...bannerData, linkUrl: e.target.value })}
-                            className="w-full px-5 py-4 bg-brand-surface rounded-2xl border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all"
+                            className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all"
                             placeholder="e.g. /category/jerseys"
                           />
                         </div>
@@ -1564,8 +1592,8 @@ const AdminDashboard = () => {
                     </div>
 
                     <div className="space-y-4 h-full flex flex-col">
-                      <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Banner Hero Image*</label>
-                      <div className="flex-1 relative rounded-[32px] overflow-hidden group cursor-pointer border-4 border-dashed border-brand-surface-normal hover:border-brand-primary/50 transition-colors bg-brand-surface min-h-[300px]">
+                      <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Banner Hero Image*</label>
+                      <div className="flex-1 relative rounded-xl overflow-hidden group cursor-pointer border-2 border-dashed border-brand-surface-normal hover:border-brand-primary/50 transition-colors bg-brand-surface min-h-[300px]">
                         <input
                           type="file"
                           accept="image/*"
@@ -1581,19 +1609,19 @@ const AdminDashboard = () => {
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                             />
                             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-opacity duration-300">
-                              <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white mb-3">
+                              <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white mb-3">
                                 <Upload size={24} />
                               </div>
                               <span className="text-white font-h font-bold tracking-widest uppercase">Change Image</span>
                             </div>
                           </>
                         ) : (
-                          <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
-                            <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center text-brand-primary shadow-lg shadow-brand-primary/10 mb-6 group-hover:scale-110 transition-transform">
+                          <div className="absolute inset-0 flex flex-col items-center justify-center p-5 text-center">
+                            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-brand-primary shadow-lg shadow-brand-primary/10 mb-6 group-hover:scale-110 transition-transform">
                               <Upload size={32} />
                             </div>
-                            <p className="font-h text-xl font-bold text-brand-on-surface mb-2">Upload Banner Image</p>
-                            <p className="font-sans text-xs font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60">Click or drag & drop</p>
+                            <p className="font-h text-base font-bold text-brand-on-surface mb-2">Upload Banner Image</p>
+                            <p className="text-sm text-gray-500 text-brand-on-surface-variant opacity-60">Click or drag & drop</p>
                             <p className="font-sans text-[10px] text-brand-on-surface-variant opacity-40 mt-4">Recommended: 1920x1080px (16:9 ratio)</p>
                           </div>
                         )}
@@ -1606,7 +1634,7 @@ const AdminDashboard = () => {
                       type="submit"
                       disabled={loading}
                       className={cn(
-                        "px-10 py-5 rounded-[24px] font-h font-black uppercase tracking-widest transition-all shadow-xl shadow-brand-primary/30 active:scale-95 text-lg min-w-[250px]",
+                        "px-5 py-2.5 rounded-lg font-semibold transition-all shadow-xl shadow-brand-primary/30 active:scale-95 text-lg min-w-[250px]",
                         loading ? "opacity-70 cursor-not-allowed" : "hover:shadow-2xl hover:shadow-brand-primary/40",
                         "bg-brand-primary text-white"
                       )}
@@ -1619,27 +1647,27 @@ const AdminDashboard = () => {
             ) : (
               <>
                 {banners.length === 0 ? (
-                  <div className="text-center py-24 bg-white rounded-[32px] border border-brand-surface-normal shadow-sm">
-                    <div className="w-20 h-20 bg-brand-surface rounded-full flex items-center justify-center mx-auto mb-6 text-brand-on-surface-variant opacity-40">
+                  <div className="text-center py-24 bg-white rounded-xl border border-brand-surface-normal shadow-sm">
+                    <div className="w-8 h-8 bg-brand-surface rounded-full flex items-center justify-center mx-auto mb-6 text-brand-on-surface-variant opacity-40">
                       <ImagePlus size={36} />
                     </div>
-                    <p className="font-h text-2xl font-bold text-brand-on-surface">No Banners Configured</p>
-                    <p className="font-sans text-sm font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60 mt-2 mb-8">Add a banner to display on the storefront hero section</p>
+                    <p className="font-h text-lg font-bold text-brand-on-surface">No Banners Configured</p>
+                    <p className="text-sm text-gray-500 text-brand-on-surface-variant opacity-60 mt-2 mb-8">Add a banner to display on the storefront hero section</p>
                     <button
                       onClick={() => {
                         setEditingBannerId('new');
                         setBannerData({ title: '', subtitle: '', buttonText: '', imageUrl: '', linkUrl: '' });
                         setBannerImage(null);
                       }}
-                      className="bg-brand-primary text-white px-8 py-4 rounded-xl font-h font-bold shadow-lg shadow-brand-primary/20 hover:bg-black transition-colors inline-flex items-center gap-2"
+                      className="bg-brand-primary text-white px-4 py-2 rounded-xl font-h font-bold shadow-lg shadow-brand-primary/20 hover:bg-black transition-colors inline-flex items-center gap-2"
                     >
                       <Plus size={20} /> Create First Banner
                     </button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                     {banners.map((banner) => (
-                      <div key={banner._id} className="bg-white rounded-[32px] shadow-xl border border-brand-surface-normal overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
+                      <div key={banner._id} className="bg-white rounded-xl shadow-xl border border-brand-surface-normal overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
                         <div className="relative aspect-video overflow-hidden">
                           <img src={banner.imageUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={banner.title} />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity"></div>
@@ -1671,18 +1699,18 @@ const AdminDashboard = () => {
                             </button>
                           </div>
                         </div>
-                        <div className="p-6 relative">
-                          <div className="absolute -top-6 right-6 bg-brand-primary text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-md shadow-lg shadow-brand-primary/30 z-10">
+                        <div className="p-4 md:p-6 relative">
+                          <div className="absolute -top-4 md:p-6 right-6 bg-brand-primary text-white text-xs font-medium text-gray-500 px-3 py-1.5 rounded-md shadow-lg shadow-brand-primary/30 z-10">
                             Active
                           </div>
-                          <h3 className="font-h text-xl font-bold text-brand-on-surface line-clamp-1 mb-2">{banner.title}</h3>
+                          <h3 className="font-h text-base font-bold text-brand-on-surface line-clamp-1 mb-2">{banner.title}</h3>
                           <p className="font-sans text-sm text-brand-on-surface-variant opacity-80 line-clamp-2 leading-relaxed">{banner.subtitle}</p>
                           
                           <div className="mt-6 pt-4 border-t border-brand-surface-normal flex items-center justify-between">
-                            <span className="font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-50 flex items-center gap-1">
+                            <span className="font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-50 flex items-center gap-1">
                               <Link2 size={12} /> {banner.linkUrl ? 'Has Link' : 'No Link'}
                             </span>
-                            <span className="font-sans text-[10px] font-black uppercase tracking-widest text-brand-primary bg-brand-primary/5 px-2 py-1 rounded">
+                            <span className="font-sans text-xs font-medium text-gray-500 text-brand-primary bg-brand-primary/5 px-2 py-1 rounded">
                               {banner.buttonText || 'No Button'}
                             </span>
                           </div>
@@ -1697,25 +1725,25 @@ const AdminDashboard = () => {
         );
       case 'users':
         return (
-          <div className="space-y-8 max-w-7xl mx-auto">
-            <div className="flex justify-between items-center bg-white p-6 rounded-[24px] shadow-sm border border-brand-surface-normal">
+          <div className="space-y-5 max-w-7xl mx-auto">
+            <div className="flex justify-between items-center bg-white p-4 md:p-6 rounded-lg shadow-sm border border-brand-surface-normal">
               <div>
-                <h2 className="font-h text-3xl font-black text-brand-on-surface uppercase tracking-tight">User Management</h2>
-                <p className="font-sans text-xs font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60 mt-1">Directory of registered customers</p>
+                <h2 className="font-h text-base font-bold text-brand-on-surface uppercase tracking-tight">User Management</h2>
+                <p className="text-sm text-gray-500 text-brand-on-surface-variant opacity-60 mt-1">Directory of registered customers</p>
               </div>
-              <div className="bg-brand-primary text-white text-sm px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-brand-primary/20">
+              <div className="bg-brand-primary text-white text-sm px-4 py-2 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-brand-primary/20">
                 <Users size={18} />
                 {users.length} Total Users
               </div>
             </div>
 
-            <div className="bg-white rounded-[32px] shadow-xl border border-brand-surface-normal overflow-hidden overflow-x-auto p-4">
+            <div className="bg-white rounded-xl shadow-xl border border-brand-surface-normal overflow-hidden overflow-x-auto p-4">
               <table className="w-full text-left min-w-[800px]">
                 <thead className="bg-brand-surface-low border-b border-brand-surface-normal">
                   <tr>
-                    <th className="px-6 py-5 font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 rounded-tl-2xl">Customer Details</th>
-                    <th className="px-6 py-5 font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60">Saved Addresses</th>
-                    <th className="px-6 py-5 font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 rounded-tr-2xl text-right">Joined Date</th>
+                    <th className="px-6 py-2.5 font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 rounded-tl-2xl">Customer Details</th>
+                    <th className="px-6 py-2.5 font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60">Saved Addresses</th>
+                    <th className="px-6 py-2.5 font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 rounded-tr-2xl text-right">Joined Date</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-brand-surface-normal">
@@ -1723,11 +1751,11 @@ const AdminDashboard = () => {
                     <tr key={user._id} className="hover:bg-brand-surface-low/50 transition-colors align-top group">
                       <td className="px-6 py-6">
                         <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-brand-surface rounded-xl flex items-center justify-center text-brand-primary border border-brand-surface-normal group-hover:bg-brand-primary group-hover:text-white transition-colors">
+                          <div className="w-8 h-8 bg-brand-surface rounded-xl flex items-center justify-center text-brand-primary border border-brand-surface-normal group-hover:bg-brand-primary group-hover:text-white transition-colors">
                             <Users size={20} strokeWidth={2.5} />
                           </div>
                           <div className="flex flex-col gap-1">
-                            <span className="font-h text-lg font-black text-brand-on-surface">{user.phone}</span>
+                            <span className="font-h text-lg font-bold text-brand-on-surface">{user.phone}</span>
                             <span className="font-sans text-[10px] font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60">Registered User</span>
                           </div>
                         </div>
@@ -1736,10 +1764,10 @@ const AdminDashboard = () => {
                         <div className="space-y-3">
                           {user.addresses && user.addresses.length > 0 ? (
                             user.addresses.map((addr: any, idx: number) => (
-                              <div key={idx} className="bg-brand-surface p-4 rounded-2xl border border-brand-surface-normal group-hover:border-brand-primary/20 transition-colors">
+                              <div key={idx} className="bg-brand-surface p-4 rounded-md border border-brand-surface-normal group-hover:border-brand-primary/20 transition-colors">
                                 <div className="flex items-center gap-2 mb-1">
                                   <span className="font-h font-bold text-brand-on-surface">{addr.name}</span>
-                                  <span className="font-sans text-[9px] font-black uppercase tracking-widest text-brand-primary bg-brand-primary/10 px-2 py-0.5 rounded-md">{addr.addressType}</span>
+                                  <span className="text-xs font-medium text-gray-500 text-brand-primary bg-brand-primary/10 px-2 py-0.5 rounded-md">{addr.addressType}</span>
                                 </div>
                                 <p className="font-sans text-xs text-brand-on-surface-variant opacity-80 leading-relaxed">
                                   {addr.address}, {addr.locality}, {addr.city} - {addr.pincode}
@@ -1747,8 +1775,8 @@ const AdminDashboard = () => {
                               </div>
                             ))
                           ) : (
-                            <div className="bg-brand-surface p-4 rounded-2xl border border-brand-surface-normal border-dashed text-center">
-                              <span className="font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-40">No addresses saved</span>
+                            <div className="bg-brand-surface p-4 rounded-md border border-brand-surface-normal border-dashed text-center">
+                              <span className="font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-40">No addresses saved</span>
                             </div>
                           )}
                         </div>
@@ -1756,7 +1784,7 @@ const AdminDashboard = () => {
                       <td className="px-6 py-6 text-right">
                         <div className="inline-flex flex-col items-end gap-1 bg-brand-surface-low px-4 py-2 rounded-xl">
                           <span className="font-h font-bold text-brand-on-surface">{new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                          <span className="font-sans text-[9px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60">
+                          <span className="text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60">
                             {new Date(user.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         </div>
@@ -1766,11 +1794,11 @@ const AdminDashboard = () => {
                   {users.length === 0 && (
                     <tr>
                       <td colSpan={3} className="px-6 py-16 text-center">
-                        <div className="w-16 h-16 bg-brand-surface rounded-full flex items-center justify-center mx-auto mb-4 text-brand-on-surface-variant opacity-40">
+                        <div className="w-10 h-10 bg-brand-surface rounded-full flex items-center justify-center mx-auto mb-4 text-brand-on-surface-variant opacity-40">
                           <Users size={32} />
                         </div>
-                        <p className="font-h text-xl font-bold text-brand-on-surface">No Users Found</p>
-                        <p className="font-sans text-xs font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60 mt-2">Registered users will appear here</p>
+                        <p className="font-h text-base font-bold text-brand-on-surface">No Users Found</p>
+                        <p className="text-sm text-gray-500 text-brand-on-surface-variant opacity-60 mt-2">Registered users will appear here</p>
                       </td>
                     </tr>
                   )}
@@ -1797,10 +1825,17 @@ const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-brand-surface font-sans flex text-brand-on-surface">
       {/* Sidebar */}
-      <aside className="w-[280px] bg-white border-r border-brand-surface-normal flex flex-col fixed h-full z-20 shadow-2xl shadow-brand-primary/5">
-        <div className="p-8 pb-4">
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden" 
+          onClick={() => setIsMobileMenuOpen(false)} 
+        />
+      )}
+      <aside className={`w-[240px] bg-white border-r border-brand-surface-normal flex flex-col fixed h-full z-50 shadow-2xl shadow-brand-primary/5 transform transition-transform duration-300 md:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="p-5 pb-4">
           <Link href="/" className="inline-block">
-            <h1 className="font-h text-3xl font-black uppercase tracking-tight">
+            <h1 className="font-h text-base font-bold uppercase tracking-tight">
               Kit<span className="text-brand-primary">Bay</span>
             </h1>
             <p className="font-sans text-[10px] font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60 mt-1">Admin Portal</p>
@@ -1817,19 +1852,19 @@ const AdminDashboard = () => {
                   if (item.id === 'products' && !isEditMode) {
                     setProductForms([initialProductState]);
                   }
-                  setActiveTab(item.id);
+                  setActiveTab(item.id); setIsMobileMenuOpen(false);
                 }}
                 className={cn(
-                  "w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-sm font-bold uppercase tracking-widest transition-all relative group overflow-hidden",
+                  "w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all relative group overflow-hidden",
                   isActive
-                    ? "text-brand-primary bg-brand-surface-low"
-                    : "text-brand-on-surface-variant hover:bg-brand-surface-low/50 hover:text-brand-on-surface"
+                    ? "text-brand-primary bg-brand-primary/10 shadow-sm"
+                    : "text-brand-on-surface-variant hover:bg-brand-surface-low hover:text-brand-on-surface"
                 )}
               >
                 {isActive && (
                   <motion.div layoutId="activeTab" className="absolute left-0 top-0 bottom-0 w-1 bg-brand-primary rounded-r-full" />
                 )}
-                <div className={cn("transition-transform group-hover:scale-110", isActive ? "scale-110" : "")}>
+                <div className={cn("transition-transform group-hover:scale-110", isActive ? "scale-110 text-brand-primary" : "text-brand-on-surface-variant opacity-70 group-hover:opacity-100")}>
                   {item.icon}
                 </div>
                 <span>{item.id === 'products' && isEditMode ? 'Edit Product' : item.label}</span>
@@ -1838,10 +1873,10 @@ const AdminDashboard = () => {
           })}
         </nav>
 
-        <div className="p-6 border-t border-brand-surface-normal">
+        <div className="p-4 md:p-6 border-t border-brand-surface-normal">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-3 px-4 py-4 bg-red-50 text-red-600 rounded-2xl text-sm font-bold uppercase tracking-widest hover:bg-red-100 transition-all active:scale-95 border border-red-100"
+            className="w-full flex items-center justify-center gap-3 px-4 py-4 bg-red-50 text-red-600 rounded-md text-sm font-bold uppercase tracking-widest hover:bg-red-100 transition-all active:scale-95 border border-red-100"
           >
             <LogOut size={18} />
             <span>Logout</span>
@@ -1850,20 +1885,28 @@ const AdminDashboard = () => {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 ml-[280px] flex flex-col min-h-screen">
+      <div className="flex-1 md:ml-[240px] w-full max-w-[100vw] flex flex-col min-h-screen overflow-x-hidden">
         {/* Top Header */}
-        <header className="h-24 bg-white/80 backdrop-blur-xl border-b border-brand-surface-normal flex items-center justify-between px-10 sticky top-0 z-10 shadow-sm">
+        <header className="md:hidden h-16 bg-white/80 backdrop-blur-xl border-b border-brand-surface-normal flex items-center justify-between px-4 md:px-5 sticky top-0 z-30 shadow-sm">
+          <div className="flex items-center gap-3">
+            <button 
+              className="md:hidden p-2 -ml-2 rounded-lg hover:bg-brand-surface-low text-brand-on-surface"
+              onClick={() => setIsMobileMenuOpen(true)}
+            >
+              <Menu size={24} />
+            </button>
           <div>
-            <h2 className="font-h text-2xl font-bold uppercase tracking-tight text-brand-on-surface">
+              <h2 className="font-h text-base md:text-lg font-bold uppercase tracking-tight text-brand-on-surface line-clamp-1">
               {navItems.find(i => i.id === activeTab)?.label || 'Dashboard'}
             </h2>
-            <p className="font-sans text-xs font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60 mt-1">
+            <p className="text-sm text-gray-500 text-brand-on-surface-variant opacity-60 mt-1">
               {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-            </p>
+              </p>
+            </div>
           </div>
 
-          <div className="flex items-center gap-6">
-            <div className="relative">
+          <div className="flex items-center gap-4 md:p-6">
+            <div className="relative hidden sm:block">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-on-surface-variant opacity-40" size={18} />
               <input
                 type="text"
@@ -1881,14 +1924,14 @@ const AdminDashboard = () => {
               </div>
               <div className="hidden md:block">
                 <p className="font-sans text-sm font-bold text-brand-on-surface">Admin User</p>
-                <p className="font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60">Superadmin</p>
+                <p className="font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60">Superadmin</p>
               </div>
             </div>
           </div>
         </header>
 
         {/* Dynamic Content */}
-        <main className="flex-1 p-10 overflow-x-hidden">
+        <main className="flex-1 p-4 md:p-6 overflow-x-hidden">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}

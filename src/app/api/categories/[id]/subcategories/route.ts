@@ -11,7 +11,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     if (!subcategoryName) return NextResponse.json({ message: 'Subcategory name is required' }, { status: 400 });
 
     const id = (await params).id;
-    const category = await Category.findById(id);
+    const category = await (Category as any).findById(id);
     if (!category) return NextResponse.json({ message: 'Category not found' }, { status: 404 });
 
     const exists = category.subcategories.some(

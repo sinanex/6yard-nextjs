@@ -8,7 +8,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   try {
     await dbConnect();
     const id = (await params).id;
-    const product = await Product.findById(id);
+    const product = await (Product as any).findById(id);
     if (!product) return NextResponse.json({ message: 'Product not found' }, { status: 404 });
     return NextResponse.json(product);
   } catch (error: any) {
@@ -95,7 +95,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     if (Object.keys(unsetFields).length > 0) updateQuery.$unset = unsetFields;
 
-    const updatedProduct = await Product.findByIdAndUpdate(id, updateQuery, { new: true, runValidators: true });
+    const updatedProduct = await (Product as any).findByIdAndUpdate(id, updateQuery, { new: true, runValidators: true });
     if (!updatedProduct) return NextResponse.json({ message: 'Product not found' }, { status: 404 });
     
     return NextResponse.json(updatedProduct);
@@ -111,7 +111,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     if (!auth.isAdmin) return NextResponse.json({ message: 'Unauthorized' }, { status: 403 });
 
     const id = (await params).id;
-    const deletedProduct = await Product.findByIdAndDelete(id);
+    const deletedProduct = await (Product as any).findByIdAndDelete(id);
     if (!deletedProduct) return NextResponse.json({ message: 'Product not found' }, { status: 404 });
     return NextResponse.json({ message: 'Product deleted successfully' });
   } catch (error: any) {

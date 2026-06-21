@@ -6,7 +6,7 @@ import { verifyAuth } from '@/lib/auth';
 export async function GET() {
   try {
     await dbConnect();
-    const categories = await Category.find().sort({ name: 1 });
+    const categories = await (Category as any).find().sort({ name: 1 });
     return NextResponse.json(categories);
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     const { name } = await req.json();
     if (!name) return NextResponse.json({ message: 'Category name is required' }, { status: 400 });
 
-    const existingCategory = await Category.findOne({ name: { $regex: new RegExp(`^${name}$`, 'i') } });
+    const existingCategory = await (Category as any).findOne({ name: { $regex: new RegExp(`^${name}$`, 'i') } });
     if (existingCategory) return NextResponse.json({ message: 'Category already exists' }, { status: 400 });
 
     const category = new Category({ name, subcategories: [] });

@@ -7,7 +7,7 @@ import { uploadToCloudinary } from '@/lib/cloudinary';
 export async function GET() {
   try {
     await dbConnect();
-    const banners = await Banner.find().sort({ createdAt: -1 });
+    const banners = await (Banner as any).find().sort({ createdAt: -1 });
     if (banners.length === 0) {
       const defaultBanner = new Banner({
         title: 'Wear Your Passion',

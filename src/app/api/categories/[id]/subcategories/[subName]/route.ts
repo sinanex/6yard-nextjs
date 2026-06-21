@@ -8,7 +8,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     await dbConnect();
     verifyAuth(req);
     const { id, subName } = await params;
-    const category = await Category.findById(id);
+    const category = await (Category as any).findById(id);
     if (!category) return NextResponse.json({ message: 'Category not found' }, { status: 404 });
 
     category.subcategories = category.subcategories.filter(

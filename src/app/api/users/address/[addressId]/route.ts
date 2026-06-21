@@ -8,7 +8,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ addr
   try {
     await dbConnect();
     const auth = verifyAuth(req);
-    const user = await User.findById(auth.user.userId);
+    const user = await (User as any).findById(auth.user.userId);
     if (!user) return NextResponse.json({ message: 'User not found' }, { status: 404 });
 
     const addressId = (await params).addressId;
@@ -38,7 +38,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ a
   try {
     await dbConnect();
     const auth = verifyAuth(req);
-    const user = await User.findById(auth.user.userId);
+    const user = await (User as any).findById(auth.user.userId);
     if (!user) return NextResponse.json({ message: 'User not found' }, { status: 404 });
 
     const addressId = (await params).addressId;

@@ -32,7 +32,11 @@ const orderSchema = new mongoose.Schema({
   shippingCharge: { type: Number, default: 0 },
   subtotal: { type: Number, required: true },
   status: { type: String, default: 'Processing', enum: ['Processing', 'Shipped', 'Delivered', 'Cancelled'] },
+  trackingId: { type: String },
   orderDate: { type: Date, default: Date.now }
 }, { timestamps: true });
 
+if (mongoose.models.Order) {
+  delete mongoose.models.Order;
+}
 module.exports = mongoose.models.Order || mongoose.model('Order', orderSchema);

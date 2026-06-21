@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
 
     const savedOrder = await newOrder.save();
 
-    await User.findByIdAndUpdate(auth.user.userId, { $set: { cart: [] } });
+    await (User as any).findByIdAndUpdate(auth.user.userId, { $set: { cart: [] } });
 
     return NextResponse.json(savedOrder, { status: 201 });
   } catch (error: any) {

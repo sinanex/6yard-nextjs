@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   try {
     await dbConnect();
     const auth = verifyAuth(req);
-    const user = await User.findById(auth.user.userId);
+    const user = await (User as any).findById(auth.user.userId);
     if (!user) return NextResponse.json({ message: 'User not found' }, { status: 404 });
     return NextResponse.json(user);
   } catch (error: any) {
@@ -20,7 +20,7 @@ export async function PUT(req: NextRequest) {
     await dbConnect();
     const auth = verifyAuth(req);
     const { name, email } = await req.json();
-    const user = await User.findById(auth.user.userId);
+    const user = await (User as any).findById(auth.user.userId);
     if (!user) return NextResponse.json({ message: 'User not found' }, { status: 404 });
     
     if (name) user.name = name;

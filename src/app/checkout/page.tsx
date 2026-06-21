@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/lib/utils';
 import { API_BASE_URL } from '@/config';
 
-export default function Checkout() {
+function CheckoutContent() {
   const location = { pathname: usePathname(), search: useSearchParams() ? "?" + useSearchParams().toString() : "" };
   const navigate = useRouter();
 
@@ -142,7 +142,7 @@ export default function Checkout() {
 
       <main className="max-w-[1280px] mx-auto px-6">
         <div className="flex items-center gap-4 mb-8">
-          <button onClick={() => navigate(-1)} className="p-2 hover:bg-brand-surface-normal rounded-full transition-colors">
+          <button onClick={() => navigate.back()} className="p-2 hover:bg-brand-surface-normal rounded-full transition-colors">
             <ArrowLeft size={24} />
           </button>
           <h1 className="font-h text-[32px] font-bold text-brand-on-surface uppercase italic">Secure Checkout</h1>
@@ -357,5 +357,13 @@ export default function Checkout() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+export default function Checkout() {
+  return (
+    <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <CheckoutContent />
+    </React.Suspense>
   );
 }

@@ -12,7 +12,7 @@ export async function GET(
     const auth = verifyAuth(req);
     const resolvedParams = await params;
     
-    const order = await Order.findOne({ _id: resolvedParams.id, user: auth.user.userId });
+    const order = await (Order as any).findOne({ _id: resolvedParams.id, user: auth.user.userId });
     
     if (!order) {
       return NextResponse.json({ message: 'Order not found' }, { status: 404 });

@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Invalid OTP. Use 0000' }, { status: 400 });
     }
 
-    let user = await User.findOne({ phone });
+    let user = await (User as any).findOne({ phone });
 
     if (!user) {
       // Create new user since they don't exist

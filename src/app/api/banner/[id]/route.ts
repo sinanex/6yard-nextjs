@@ -26,7 +26,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       updateData.imageUrl = await uploadToCloudinary(image, 'kitbay/banners');
     }
 
-    const banner = await Banner.findByIdAndUpdate(id, updateData, { new: true });
+    const banner = await (Banner as any).findByIdAndUpdate(id, updateData, { new: true });
     if (!banner) return NextResponse.json({ message: 'Banner not found' }, { status: 404 });
     
     return NextResponse.json(banner);
@@ -44,7 +44,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     }
 
     const id = (await params).id;
-    const banner = await Banner.findByIdAndDelete(id);
+    const banner = await (Banner as any).findByIdAndDelete(id);
     if (!banner) return NextResponse.json({ message: 'Banner not found' }, { status: 404 });
     return NextResponse.json({ message: 'Banner deleted successfully' });
   } catch (error: any) {
