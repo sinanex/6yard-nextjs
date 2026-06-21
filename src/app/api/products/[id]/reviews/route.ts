@@ -4,14 +4,11 @@ import Product from '@/models/Product';
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectToDatabase();
-    
-    // In Next.js 15, we need to await params if it's treated as a Promise in some contexts,
-    // but in route handlers it's technically synchronously available. However, Next 15 prefers `await params`.
-    const { id } = await Promise.resolve(params);
+    const { id } = await params;
 
     const body = await request.json();
     const { rating, text, name, date } = body;
