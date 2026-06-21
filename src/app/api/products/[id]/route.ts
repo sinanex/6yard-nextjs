@@ -39,6 +39,23 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     if (typeof updateQuery.colors === 'string') {
       try { updateQuery.colors = JSON.parse(updateQuery.colors); } catch (e) {}
     }
+    if (typeof updateQuery.sizeStocks === 'string') {
+      try { updateQuery.sizeStocks = JSON.parse(updateQuery.sizeStocks); } catch (e) {}
+    }
+
+    if (updateQuery.sizeStocks && Array.isArray(updateQuery.sizeStocks)) {
+      let totalStock = 0;
+      const validSizes: string[] = [];
+      updateQuery.sizeStocks.forEach((s: any) => {
+        const qty = Number(s.stock);
+        if (!isNaN(qty)) {
+          totalStock += qty;
+          if (s.size) validSizes.push(s.size);
+        }
+      });
+      updateQuery.stock = totalStock;
+      updateQuery.sizes = validSizes;
+    }
 
     const imageSlots = formData.get('imageSlots') as string;
     if (imageSlots) {

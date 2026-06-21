@@ -3,6 +3,7 @@ import dbConnect from '@/lib/dbConnect';
 import User from '@/models/User';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import Settings from '@/models/Settings';
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ slug: string[] }> }) {
   await dbConnect();
@@ -36,13 +37,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
     try {
       const { email, password } = await req.json();
 
-      if (email === 'admin' && password === 'admin') {
+      let settings = await (Settings as any).findOne();
+      if (!settings) {
+        settings = { adminUsername: 'admin', adminPassword: 'admin' };
+      }
+
+      if (email === settings.adminUsername && password === settings.adminPassword) {
         const token = jwt.sign(
-          { userId: 'hardcoded-admin', role: 'admin' },
+          { userId: 'db-admin', role: 'admin' },
           process.env.JWT_SECRET || 'secret',
           { expiresIn: '7d' }
         );
-        return NextResponse.json({ token, user: { id: 'admin', name: 'Admin', email: 'admin' } });
+        return NextResponse.json({ token, user: { id: 'admin', name: 'Admin', email: settings.adminUsername } });
       }
 
       const user = await (User as any).findOne({ email });

@@ -31,14 +31,22 @@ export default function ProductCard({ product, isSelectable, isSelected, onSelec
           />
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all" />
           
-          {product.isNew && (
+          {product.isNew && !product.salesTag && (
             <div className="absolute top-4 left-4 bg-brand-primary text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
               New Season
             </div>
           )}
-          {product.isSale && (
+          {product.isSale && !product.salesTag && (
             <div className="absolute top-4 left-4 bg-red-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
               Sale
+            </div>
+          )}
+          {product.salesTag && (
+            <div 
+              className="absolute top-4 left-4 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest shadow-lg"
+              style={{ backgroundColor: product.salesTagColor || '#ff0000' }}
+            >
+              {product.salesTag}
             </div>
           )}
           {product.isBestSeller && (

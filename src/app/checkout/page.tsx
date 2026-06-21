@@ -14,11 +14,17 @@ function CheckoutContent() {
 
   const [checkoutState, setCheckoutState] = useState<any>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [settings, setSettings] = useState<any>(null);
 
   useEffect(() => {
     const state = localStorage.getItem('checkoutState');
     if (state) setCheckoutState(JSON.parse(state));
-    setIsLoaded(true);
+    
+    fetch(`${API_BASE_URL}/api/settings`)
+      .then(res => res.json())
+      .then(data => setSettings(data))
+      .catch(err => console.error('Error fetching settings:', err))
+      .finally(() => setIsLoaded(true));
   }, []);
   const { cartItems, summary, address } = checkoutState || {
     cartItems: [],
@@ -28,7 +34,7 @@ function CheckoutContent() {
 
   const [paymentMethod, setPaymentMethod] = useState('online');
   const [showMockRazorpay, setShowMockRazorpay] = useState(false);
-  const payableAmount = paymentMethod === 'cod' ? 60 : (checkoutState?.summary?.total || 0);
+  const payableAmount = paymentMethod === 'cod' ? (settings?.codDeliveryAmount || 60) : (checkoutState?.summary?.total || 0);
 
   // Redirect if no data (e.g., direct URL access)
   React.useEffect(() => {
@@ -59,7 +65,7 @@ function CheckoutContent() {
         shippingCharge: summary.shippingCost,
         subtotal: summary.subtotal,
         razorpayPaymentId,
-        advancePaid: paymentMethod === 'cod' ? 60 : summary.total
+        advancePaid: paymentMethod === 'cod' ? (settings?.codDeliveryAmount || 60) : summary.total
       };
 
       const response = await fetch(`${API_BASE_URL}/api/orders`, {
@@ -113,7 +119,7 @@ function CheckoutContent() {
       key: key,
       amount: payableAmount * 100, // Amount in paise
       currency: "INR",
-      name: "KITBAY",
+      name: "6YARD",
       description: paymentMethod === 'cod' ? "Advance Payment for COD" : "Order Payment",
       handler: function (response: any) {
         placeOrder(response.razorpay_payment_id);
@@ -137,7 +143,7 @@ function CheckoutContent() {
   return (
     <div className="min-h-screen bg-brand-surface text-brand-on-surface pt-24 pb-32">
       <>
-        <title>Secure Checkout | KITBAY</title>
+        <title>Secure Checkout | 6YARD</title>
       </>
 
       <main className="max-w-[1280px] mx-auto px-6">
@@ -193,7 +199,7 @@ function CheckoutContent() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
                   { id: 'online', name: 'Online Payment', icon: CreditCard, subtitle: 'Pay via UPI, Cards, Netbanking' },
-                  { id: 'cod', name: 'Cash on Delivery', icon: Truck, subtitle: 'Requires ₹60 Advance' },
+                  { id: 'cod', name: 'Cash on Delivery', icon: Truck, subtitle: `Requires ₹${settings?.codDeliveryAmount || 60} Advance` },
                 ].map((method) => (
                   <div
                     key={method.id}
@@ -225,7 +231,7 @@ function CheckoutContent() {
                     <ShieldCheck className="text-brand-primary shrink-0" size={20} />
                     <div>
                       <p className="font-sans text-sm text-brand-on-surface-variant leading-relaxed">
-                        To confirm your COD order and prevent fake orders, an advance payment of <strong className="text-brand-on-surface">₹60</strong> is required.
+                        To confirm your COD order and prevent fake orders, an advance payment of <strong className="text-brand-on-surface">₹{settings?.codDeliveryAmount || 60}</strong> is required.
                         The remaining amount will be collected at the time of delivery.
                       </p>
                     </div>

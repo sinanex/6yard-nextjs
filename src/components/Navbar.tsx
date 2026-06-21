@@ -4,14 +4,17 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Search, ShoppingBag, User, Heart, Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { API_BASE_URL } from '../config';
-import { Product } from '../types';
+import { API_BASE_URL } from '@/config';
+import { Product } from '@/types';
 import { useCart } from '@/context/CartContext';
 
 export default function Navbar() {
   const pathname = usePathname();
+  if (pathname.startsWith('/admin')) {
+    return null;
+  }
   const isProfile = pathname.startsWith('/profile') || pathname.startsWith('/settings') || pathname.startsWith('/orders');
-  
+
   const { totalQuantity } = useCart();
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -51,13 +54,13 @@ export default function Navbar() {
   return (
     <header className="fixed top-0 w-full z-50 border-b border-brand-surface-normal bg-white/80 backdrop-blur-xl shadow-sm">
       <nav className="flex justify-between items-center h-20 px-6 md:px-12 max-w-[1280px] mx-auto w-full relative">
-        <Link href="/" className="text-2xl font-black tracking-tighter text-brand-on-surface uppercase font-h shrink-0">
-          KITBAY
+        <Link href="/" className="shrink-0 flex items-center">
+          <img src="/logo.png" alt="KITBAY" className="h-10 w-auto" />
         </Link>
 
         <nav className="hidden lg:flex items-center gap-8 font-sans text-xs uppercase tracking-[0.15em] font-bold">
         </nav>
-        
+
         <div className="flex items-center gap-4 shrink-0">
           <div className="relative" ref={searchRef}>
             {isSearchOpen ? (
@@ -102,7 +105,7 @@ export default function Navbar() {
                 )}
               </div>
             ) : (
-              <button 
+              <button
                 onClick={() => setIsSearchOpen(true)}
                 className="p-2 text-brand-on-surface-variant hover:text-brand-primary transition-all active:scale-95"
               >

@@ -22,6 +22,8 @@ export interface Product {
   isNew?: boolean;
   isSale?: boolean;
   isBestSeller?: boolean;
+  salesTag?: string;
+  salesTagColor?: string;
 }
 
 export interface Order {

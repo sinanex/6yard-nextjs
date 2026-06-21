@@ -13,17 +13,28 @@ export async function GET() {
   }
 }
 
+import { uploadToCloudinary } from '@/lib/cloudinary';
+
 export async function POST(req: NextRequest) {
   try {
     await dbConnect();
     verifyAuth(req); // ensure logged in
-    const { name } = await req.json();
+    
+    const formData = await req.formData();
+    const name = formData.get('name') as string;
+    const image = formData.get('image') as File | null;
+
     if (!name) return NextResponse.json({ message: 'Category name is required' }, { status: 400 });
 
     const existingCategory = await (Category as any).findOne({ name: { $regex: new RegExp(`^${name}$`, 'i') } });
     if (existingCategory) return NextResponse.json({ message: 'Category already exists' }, { status: 400 });
 
-    const category = new Category({ name, subcategories: [] });
+    let imageUrl = '';
+    if (image) {
+      imageUrl = await uploadToCloudinary(image, 'kitbay/categories');
+    }
+
+    const category = new Category({ name, imageUrl, subcategories: [] });
     const savedCategory = await category.save();
     return NextResponse.json(savedCategory, { status: 201 });
   } catch (error: any) {

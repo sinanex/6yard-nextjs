@@ -109,7 +109,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
               </div>
 
               <h2 className="font-h text-2xl font-bold text-center mb-2">
-                {step === 'phone' ? 'Welcome to KitBay' : 'Verify Identity'}
+                {step === 'phone' ? 'Welcome to 6YARD' : 'Verify Identity'}
               </h2>
               <p className="font-sans text-brand-on-surface-variant text-center mb-8">
                 {step === 'phone' 
@@ -175,7 +175,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
 
             <div className="p-6 bg-brand-surface-low border-t border-brand-surface-normal text-center">
               <p className="text-[10px] text-brand-on-surface-variant uppercase tracking-widest leading-relaxed">
-                By continuing, you agree to KitBay's<br />
+                By continuing, you agree to 6YARD's<br />
                 <span className="text-brand-on-surface font-bold">Terms of Service</span> & <span className="text-brand-on-surface font-bold">Privacy Policy</span>
               </p>
             </div>

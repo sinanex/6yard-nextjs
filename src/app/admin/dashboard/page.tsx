@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Menu, 
+import {
+  Menu,
   LayoutDashboard,
   PackagePlus,
   Tags,
@@ -22,7 +23,8 @@ import { Menu,
   Bell,
   Search,
   ImagePlus,
-  Link2
+  Link2,
+  Settings as SettingsIcon,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { API_BASE_URL } from '@/config';
@@ -219,6 +221,17 @@ const AdminDashboard = () => {
   const [banners, setBanners] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
+  const [orderSearchQuery, setOrderSearchQuery] = useState('');
+  const [orderFilterPayment, setOrderFilterPayment] = useState('all');
+  const [orderFilterFromDate, setOrderFilterFromDate] = useState('');
+  const [orderFilterToDate, setOrderFilterToDate] = useState('');
+  const [settings, setSettings] = useState({
+    processingTimeFrom: 2, processingTimeTo: 4,
+    deliveryTimeFrom: 5, deliveryTimeTo: 7,
+    codDeliveryAmount: 50,
+    adminUsername: '', adminPassword: '',
+    salesTags: [] as { name: string, color: string }[]
+  });
   const [isBannerEditMode, setIsBannerEditMode] = useState(false);
   const [editingBannerId, setEditingBannerId] = useState<any>(null);
   const [bannerData, setBannerData] = useState({ title: '', subtitle: '', buttonText: '', imageUrl: '', linkUrl: '' });
@@ -242,6 +255,15 @@ const AdminDashboard = () => {
     stock: '',
     isAvailable: true,
     sizes: '',
+    sizeStocks: [
+      { size: 'S', stock: '' },
+      { size: 'M', stock: '' },
+      { size: 'L', stock: '' },
+      { size: 'XL', stock: '' },
+      { size: 'XXL', stock: '' },
+      { size: 'XXXL', stock: '' }
+    ],
+    salesTag: '',
     colors: '',
     customNameNumber: false,
     tempImages: Array(5).fill(null), // Store 5 slots (Main Image + 4 Sub Images)
@@ -250,8 +272,10 @@ const AdminDashboard = () => {
 
   const [productForms, setProductForms] = useState([initialProductState]);
   const [categories, setCategories] = useState<any[]>([]);
+  const [showAddCategory, setShowAddCategory] = useState(false);
   const [teams, setTeams] = useState<any[]>([]);
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryImage, setNewCategoryImage] = useState<any>(null);
   const [selectedParentCategoryId, setSelectedParentCategoryId] = useState('');
   const [newSubcategoryName, setNewSubcategoryName] = useState('');
   const handleDirectFieldChange = (index, name, value) => {
@@ -298,6 +322,9 @@ const AdminDashboard = () => {
     if (activeTab === 'orders') {
       fetchOrders();
     }
+    if (activeTab === 'settings') {
+      fetchSettings();
+    }
   }, [activeTab]);
 
   const fetchOrders = async () => {
@@ -327,6 +354,41 @@ const AdminDashboard = () => {
       }
     } catch (error) {
       console.error('Error fetching users:', error);
+    }
+  };
+
+  const fetchSettings = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/settings`);
+      const data = await response.json();
+      if (response.ok) {
+        setSettings(prev => ({ ...prev, ...data }));
+      }
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+    }
+  };
+
+  const handleSaveSettings = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(`${API_BASE_URL}/api/settings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(settings)
+      });
+      if (response.ok) {
+        alert('Settings saved successfully!');
+      } else {
+        alert('Failed to save settings');
+      }
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      alert('Error saving settings');
     }
   };
 
@@ -453,18 +515,25 @@ const AdminDashboard = () => {
 
     try {
       const token = localStorage.getItem('adminToken');
+      const formData = new FormData();
+      formData.append('name', newCategoryName.trim());
+      if (newCategoryImage) {
+        formData.append('image', newCategoryImage);
+      }
+
       const response = await fetch(`${API_BASE_URL}/api/categories`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ name: newCategoryName.trim() })
+        body: formData
       });
 
       const data = await response.json();
       if (response.ok) {
         setNewCategoryName('');
+        setNewCategoryImage(null);
+        setShowAddCategory(false);
         fetchCategories();
         alert('Category created successfully!');
       } else {
@@ -628,12 +697,15 @@ const AdminDashboard = () => {
       Object.keys(form).forEach(key => {
         if (key === 'tempImages' || key === 'existingImages') return;
 
-        if (key === 'sizes' || key === 'colors') {
+        if (key === 'sizeStocks') {
+          const validSizeStocks = form[key].filter((s: any) => s.size && s.stock !== '');
+          formData.append(key, JSON.stringify(validSizeStocks));
+        } else if (key === 'sizes' || key === 'colors') {
           const arr = form[key]
             ? form[key]
               .split(',')
-              .map(item => item.trim())
-              .filter(item => item !== '')
+              .map((item: any) => item.trim())
+              .filter((item: any) => item !== '')
             : [];
 
           formData.append(key, JSON.stringify(arr));
@@ -641,6 +713,11 @@ const AdminDashboard = () => {
           formData.append(key, form[key]);
         }
       });
+
+      if (form.salesTag) {
+        const tagObj = settings.salesTags?.find(t => t.name === form.salesTag);
+        if (tagObj) formData.append('salesTagColor', tagObj.color);
+      }
 
       form.tempImages.filter(img => img !== null).forEach(image => {
         formData.append('images', image);
@@ -690,10 +767,13 @@ const AdminDashboard = () => {
       Object.keys(form).forEach(key => {
         if (key === 'tempImages' || key === 'existingImages') return; // Skip image arrays
 
-        if (key === 'sizes' || key === 'colors') {
+        if (key === 'sizeStocks') {
+          const validSizeStocks = form[key].filter((s: any) => s.size && s.stock !== '');
+          formData.append(key, JSON.stringify(validSizeStocks));
+        } else if (key === 'sizes' || key === 'colors') {
           const val = form[key];
           const arr = typeof val === 'string'
-            ? val.split(',').map(item => item.trim()).filter(item => item !== '')
+            ? val.split(',').map((item: any) => item.trim()).filter((item: any) => item !== '')
             : Array.isArray(val) ? val : [];
           formData.append(key, JSON.stringify(arr));
         } else {
@@ -704,6 +784,11 @@ const AdminDashboard = () => {
 
       const imageSlots = [];
       let newFileCount = 0;
+
+      if (form.salesTag) {
+        const tagObj = settings.salesTags?.find(t => t.name === form.salesTag);
+        if (tagObj) formData.append('salesTagColor', tagObj.color);
+      }
 
       for (let i = 0; i < 5; i++) {
         const file = form.tempImages?.[i];
@@ -881,15 +966,7 @@ const AdminDashboard = () => {
                       <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Product Name*</label>
                       <input name="name" value={form.name} onChange={(e) => handleInputChange(index, e)} type="text" className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all" placeholder="e.g. Argentina Home Jersey" required />
                     </div>
-                    <div>
-                      <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Team (Country/Club)</label>
-                      <SearchableDropdown
-                        options={teams.map(t => t.name)}
-                        value={form.team}
-                        onChange={(val) => handleDirectFieldChange(index, 'team', val)}
-                        placeholder="Search Team..."
-                      />
-                    </div>
+
                     <div>
                       <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Category*</label>
                       <SearchableDropdown
@@ -899,18 +976,7 @@ const AdminDashboard = () => {
                         placeholder="Search Category..."
                       />
                     </div>
-                    <div>
-                      <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Subcategory</label>
-                      <SearchableDropdown
-                        options={(() => {
-                          const parentCat = categories.find(c => c.name === form.category);
-                          return parentCat ? parentCat.subcategories : [];
-                        })()}
-                        value={form.subcategory}
-                        onChange={(val) => handleDirectFieldChange(index, 'subcategory', val)}
-                        placeholder={form.category ? "Select Subcategory..." : "Select Category first"}
-                      />
-                    </div>
+
                     <div>
                       <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Price (INR)*</label>
                       <input name="price" value={form.price} onChange={(e) => handleInputChange(index, e)} type="number" className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all" placeholder="e.g. 1999" required />
@@ -921,72 +987,57 @@ const AdminDashboard = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-8">
-                    <div>
-                      <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Stock</label>
-                      <input name="stock" value={form.stock} onChange={(e) => handleInputChange(index, e)} type="number" className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all" placeholder="e.g. 50" />
-                    </div>
-                    <div className="col-span-1 lg:col-span-2">
-                      <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Sizes Available</label>
-                      <div className="flex flex-wrap gap-3">
-                        {['S', 'M', 'L', 'XL', 'XXL', 'XXXL'].map(size => {
-                          const sizeList = form.sizes ? form.sizes.split(',').map(s => s.trim()).filter(s => s !== '') : [];
-                          const isSelected = sizeList.includes(size);
-                          return (
-                            <button
-                              key={size}
-                              type="button"
-                              onClick={() => {
-                                let newSizes;
-                                if (isSelected) {
-                                  newSizes = sizeList.filter(s => s !== size).join(', ');
-                                } else {
-                                  newSizes = [...sizeList, size].join(', ');
-                                }
-                                handleDirectFieldChange(index, 'sizes', newSizes);
-                              }}
-                              className={cn(
-                                "w-14 h-14 rounded-md font-bold text-lg transition-all active:scale-95 flex items-center justify-center border-2",
-                                isSelected
-                                  ? 'bg-brand-primary text-white border-brand-primary shadow-lg shadow-brand-primary/20'
-                                  : 'bg-brand-surface text-brand-on-surface-variant border-transparent hover:border-brand-primary/30'
-                              )}
-                            >
-                              {size}
-                            </button>
-                          );
-                        })}
-                      </div>
+                  <div className="mt-8">
+                    <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Stock per Size (Leave stock empty if size is not available)</label>
+                    <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
+                      {form.sizeStocks?.map((sizeObj: any, sIdx: number) => (
+                        <div key={sIdx} className="flex flex-col border border-brand-surface-normal rounded-lg overflow-hidden bg-brand-surface">
+                          <div className="bg-brand-surface-low text-center py-2 border-b border-brand-surface-normal font-bold text-brand-on-surface text-sm uppercase tracking-widest relative">
+                            {sizeObj.size}
+                            {sIdx >= 6 && (
+                              <button 
+                                onClick={() => {
+                                  const updatedSizeStocks = [...form.sizeStocks];
+                                  updatedSizeStocks.splice(sIdx, 1);
+                                  handleDirectFieldChange(index, 'sizeStocks', updatedSizeStocks);
+                                }}
+                                className="absolute right-1 top-1 text-red-400 hover:text-red-600"
+                              >
+                                <X size={12} />
+                              </button>
+                            )}
+                          </div>
+                          <input 
+                            type="number" 
+                            min="0"
+                            placeholder="Qty" 
+                            className="w-full text-center py-2 bg-transparent outline-none font-bold text-brand-primary"
+                            value={sizeObj.stock}
+                            onChange={(e) => {
+                               const updatedSizeStocks = [...form.sizeStocks];
+                               updatedSizeStocks[sIdx].stock = e.target.value;
+                               handleDirectFieldChange(index, 'sizeStocks', updatedSizeStocks);
+                            }}
+                          />
+                        </div>
+                      ))}
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-8">
+                  <div className="mt-8">
                     <div>
-                      <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Colors (Select options)</label>
-                      <SearchableMultiDropdown
-                        options={['Red', 'Blue', 'White', 'Black', 'Yellow', 'Green', 'Orange', 'Purple', 'Grey', 'Gold', 'Silver', 'Navy Blue', 'Sky Blue', 'Pink', 'Burgundy', 'Maroon']}
-                        selectedValues={form.colors ? form.colors.split(',').map(c => c.trim()).filter(c => c !== '') : []}
-                        onChange={(selectedColorsArray) => {
-                          handleDirectFieldChange(index, 'colors', selectedColorsArray.join(', '));
-                        }}
-                        placeholder="Search & Select Colors..."
-                      />
-                    </div>
-                    <div className="flex items-center gap-5 bg-brand-surface p-4 rounded-md">
-                      <label className="flex items-center gap-3 cursor-pointer group">
-                        <div className={cn("w-6 h-6 rounded flex items-center justify-center transition-colors", form.isAvailable ? "bg-brand-primary text-white" : "bg-white border border-brand-surface-normal group-hover:border-brand-primary")}>
-                          {form.isAvailable && <Check size={16} strokeWidth={3} />}
-                        </div>
-                        <input name="isAvailable" checked={form.isAvailable} onChange={(e) => handleInputChange(index, e)} type="checkbox" className="hidden" />
-                        <span className="font-h font-bold text-brand-on-surface">Available in Store</span>
-                      </label>
-                      <label className="flex items-center gap-3 cursor-pointer group">
-                        <div className={cn("w-6 h-6 rounded flex items-center justify-center transition-colors", form.customNameNumber ? "bg-brand-primary text-white" : "bg-white border border-brand-surface-normal group-hover:border-brand-primary")}>
-                          {form.customNameNumber && <Check size={16} strokeWidth={3} />}
-                        </div>
-                        <input name="customNameNumber" checked={form.customNameNumber} onChange={(e) => handleInputChange(index, e)} type="checkbox" className="hidden" />
-                        <span className="font-h font-bold text-brand-on-surface">Customizable (Name/No.)</span>
-                      </label>
+                      <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Sales Tag</label>
+                      <select
+                        name="salesTag"
+                        value={form.salesTag}
+                        onChange={(e) => handleInputChange(index, e)}
+                        className="w-full px-3 py-3 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-sm transition-all text-brand-on-surface"
+                      >
+                        <option value="">No Tag</option>
+                        {(settings.salesTags || []).map((tag, tIdx) => (
+                          <option key={tIdx} value={tag.name}>{tag.name}</option>
+                        ))}
+                      </select>
                     </div>
                   </div>
 
@@ -1084,161 +1135,97 @@ const AdminDashboard = () => {
           <div className="space-y-5 max-w-7xl mx-auto">
             <div className="flex justify-between items-center bg-white p-4 md:p-6 rounded-lg shadow-sm border border-brand-surface-normal">
               <div>
-                <h2 className="font-h text-base font-bold text-brand-on-surface uppercase tracking-tight">Categories Matrix</h2>
-                <p className="text-sm text-gray-500 text-brand-on-surface-variant opacity-60 mt-1">Manage product classification and hierarchy</p>
+                <h2 className="font-h text-base font-bold text-brand-on-surface uppercase tracking-tight">Category Management</h2>
+                <p className="text-sm text-gray-500 text-brand-on-surface-variant opacity-60 mt-1">Organize your store hierarchy</p>
               </div>
-              <div className="bg-brand-primary text-white text-sm px-4 py-2 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-brand-primary/20">
-                <Tags size={18} />
-                {categories.length} Active Categories
-              </div>
+              <button 
+                onClick={() => setShowAddCategory(!showAddCategory)}
+                className="bg-brand-primary text-white text-sm px-4 py-2 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-brand-primary/20 hover:bg-black transition-colors"
+              >
+                {showAddCategory ? <X size={18} /> : <Plus size={18} />}
+                {showAddCategory ? 'Cancel' : 'Add Category'}
+              </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              {/* Create Category */}
-              <div className="bg-white p-5 rounded-xl shadow-xl border border-brand-surface-normal flex flex-col justify-between group hover:border-brand-primary/30 transition-colors">
-                <div>
-                  <h3 className="font-h text-lg font-bold text-brand-on-surface mb-2">Create Root Category</h3>
-                  <p className="text-sm text-gray-500 text-brand-on-surface-variant opacity-60 mb-8">Add a new high-level classification</p>
-                  <form onSubmit={handleCreateCategory} className="space-y-6">
-                    <div>
-                      <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Category Name*</label>
-                      <input
-                        type="text"
-                        value={newCategoryName}
-                        onChange={(e) => setNewCategoryName(e.target.value)}
-                        className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all"
-                        placeholder="e.g. Jerseys, Footwear, Accessories"
-                        required
-                      />
-                    </div>
-                    <button
-                      type="submit"
-                      className="bg-brand-primary hover:bg-black text-white px-4 py-2 rounded-md font-semibold w-full transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-brand-primary/20"
-                    >
-                      <Plus size={20} strokeWidth={3} /> Add Category
-                    </button>
-                  </form>
-                </div>
-              </div>
-
-              {/* Create Subcategory */}
-              <div className="bg-white p-5 rounded-xl shadow-xl border border-brand-surface-normal flex flex-col justify-between group hover:border-brand-primary/30 transition-colors">
-                <div>
-                  <h3 className="font-h text-lg font-bold text-brand-on-surface mb-2">Create Subcategory</h3>
-                  <p className="text-sm text-gray-500 text-brand-on-surface-variant opacity-60 mb-8">Group products under a root category</p>
-                  <form onSubmit={handleCreateSubcategory} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:p-6">
-                      <div>
-                        <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Parent Category*</label>
-                        <select
-                          value={selectedParentCategoryId}
-                          onChange={(e) => setSelectedParentCategoryId(e.target.value)}
-                          className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all appearance-none cursor-pointer"
-                          required
-                        >
-                          <option value="">Select Parent...</option>
-                          {categories.map(cat => (
-                            <option key={cat._id} value={cat._id}>{cat.name}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Subcategory Name*</label>
-                        <input
-                          type="text"
-                          value={newSubcategoryName}
-                          onChange={(e) => setNewSubcategoryName(e.target.value)}
-                          className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all"
-                          placeholder="e.g. Premier League"
-                          required
-                        />
-                      </div>
-                    </div>
-                    <button
-                      type="submit"
-                      className="bg-brand-primary hover:bg-black text-white px-4 py-2 rounded-md font-semibold w-full transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-brand-primary/20 mt-6"
-                    >
-                      <Plus size={20} strokeWidth={3} /> Add Subcategory
-                    </button>
-                  </form>
-                </div>
-              </div>
-            </div>
-
-            {/* List & Manage */}
-            <div className="bg-white p-5 rounded-xl shadow-xl border border-brand-surface-normal">
-              <div className="flex items-center gap-3 mb-8 border-b border-brand-surface-normal pb-4">
-                <div className="w-10 h-10 bg-brand-surface-low rounded-xl flex items-center justify-center text-brand-primary">
-                  <Tags size={20} strokeWidth={3} />
-                </div>
-                <h3 className="font-h text-lg font-bold text-brand-on-surface">Directory Structure</h3>
-              </div>
-
-              {categories.length === 0 ? (
-                <div className="text-center py-16 bg-brand-surface rounded-md border-2 border-dashed border-brand-surface-normal">
-                  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-brand-on-surface-variant opacity-40">
-                    <Tags size={32} />
+            {showAddCategory ? (
+              <div className="bg-white p-5 rounded-xl shadow-xl border border-brand-surface-normal">
+                <h3 className="font-h text-lg font-bold text-brand-on-surface mb-2">Create Category (Jersey Type)</h3>
+                <p className="text-sm text-gray-500 text-brand-on-surface-variant opacity-60 mb-8">Add a new jersey type or category</p>
+                <form onSubmit={handleCreateCategory} className="space-y-6 max-w-xl">
+                  <div>
+                    <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Category Name (Type)*</label>
+                    <input
+                      type="text"
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all"
+                      placeholder="e.g. Player Edition, Fan Edition, Retro"
+                      required
+                    />
                   </div>
-                  <p className="font-h text-base font-bold text-brand-on-surface">No Categories Found</p>
-                  <p className="text-sm text-gray-500 text-brand-on-surface-variant opacity-60 mt-2">Create your first category above</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:p-6">
-                  {categories.map((cat) => (
-                    <div
-                      key={cat._id}
-                      className="bg-brand-surface rounded-lg p-4 md:p-6 flex flex-col justify-between hover:shadow-lg transition-all duration-300 group relative overflow-hidden"
-                    >
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-brand-primary/5 to-transparent rounded-bl-full -z-10 transition-transform group-hover:scale-150"></div>
-
-                      <div>
-                        <div className="flex justify-between items-start mb-6">
-                          <div>
-                            <h4 className="font-h text-base font-bold text-brand-on-surface">{cat.name}</h4>
-                            <span className="font-sans text-xs font-medium text-gray-500 text-brand-primary bg-brand-primary/10 px-2 py-1 rounded-md mt-2 inline-block">
-                              {cat.subcategories.length} {cat.subcategories.length === 1 ? 'Sub' : 'Subs'}
-                            </span>
+                  <div>
+                    <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Category Image (Optional)</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          setNewCategoryImage(e.target.files[0]);
+                        }
+                      }}
+                      className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none font-sans text-sm transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-primary/10 file:text-brand-primary hover:file:bg-brand-primary/20"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="bg-brand-primary hover:bg-black text-white px-4 py-2 rounded-md font-semibold w-full transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-brand-primary/20"
+                  >
+                    <Plus size={20} strokeWidth={3} /> Save Category
+                  </button>
+                </form>
+              </div>
+            ) : (
+              <div className="bg-white p-5 rounded-xl shadow-xl border border-brand-surface-normal">
+                {categories.length === 0 ? (
+                  <div className="text-center py-16 bg-brand-surface rounded-md border-2 border-dashed border-brand-surface-normal">
+                    <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-brand-on-surface-variant opacity-40">
+                      <Tags size={32} />
+                    </div>
+                    <p className="font-h text-base font-bold text-brand-on-surface">No Categories Found</p>
+                    <p className="text-sm text-gray-500 text-brand-on-surface-variant opacity-60 mt-2">Create your first category using the button above</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:p-6">
+                    {categories.map((cat) => (
+                      <div
+                        key={cat._id}
+                        className="bg-brand-surface rounded-2xl overflow-hidden hover:shadow-xl border border-brand-surface-normal transition-all duration-300 group relative flex flex-col"
+                      >
+                        {cat.imageUrl ? (
+                          <div className="w-full h-48 overflow-hidden bg-brand-surface-low">
+                            <img src={cat.imageUrl} alt={cat.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                           </div>
+                        ) : (
+                          <div className="w-full h-48 bg-brand-surface-low flex items-center justify-center">
+                            <Tags size={48} className="text-brand-on-surface-variant opacity-20" />
+                          </div>
+                        )}
+                        <div className="p-4 flex justify-between items-center bg-white z-10 border-t border-brand-surface-normal">
+                          <h4 className="font-h text-lg font-bold text-brand-on-surface">{cat.name}</h4>
                           <button
                             onClick={() => handleDeleteCategory(cat._id)}
                             className="text-brand-on-surface-variant opacity-40 hover:opacity-100 hover:text-red-500 hover:bg-red-50 p-2 rounded-xl transition-all active:scale-90"
                             title="Delete Category"
                           >
-                            <Trash2 size={18} />
+                            <Trash2 size={20} />
                           </button>
                         </div>
-
-                        <div className="bg-white rounded-md p-4 border border-brand-surface-normal h-48 overflow-y-auto custom-scrollbar">
-                          {cat.subcategories.length === 0 ? (
-                            <div className="h-full flex flex-col items-center justify-center text-center opacity-50">
-                              <span className="font-sans text-xs font-medium text-gray-500">No Subcategories</span>
-                            </div>
-                          ) : (
-                            <div className="space-y-2">
-                              {cat.subcategories.map((sub, i) => (
-                                <div
-                                  key={i}
-                                  className="flex items-center justify-between bg-brand-surface px-4 py-3 rounded-xl border border-brand-surface-normal group/sub hover:border-brand-primary/30 transition-colors"
-                                >
-                                  <span className="font-h text-sm font-bold text-brand-on-surface">{sub}</span>
-                                  <button
-                                    onClick={() => handleDeleteSubcategory(cat._id, sub)}
-                                    className="text-brand-on-surface-variant opacity-0 group-hover/sub:opacity-100 hover:text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition-all"
-                                    title="Delete Subcategory"
-                                  >
-                                    <Trash2 size={14} />
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         );
       case 'all-products':
@@ -1268,7 +1255,7 @@ const AdminDashboard = () => {
                   <tr>
                     <th className="px-6 py-2.5 font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 rounded-tl-2xl w-24">Image</th>
                     <th className="px-6 py-2.5 font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60">Product Details</th>
-                    <th className="px-6 py-2.5 font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60">Category & Team</th>
+                    <th className="px-6 py-2.5 font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60">Category</th>
                     <th className="px-6 py-2.5 font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60">Price</th>
                     <th className="px-6 py-2.5 font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 rounded-tr-2xl text-right">Actions</th>
                   </tr>
@@ -1286,12 +1273,21 @@ const AdminDashboard = () => {
                         </div>
                       </td>
                       <td className="px-4 py-2">
-                        <p className="font-h text-sm font-bold text-brand-on-surface line-clamp-2">{product.name}</p>
+                        <p className="font-h text-sm font-bold text-brand-on-surface line-clamp-2">
+                          {product.name}
+                          {product.salesTag && (
+                            <span 
+                              className="ml-2 inline-block px-2 py-0.5 text-[10px] font-bold rounded-full text-white align-middle" 
+                              style={{ backgroundColor: settings?.salesTags?.find((t: any) => t.name === product.salesTag)?.color || '#ff0000' }}
+                            >
+                              {product.salesTag}
+                            </span>
+                          )}
+                        </p>
                       </td>
                       <td className="px-4 py-2">
                         <div className="flex flex-col gap-1">
                           <span className="text-sm text-gray-500 text-brand-on-surface-variant opacity-80">{product.category}</span>
-                          <span className="font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-40">{product.team || 'No Team'}</span>
                         </div>
                       </td>
                       <td className="px-4 py-2">
@@ -1325,6 +1321,17 @@ const AdminDashboard = () => {
                                 stock: product.stock || 0,
                                 isAvailable: product.isAvailable !== undefined ? product.isAvailable : true,
                                 sizes: Array.isArray(product.sizes) ? product.sizes.join(', ') : product.sizes || '',
+                                sizeStocks: product.sizeStocks && product.sizeStocks.length > 0 
+                                  ? product.sizeStocks.map((s: any) => ({ size: s.size, stock: s.stock })) 
+                                  : [
+                                      { size: 'S', stock: '' },
+                                      { size: 'M', stock: '' },
+                                      { size: 'L', stock: '' },
+                                      { size: 'XL', stock: '' },
+                                      { size: 'XXL', stock: '' },
+                                      { size: 'XXXL', stock: '' }
+                                    ],
+                                salesTag: product.salesTag || '',
                                 colors: Array.isArray(product.colors) ? product.colors.join(', ') : product.colors || '',
                                 customNameNumber: product.customNameNumber || false,
                                 tempImages: Array(5).fill(null),
@@ -1368,7 +1375,39 @@ const AdminDashboard = () => {
             </div>
           </div>
         );
-      case 'orders':
+      case 'orders': {
+        const filteredOrders = orders.filter(order => {
+          let matchesSearch = true;
+          if (orderSearchQuery) {
+            const q = orderSearchQuery.toLowerCase();
+            matchesSearch =
+              (order._id && order._id.toLowerCase().includes(q)) ||
+              (order.trackingId && order.trackingId.toLowerCase().includes(q)) ||
+              (order.shippingAddress?.name && order.shippingAddress.name.toLowerCase().includes(q)) ||
+              (order.shippingAddress?.phone && order.shippingAddress.phone.toLowerCase().includes(q));
+          }
+          let matchesPayment = true;
+          if (orderFilterPayment !== 'all') {
+            matchesPayment = order.paymentMethod === orderFilterPayment;
+          }
+          let matchesDate = true;
+          if (orderFilterFromDate || orderFilterToDate) {
+            const orderDate = new Date(order.createdAt);
+            orderDate.setHours(0, 0, 0, 0);
+            if (orderFilterFromDate) {
+              const from = new Date(orderFilterFromDate);
+              from.setHours(0, 0, 0, 0);
+              if (orderDate < from) matchesDate = false;
+            }
+            if (orderFilterToDate) {
+              const to = new Date(orderFilterToDate);
+              to.setHours(23, 59, 59, 999);
+              if (orderDate > to) matchesDate = false;
+            }
+          }
+          return matchesSearch && matchesPayment && matchesDate;
+        });
+
         return (
           <div className="space-y-5">
             <div className="flex justify-between items-center bg-white p-4 md:p-6 rounded-lg shadow-sm border border-brand-surface-normal">
@@ -1378,7 +1417,33 @@ const AdminDashboard = () => {
               </div>
               <div className="bg-brand-primary text-white text-sm px-4 py-2 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-brand-primary/20">
                 <ShoppingCart size={18} />
-                {orders.length} Orders Total
+                {filteredOrders.length} Orders Found
+              </div>
+            </div>
+
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-brand-surface-normal grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-brand-on-surface-variant opacity-60 mb-1">Search</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-on-surface-variant opacity-40" size={16} />
+                  <input type="text" placeholder="ID, Name, Phone, Tracking" value={orderSearchQuery} onChange={(e) => setOrderSearchQuery(e.target.value)} className="w-full pl-9 pr-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none text-sm" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-brand-on-surface-variant opacity-60 mb-1">From Date</label>
+                <input type="date" value={orderFilterFromDate} onChange={(e) => setOrderFilterFromDate(e.target.value)} className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none text-sm" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-brand-on-surface-variant opacity-60 mb-1">To Date</label>
+                <input type="date" value={orderFilterToDate} onChange={(e) => setOrderFilterToDate(e.target.value)} className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none text-sm" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-brand-on-surface-variant opacity-60 mb-1">Payment Method</label>
+                <select value={orderFilterPayment} onChange={(e) => setOrderFilterPayment(e.target.value)} className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none text-sm cursor-pointer">
+                  <option value="all">All Methods</option>
+                  <option value="online">Online Payment</option>
+                  <option value="cod">Cash on Delivery</option>
+                </select>
               </div>
             </div>
 
@@ -1395,7 +1460,7 @@ const AdminDashboard = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-brand-surface-normal">
-                  {orders.map((order) => (
+                  {filteredOrders.map((order) => (
                     <tr key={order._id} className="hover:bg-brand-surface-low/50 transition-colors align-top group">
                       <td className="px-6 py-6">
                         <div className="flex flex-col gap-1">
@@ -1467,7 +1532,7 @@ const AdminDashboard = () => {
                             <option value="Delivered">✅ Delivered</option>
                             <option value="Cancelled">❌ Cancelled</option>
                           </select>
-                          
+
                           <input
                             type="text"
                             placeholder="Enter Tracking ID..."
@@ -1500,6 +1565,7 @@ const AdminDashboard = () => {
             </div>
           </div>
         );
+      }
       case 'banner':
         return (
           <div className="space-y-5 max-w-7xl mx-auto">
@@ -1512,7 +1578,7 @@ const AdminDashboard = () => {
                   {isBannerEditMode || editingBannerId === 'new' ? 'Configure banner details and image' : 'Manage your storefront hero section'}
                 </p>
               </div>
-              
+
               <div className="flex items-center gap-4">
                 {!isBannerEditMode && editingBannerId !== 'new' && (
                   <button
@@ -1671,7 +1737,7 @@ const AdminDashboard = () => {
                         <div className="relative aspect-video overflow-hidden">
                           <img src={banner.imageUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={banner.title} />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity"></div>
-                          
+
                           <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0 duration-300">
                             <button
                               onClick={() => {
@@ -1705,7 +1771,7 @@ const AdminDashboard = () => {
                           </div>
                           <h3 className="font-h text-base font-bold text-brand-on-surface line-clamp-1 mb-2">{banner.title}</h3>
                           <p className="font-sans text-sm text-brand-on-surface-variant opacity-80 line-clamp-2 leading-relaxed">{banner.subtitle}</p>
-                          
+
                           <div className="mt-6 pt-4 border-t border-brand-surface-normal flex items-center justify-between">
                             <span className="font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-50 flex items-center gap-1">
                               <Link2 size={12} /> {banner.linkUrl ? 'Has Link' : 'No Link'}
@@ -1807,6 +1873,198 @@ const AdminDashboard = () => {
             </div>
           </div>
         );
+      case 'settings':
+        return (
+          <div className="space-y-6 max-w-4xl mx-auto">
+            <div className="flex justify-between items-center bg-white p-4 md:p-6 rounded-lg shadow-sm border border-brand-surface-normal">
+              <div>
+                <h2 className="font-h text-base font-bold text-brand-on-surface uppercase tracking-tight">Global Settings</h2>
+                <p className="text-sm text-gray-500 text-brand-on-surface-variant opacity-60 mt-1">Manage store delivery times, fees, and admin credentials</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleSaveSettings} className="space-y-6">
+              {/* Delivery Settings */}
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-brand-surface-normal">
+                <h3 className="font-h text-lg font-bold text-brand-on-surface mb-6 flex items-center gap-2">
+                  <Package size={20} className="text-brand-primary" /> Delivery Configuration
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <h4 className="font-sans text-sm font-bold text-brand-on-surface">Processing Time (Days)</h4>
+                    <div className="flex gap-4">
+                      <div className="flex-1">
+                        <label className="block text-xs font-medium text-brand-on-surface-variant opacity-60 mb-1">From</label>
+                        <input
+                          type="number"
+                          value={settings.processingTimeFrom}
+                          onChange={(e) => setSettings({ ...settings, processingTimeFrom: Number(e.target.value) })}
+                          className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none"
+                          min="0"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <label className="block text-xs font-medium text-brand-on-surface-variant opacity-60 mb-1">To</label>
+                        <input
+                          type="number"
+                          value={settings.processingTimeTo}
+                          onChange={(e) => setSettings({ ...settings, processingTimeTo: Number(e.target.value) })}
+                          className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none"
+                          min="0"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h4 className="font-sans text-sm font-bold text-brand-on-surface">Delivery Time (Days)</h4>
+                    <div className="flex gap-4">
+                      <div className="flex-1">
+                        <label className="block text-xs font-medium text-brand-on-surface-variant opacity-60 mb-1">From</label>
+                        <input
+                          type="number"
+                          value={settings.deliveryTimeFrom}
+                          onChange={(e) => setSettings({ ...settings, deliveryTimeFrom: Number(e.target.value) })}
+                          className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none"
+                          min="0"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <label className="block text-xs font-medium text-brand-on-surface-variant opacity-60 mb-1">To</label>
+                        <input
+                          type="number"
+                          value={settings.deliveryTimeTo}
+                          onChange={(e) => setSettings({ ...settings, deliveryTimeTo: Number(e.target.value) })}
+                          className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none"
+                          min="0"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 md:col-span-2">
+                    <h4 className="font-sans text-sm font-bold text-brand-on-surface">Cash on Delivery (COD) Amount</h4>
+                    <div>
+                      <label className="block text-xs font-medium text-brand-on-surface-variant opacity-60 mb-1">Amount (INR)</label>
+                      <input
+                        type="number"
+                        value={settings.codDeliveryAmount}
+                        onChange={(e) => setSettings({ ...settings, codDeliveryAmount: Number(e.target.value) })}
+                        className="w-full md:w-1/2 px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none"
+                        min="0"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Admin Security */}
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-brand-surface-normal">
+                <h3 className="font-h text-lg font-bold text-brand-on-surface mb-6 flex items-center gap-2">
+                  <SettingsIcon size={20} className="text-brand-primary" /> Admin Security
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-xs font-medium text-brand-on-surface-variant opacity-60 mb-1">Admin Username</label>
+                    <input
+                      type="text"
+                      value={settings.adminUsername}
+                      onChange={(e) => setSettings({ ...settings, adminUsername: e.target.value })}
+                      className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-brand-on-surface-variant opacity-60 mb-1">Admin Password</label>
+                    <input
+                      type="text"
+                      value={settings.adminPassword}
+                      onChange={(e) => setSettings({ ...settings, adminPassword: e.target.value })}
+                      className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none"
+                      placeholder="Leave blank to keep unchanged"
+                    />
+                    <p className="text-xs mt-1 text-orange-500">Note: Password is shown in plain text for configuration.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Sales Tags Configuration */}
+              <div className="bg-white p-6 rounded-2xl border border-brand-surface-normal shadow-sm mb-6">
+                <h3 className="font-h text-lg font-bold text-brand-on-surface mb-4">Sales Tags Configuration</h3>
+                <div className="space-y-4">
+                  {(settings.salesTags || []).map((tag, index) => (
+                    <div key={index} className="flex items-center gap-4 bg-brand-surface p-3 rounded-lg">
+                      <div className="flex-1">
+                        <label className="block text-xs font-medium text-brand-on-surface-variant opacity-60 mb-1">Tag Name</label>
+                        <input
+                          type="text"
+                          value={tag.name}
+                          onChange={(e) => {
+                            const newTags = [...settings.salesTags];
+                            newTags[index].name = e.target.value;
+                            setSettings({ ...settings, salesTags: newTags });
+                          }}
+                          className="w-full px-3 py-2 bg-white rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none"
+                          placeholder="e.g. New Arrival"
+                        />
+                      </div>
+                      <div className="w-24">
+                        <label className="block text-xs font-medium text-brand-on-surface-variant opacity-60 mb-1">Color</label>
+                        <input
+                          type="color"
+                          value={tag.color}
+                          onChange={(e) => {
+                            const newTags = [...settings.salesTags];
+                            newTags[index].color = e.target.value;
+                            setSettings({ ...settings, salesTags: newTags });
+                          }}
+                          className="w-full h-10 rounded-md cursor-pointer border-none bg-transparent"
+                        />
+                      </div>
+                      <div className="pt-5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newTags = [...settings.salesTags];
+                            newTags.splice(index, 1);
+                            setSettings({ ...settings, salesTags: newTags });
+                          }}
+                          className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                        >
+                          <X size={20} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSettings({ 
+                        ...settings, 
+                        salesTags: [...(settings.salesTags || []), { name: 'New Tag', color: '#ff0000' }] 
+                      });
+                    }}
+                    className="flex items-center gap-2 text-brand-primary hover:text-brand-primary-hover font-bold text-sm uppercase tracking-widest mt-2"
+                  >
+                    <Plus size={16} />
+                    Add Sales Tag
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-4">
+                <button
+                  type="submit"
+                  className="bg-brand-primary hover:bg-black text-white px-8 py-3 rounded-lg font-bold uppercase tracking-widest text-sm transition-all shadow-lg hover:shadow-xl active:scale-95"
+                >
+                  Save Settings
+                </button>
+              </div>
+            </form>
+          </div>
+        );
       default:
         return <div>Select a tab</div>;
     }
@@ -1820,6 +2078,7 @@ const AdminDashboard = () => {
     { id: 'categories', label: 'Categories', icon: <Tags size={20} /> },
     { id: 'banner', label: 'Home Banner', icon: <LayoutDashboard size={20} /> },
     { id: 'users', label: 'Users', icon: <Users size={20} /> },
+    { id: 'settings', label: 'Settings', icon: <SettingsIcon size={20} /> },
   ];
 
   return (
@@ -1827,13 +2086,13 @@ const AdminDashboard = () => {
       {/* Sidebar */}
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 md:hidden" 
-          onClick={() => setIsMobileMenuOpen(false)} 
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
       <aside className={`w-[240px] bg-white border-r border-brand-surface-normal flex flex-col fixed h-full z-50 shadow-2xl shadow-brand-primary/5 transform transition-transform duration-300 md:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="p-5 pb-4">
+        <div className="p-5 pb-4 hidden">
           <Link href="/" className="inline-block">
             <h1 className="font-h text-base font-bold uppercase tracking-tight">
               Kit<span className="text-brand-primary">Bay</span>
@@ -1889,18 +2148,18 @@ const AdminDashboard = () => {
         {/* Top Header */}
         <header className="md:hidden h-16 bg-white/80 backdrop-blur-xl border-b border-brand-surface-normal flex items-center justify-between px-4 md:px-5 sticky top-0 z-30 shadow-sm">
           <div className="flex items-center gap-3">
-            <button 
+            <button
               className="md:hidden p-2 -ml-2 rounded-lg hover:bg-brand-surface-low text-brand-on-surface"
               onClick={() => setIsMobileMenuOpen(true)}
             >
               <Menu size={24} />
             </button>
-          <div>
+            <div>
               <h2 className="font-h text-base md:text-lg font-bold uppercase tracking-tight text-brand-on-surface line-clamp-1">
-              {navItems.find(i => i.id === activeTab)?.label || 'Dashboard'}
-            </h2>
-            <p className="text-sm text-gray-500 text-brand-on-surface-variant opacity-60 mt-1">
-              {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                {navItems.find(i => i.id === activeTab)?.label || 'Dashboard'}
+              </h2>
+              <p className="text-sm text-gray-500 text-brand-on-surface-variant opacity-60 mt-1">
+                {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
               </p>
             </div>
           </div>

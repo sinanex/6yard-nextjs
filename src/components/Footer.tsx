@@ -1,12 +1,17 @@
+"use client";
 import React from 'react';
+import { usePathname } from 'next/navigation';
 import { Share2, Globe, Mail } from 'lucide-react';
 
 export default function Footer() {
+  const pathname = usePathname();
+  if (pathname.startsWith('/admin')) return null;
+  
   return (
     <footer className="bg-brand-surface-low border-t border-brand-surface-normal w-full py-16 px-6 md:px-12">
       <div className="max-w-[1280px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
         <div className="space-y-6">
-          <div className="text-xl font-black text-brand-on-surface font-h uppercase">KITBAY</div>
+          <div className="text-xl font-black text-brand-on-surface font-h uppercase">6YARD</div>
           <p className="font-h text-sm leading-relaxed text-brand-on-surface-variant max-w-sm">
             Premium sports performance apparel. Engineered for the athletes of tomorrow, available for the fans of today.
           </p>
@@ -39,7 +44,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="max-w-[1280px] mx-auto mt-16 pt-8 border-t border-brand-surface-normal text-center">
-        <p className="font-h text-sm text-brand-on-surface-variant">© 2026 KITBAY Sports Performance. Engineered for the fans.</p>
+        <p className="font-h text-sm text-brand-on-surface-variant">© 2026 6YARD Sports Performance. Engineered for the fans.</p>
       </div>
     </footer>
   );

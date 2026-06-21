@@ -33,6 +33,7 @@ export default function ProductDetail() {
   const [activeImage, setActiveImage] = useState(0);
   const [openAccordion, setOpenAccordion] = useState<string | null>('specs');
   const [isAdding, setIsAdding] = useState(false);
+  const [isBuying, setIsBuying] = useState(false);
   const { addToCart } = useCart();
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -43,9 +44,41 @@ export default function ProductDetail() {
   const [touchStartY, setTouchStartY] = useState<number | null>(null);
   const [lastTap, setLastTap] = useState<number>(0);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
+
+  const [reviewsList, setReviewsList] = useState<{ rating: number, text: string, name: string, date: string }[]>([]);
+  const [newReview, setNewReview] = useState({ rating: 5, text: '', name: '' });
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+
+  const handleAddReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newReview.text.trim() || !newReview.name.trim()) return;
+    setIsSubmittingReview(true);
+    try {
+      const reviewData = {
+        ...newReview,
+        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      };
+      
+      const res = await fetch(`/api/products/${id}/reviews`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reviewData)
+      });
+      
+      if (!res.ok) throw new Error("Failed to submit review");
+      
+      setReviewsList([reviewData, ...reviewsList]);
+      setNewReview({ rating: 5, text: '', name: '' });
+    } catch (err) {
+      alert("Failed to submit review. Please try again.");
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (window.matchMedia("(pointer: coarse)").matches) return; // Ignore on touch screens
+    if (window.matchMedia("(pointer: coarse)").matches) return;
     const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientX - left) / width) * 100;
     const y = ((e.clientY - top) / height) * 100;
@@ -174,6 +207,9 @@ export default function ProductDetail() {
         if (data.sizes && data.sizes.length > 0) {
           setSelectedSize(data.sizes[0]);
         }
+        if (data.reviews) {
+          setReviewsList(data.reviews);
+        }
       })
       .catch(err => {
         console.error("Fetch detail error:", err);
@@ -209,6 +245,20 @@ export default function ProductDetail() {
     }
   };
 
+  const handleBuyNow = async () => {
+    if (!product) return;
+
+    setIsBuying(true);
+    try {
+      await addToCart(product, selectedSize, 1);
+      navigate.push('/checkout');
+    } catch (err) {
+      alert('Failed to process order');
+    } finally {
+      setIsBuying(false);
+    }
+  };
+
   if (loading || !product) {
     return (
       <div className="min-h-screen bg-brand-surface flex items-center justify-center">
@@ -236,7 +286,7 @@ export default function ProductDetail() {
     "@type": "Product",
     "name": product.name,
     "image": firstImage,
-    "description": product.description || `Buy premium ${product.name} at KITBAY STORE. engineered for the fans, designed for the pros.`,
+    "description": product.description || `Buy premium ${product.name} at 6YARD STORE. engineered for the fans, designed for the pros.`,
     "offers": {
       "@type": "Offer",
       "priceCurrency": "INR",
@@ -249,13 +299,13 @@ export default function ProductDetail() {
   return (
     <main className="max-w-[1280px] mx-auto px-6 pt-24 pb-20">
       <>
-        <title>{`KITBAY | ${product.name}`}</title>
-        <meta name="description" content={product.description || `Get your hands on the premium ${product.name} from KITBAY. High performance athletic gear, premium sizes, and custom prints available.`} />
+        <title>{`6YARD | ${product.name}`}</title>
+        <meta name="description" content={product.description || `Get your hands on the premium ${product.name} from 6YARD. High performance athletic gear, premium sizes, and custom prints available.`} />
 
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="product" />
-        <meta property="og:title" content={`KITBAY | ${product.name}`} />
-        <meta property="og:description" content={product.description || `Get your hands on the premium ${product.name} from KITBAY. High performance athletic gear, premium sizes, and custom prints available.`} />
+        <meta property="og:title" content={`6YARD | ${product.name}`} />
+        <meta property="og:description" content={product.description || `Get your hands on the premium ${product.name} from 6YARD. High performance athletic gear, premium sizes, and custom prints available.`} />
         <meta property="og:image" content={firstImage} />
         <meta property="product:price:amount" content={String(currentPrice)} />
         <meta property="product:price:currency" content="INR" />
@@ -358,8 +408,24 @@ export default function ProductDetail() {
           <div className="space-y-4">
             <div className="flex justify-between items-center text-[10px] border-b border-brand-surface-normal pb-2">
               <span className="font-sans font-bold text-brand-on-surface uppercase tracking-widest">SELECT SIZE</span>
-              <a className="font-sans text-brand-primary font-bold underline underline-offset-4 hover:opacity-70" href="#">Size Guide</a>
+              <button onClick={() => setIsSizeGuideOpen(!isSizeGuideOpen)} className="font-sans text-brand-primary font-bold underline underline-offset-4 hover:opacity-70">Size Guide</button>
             </div>
+
+            <AnimatePresence>
+              {isSizeGuideOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="py-2">
+                    <img src="/sizechart.png" alt="Size Chart" className="w-full h-auto rounded-xl border border-brand-surface-normal shadow-sm" />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <div className="flex flex-wrap gap-3">
               {sizes.map(size => (
                 <button
@@ -379,11 +445,11 @@ export default function ProductDetail() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col md:flex-row gap-4">
             <button
               onClick={handleAddToCart}
-              disabled={isAdding}
-              className="w-full bg-brand-primary hover:bg-brand-primary-hover text-white font-sans font-bold py-5 rounded-xl shadow-2xl shadow-brand-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm cursor-pointer group disabled:opacity-70 disabled:cursor-not-allowed">
+              disabled={isAdding || isBuying}
+              className="w-full bg-white border-2 border-brand-surface-normal hover:border-brand-primary text-brand-on-surface font-sans font-bold py-5 rounded-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed">
               <AnimatePresence mode="wait">
                 {isAdding ? (
                   <motion.div
@@ -399,7 +465,7 @@ export default function ProductDetail() {
                     >
                       <ShoppingBag size={20} />
                     </motion.div>
-                    ADDING TO CART...
+                    ADDING...
                   </motion.div>
                 ) : (
                   <motion.div
@@ -409,15 +475,40 @@ export default function ProductDetail() {
                     exit={{ y: -20, opacity: 0 }}
                     className="flex items-center gap-3"
                   >
-                    <ShoppingBag size={20} className="group-hover:-translate-y-1 transition-transform" />
+                    <ShoppingBag size={20} />
                     ADD TO CART
                   </motion.div>
                 )}
               </AnimatePresence>
             </button>
-            <button className="w-full bg-white border-2 border-brand-surface-normal text-brand-on-surface hover:bg-brand-surface-low font-sans font-bold py-5 rounded-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm">
-              <Heart size={20} />
-              ADD TO WISHLIST
+
+            <button
+              onClick={handleBuyNow}
+              disabled={isAdding || isBuying}
+              className="w-full bg-brand-primary hover:bg-brand-primary-hover text-white font-sans font-bold py-5 rounded-xl shadow-2xl shadow-brand-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed">
+              <AnimatePresence mode="wait">
+                {isBuying ? (
+                  <motion.div
+                    key="buying"
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -20, opacity: 0 }}
+                    className="flex items-center gap-2"
+                  >
+                    PROCESSING...
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="buy"
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -20, opacity: 0 }}
+                    className="flex items-center gap-3"
+                  >
+                    BUY NOW
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </button>
           </div>
 
@@ -468,13 +559,63 @@ export default function ProductDetail() {
           },
           { id: 'shipping', title: 'Shipping & Returns', content: <p className="py-4 text-brand-on-surface-variant">Standard shipping (3-5 days) available for all orders. Returns accepted within 30 days of delivery.</p> },
           {
-            id: 'reviews', title: 'Customer Reviews (124)', content: (
-              <div className="py-4 flex items-center gap-4">
-                <div className="flex items-center text-brand-primary">
-                  {[1, 2, 3, 4].map(star => <Star key={star} size={18} fill="currentColor" />)}
-                  <Star size={18} className="opacity-40" />
+            id: 'reviews', title: `Customer Reviews (${reviewsList.length})`, content: (
+              <div className="py-4 space-y-8">
+                {/* Add Review Form */}
+                <form onSubmit={handleAddReview} className="bg-brand-surface-lowest border border-brand-surface-normal p-6 rounded-2xl space-y-4">
+                  <h3 className="font-h font-bold text-lg">Write a Review</h3>
+                  <div className="flex items-center gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button type="button" key={star} onClick={() => setNewReview({ ...newReview, rating: star })} className="text-brand-primary transition-transform active:scale-90">
+                        <Star size={24} fill={star <= newReview.rating ? "currentColor" : "none"} />
+                      </button>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-1 gap-4">
+                    <input
+                      type="text"
+                      placeholder="Your Name"
+                      required
+                      value={newReview.name}
+                      onChange={(e) => setNewReview({ ...newReview, name: e.target.value })}
+                      className="w-full bg-brand-surface border border-brand-surface-normal rounded-xl px-4 py-3 font-sans outline-none focus:border-brand-primary"
+                    />
+                    <textarea
+                      placeholder="Share your thoughts about this product..."
+                      required
+                      rows={3}
+                      value={newReview.text}
+                      onChange={(e) => setNewReview({ ...newReview, text: e.target.value })}
+                      className="w-full bg-brand-surface border border-brand-surface-normal rounded-xl px-4 py-3 font-sans outline-none focus:border-brand-primary resize-none"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isSubmittingReview || !newReview.text.trim() || !newReview.name.trim()}
+                    className="bg-brand-primary hover:bg-brand-primary-hover text-white font-sans font-bold py-3 px-6 rounded-xl uppercase tracking-widest text-xs transition-all disabled:opacity-50">
+                    {isSubmittingReview ? "Submitting..." : "Submit Review"}
+                  </button>
+                </form>
+
+                {/* List Reviews */}
+                <div className="space-y-6">
+                  {reviewsList.map((review, idx) => (
+                    <div key={idx} className="border-b border-brand-surface-normal pb-6 last:border-0 last:pb-0">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <div className="font-sans font-bold text-brand-on-surface">{review.name}</div>
+                          <div className="text-[10px] text-brand-on-surface-variant uppercase tracking-widest mt-1">{review.date}</div>
+                        </div>
+                        <div className="flex items-center text-brand-primary">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star key={i} size={14} fill={i < review.rating ? "currentColor" : "none"} />
+                          ))}
+                        </div>
+                      </div>
+                      <p className="font-sans text-brand-on-surface-variant text-sm mt-3 leading-relaxed">"{review.text}"</p>
+                    </div>
+                  ))}
                 </div>
-                <span className="text-brand-on-surface-variant text-sm font-semibold italic">"Premium quality, fits perfectly. The HEAT.RDY tech really works!"</span>
               </div>
             )
           },
@@ -503,22 +644,11 @@ export default function ProductDetail() {
         ))}
       </div>
 
-      {/* Cross-sell */}
-      <section className="mt-24">
-        <h2 className="font-h text-[32px] font-bold mb-10 text-center uppercase tracking-widest text-brand-primary/20">Complete The Look</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {RELATED_PRODUCTS.map((product) => (
-            <div key={product.id}>
-              <ProductCard product={product} />
-            </div>
-          ))}
-        </div>
-      </section>
 
-      <AuthModal 
-        isOpen={isAuthModalOpen} 
-        onClose={() => setIsAuthModalOpen(false)} 
-        onSuccess={() => handleAddToCart()} 
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onSuccess={() => handleAddToCart()}
       />
     </main>
   );
