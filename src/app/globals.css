@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lexend:wght@400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-h: "Lexend", sans-serif;
+
+  --color-brand-surface: #fbf9f9;
+  --color-brand-surface-dim: #dbdad9;
+  --color-brand-surface-bright: #fbf9f9;
+  --color-brand-surface-lowest: #ffffff;
+  --color-brand-surface-low: #f5f3f3;
+  --color-brand-surface-normal: #efeded;
+  --color-brand-surface-high: #e9e8e7;
+  --color-brand-surface-highest: #e3e2e2;
+
+  --color-brand-primary: #5c5c5c;
+  --color-brand-primary-hover: #4a4a4a;
+  --color-brand-secondary: #5e5e5e;
+  --color-brand-on-surface: #1b1c1c;
+  --color-brand-on-surface-variant: #444748;
+
+  --radius-xl: 1.5rem;
+  --radius-lg: 1rem;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body {
+    @apply bg-brand-surface text-brand-on-surface font-sans antialiased;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Hardware-accelerate swiping and scrolling widgets */
+  .overflow-x-auto,
+  .overflow-y-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ⚡ HIGH PERFORMANCE GPU RENDERING: Fixes scroll lag, paint loops, and hover frame drops */
+* {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Force hardware compositing layer for heavy animations, images, and hovers */
+img,
+button,
+a,
+.group,
+.transition-transform,
+.transition-all,
+.animate-pulse,
+.animate-spin {
+  will-change: transform, opacity;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}

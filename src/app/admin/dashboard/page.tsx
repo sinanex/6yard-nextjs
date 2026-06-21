@@ -1,0 +1,1910 @@
+"use client";
+
+import React, { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
+import {
+  LayoutDashboard,
+  PackagePlus,
+  Tags,
+  ShoppingCart,
+  TrendingUp,
+  LogOut,
+  Users,
+  DollarSign,
+  Upload,
+  Trash2,
+  Check,
+  Plus,
+  Minus,
+  Edit,
+  X,
+  Package,
+  Bell,
+  Search,
+  Menu
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { API_BASE_URL } from '@/config';
+import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'motion/react';
+
+// Premium Searchable Dropdown Component
+const SearchableDropdown = ({
+  options,
+  value,
+  onChange,
+  placeholder = "Select...",
+  required = false
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const filteredOptions = options.filter(option =>
+    option.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <div
+        onClick={() => {
+          setIsOpen(!isOpen);
+          setSearchTerm("");
+        }}
+        className="w-full px-4 py-2 border rounded-lg focus-within:ring-1 focus-within:ring-black focus-within:border-black bg-white cursor-pointer flex justify-between items-center text-sm min-h-[42px]"
+      >
+        <span className={value ? "text-gray-900" : "text-gray-400"}>
+          {value || placeholder}
+        </span>
+        <span className="text-gray-500 text-xs">▼</span>
+      </div>
+
+      {isOpen && (
+        <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+          <div className="p-2 border-b sticky top-0 bg-white">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search..."
+              className="w-full px-3 py-1.5 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-black focus:border-black"
+              autoFocus
+            />
+          </div>
+          <div className="py-1">
+            {filteredOptions.length === 0 ? (
+              <div className="px-4 py-2 text-sm text-gray-500">No results found</div>
+            ) : (
+              filteredOptions.map((option, index) => (
+                <div
+                  key={index}
+                  onClick={() => {
+                    onChange(option);
+                    setIsOpen(false);
+                  }}
+                  className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-100 transition duration-150 ${value === option ? "bg-gray-50 font-semibold text-black" : "text-gray-700"
+                    }`}
+                >
+                  {option}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Premium Searchable Multi-Select Dropdown Component for Colors
+const SearchableMultiDropdown = ({
+  options,
+  selectedValues = [],
+  onChange,
+  placeholder = "Select..."
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const filteredOptions = options.filter(option =>
+    option.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const toggleOption = (option) => {
+    let updated;
+    if (selectedValues.includes(option)) {
+      updated = selectedValues.filter(val => val !== option);
+    } else {
+      updated = [...selectedValues, option];
+    }
+    onChange(updated);
+  };
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <div
+        onClick={() => {
+          setIsOpen(!isOpen);
+          setSearchTerm("");
+        }}
+        className="w-full px-4 py-2 border rounded-lg focus-within:ring-1 focus-within:ring-black focus-within:border-black bg-white cursor-pointer flex justify-between items-center text-sm min-h-[42px]"
+      >
+        <div className="flex flex-wrap gap-1">
+          {selectedValues.length === 0 ? (
+            <span className="text-gray-400">{placeholder}</span>
+          ) : (
+            selectedValues.map(val => (
+              <span key={val} className="bg-gray-100 text-gray-800 text-xs font-bold px-2.5 py-0.5 rounded-full border">
+                {val}
+              </span>
+            ))
+          )}
+        </div>
+        <span className="text-gray-500 text-xs">▼</span>
+      </div>
+
+      {isOpen && (
+        <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+          <div className="p-2 border-b sticky top-0 bg-white">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search colors..."
+              className="w-full px-3 py-1.5 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-black focus:border-black"
+              autoFocus
+            />
+          </div>
+          <div className="py-1">
+            {filteredOptions.length === 0 ? (
+              <div className="px-4 py-2 text-sm text-gray-500">No colors found</div>
+            ) : (
+              filteredOptions.map((option, idx) => {
+                const isChecked = selectedValues.includes(option);
+                return (
+                  <div
+                    key={idx}
+                    onClick={() => toggleOption(option)}
+                    className="flex items-center gap-3 px-4 py-2 text-sm cursor-pointer hover:bg-gray-100 transition duration-150"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() => { }}
+                      className="w-4 h-4 accent-black rounded cursor-pointer"
+                    />
+                    <span className="text-gray-700 font-medium">{option}</span>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const AdminDashboard = () => {
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [loading, setLoading] = useState(false);
+  const [products, setProducts] = useState<any[]>([]);
+  const [banners, setBanners] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [isBannerEditMode, setIsBannerEditMode] = useState(false);
+  const [editingBannerId, setEditingBannerId] = useState<any>(null);
+  const [bannerData, setBannerData] = useState({ title: '', subtitle: '', buttonText: '', imageUrl: '', linkUrl: '' });
+  const [bannerImage, setBannerImage] = useState<any>(null);
+  const navigate = useRouter();
+
+  // Edit mode state variables
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingProductId, setEditingProductId] = useState<any>(null);
+
+  // Multi-Product Form State
+  const initialProductState = {
+    name: '',
+    description: '',
+    brand: '',
+    team: '',
+    category: '',
+    subcategory: '',
+    price: '',
+    discount_price: '',
+    stock: '',
+    isAvailable: true,
+    sizes: '',
+    colors: '',
+    customNameNumber: false,
+    tempImages: Array(5).fill(null), // Store 5 slots (Main Image + 4 Sub Images)
+    existingImages: Array(5).fill(null)
+  };
+
+  const [productForms, setProductForms] = useState([initialProductState]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [teams, setTeams] = useState<any[]>([]);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [selectedParentCategoryId, setSelectedParentCategoryId] = useState('');
+  const [newSubcategoryName, setNewSubcategoryName] = useState('');
+  const handleDirectFieldChange = (index, name, value) => {
+    const updatedForms = [...productForms];
+    if (name === 'category') {
+      updatedForms[index] = {
+        ...updatedForms[index],
+        category: value,
+        subcategory: ''
+      };
+    } else {
+      updatedForms[index] = {
+        ...updatedForms[index],
+        [name]: value
+      };
+    }
+    setProductForms(updatedForms);
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
+      navigate.push('/admin');
+    } else {
+      fetchCategories();
+      fetchTeams();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'orders' || activeTab === 'dashboard') {
+      fetchProducts();
+    }
+    if (activeTab === 'categories' || activeTab === 'products') {
+      fetchCategories();
+      fetchTeams();
+    }
+    if (activeTab === 'banner') {
+      fetchBanner();
+    }
+    if (activeTab === 'users') {
+      fetchUsers();
+    }
+    if (activeTab === 'orders') {
+      fetchOrders();
+    }
+  }, [activeTab]);
+
+  const fetchOrders = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(`${API_BASE_URL}/api/orders/all`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setOrders(data);
+      }
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(`${API_BASE_URL}/api/users/all`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setUsers(data);
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
+  const fetchBanner = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/banner`);
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setBanners(data);
+      }
+    } catch (error) {
+      console.error('Error fetching banners:', error);
+    }
+  };
+
+  const handleBannerSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const formData = new FormData();
+      formData.append('title', bannerData.title);
+      formData.append('subtitle', bannerData.subtitle);
+      formData.append('buttonText', bannerData.buttonText);
+      formData.append('linkUrl', bannerData.linkUrl);
+      if (bannerImage) {
+        formData.append('image', bannerImage);
+      }
+
+      const url = isBannerEditMode
+        ? `${API_BASE_URL}/api/banner/${editingBannerId}`
+        : `${API_BASE_URL}/api/banner`;
+
+      const method = isBannerEditMode ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method: method,
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (response.ok) {
+        alert(isBannerEditMode ? 'Banner updated successfully!' : 'Banner added successfully!');
+        setBannerImage(null);
+        setIsBannerEditMode(false);
+        setEditingBannerId(null);
+        setBannerData({ title: '', subtitle: '', buttonText: '', imageUrl: '', linkUrl: '' });
+        fetchBanner();
+      } else {
+        const data = await response.json();
+        alert(data.message || 'Failed to save banner');
+      }
+    } catch (error) {
+      console.error('Error saving banner:', error);
+      alert('Error saving banner');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteBanner = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this banner?')) return;
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(`${API_BASE_URL}/api/banner/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response.ok) {
+        alert('Banner deleted successfully!');
+        fetchBanner();
+      }
+    } catch (error) {
+      alert('Delete failed');
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(`${API_BASE_URL}/api/products`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      setProducts(data);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/categories`);
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setCategories(data);
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
+  const fetchTeams = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/teams`);
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setTeams(data);
+      }
+    } catch (error) {
+      console.error('Error fetching teams:', error);
+    }
+  };
+
+  const handleCreateCategory = async (e) => {
+    e.preventDefault();
+    if (!newCategoryName.trim()) return;
+
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(`${API_BASE_URL}/api/categories`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ name: newCategoryName.trim() })
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setNewCategoryName('');
+        fetchCategories();
+        alert('Category created successfully!');
+      } else {
+        alert(data.message || 'Failed to create category');
+      }
+    } catch (error) {
+      console.error('Error creating category:', error);
+      alert('Error creating category');
+    }
+  };
+
+  const handleCreateSubcategory = async (e) => {
+    e.preventDefault();
+    if (!selectedParentCategoryId || !newSubcategoryName.trim()) {
+      alert('Please select a parent category and enter a subcategory name');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(`${API_BASE_URL}/api/categories/${selectedParentCategoryId}/subcategories`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ subcategoryName: newSubcategoryName.trim() })
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setNewSubcategoryName('');
+        fetchCategories();
+        alert('Subcategory created successfully!');
+      } else {
+        alert(data.message || 'Failed to create subcategory');
+      }
+    } catch (error) {
+      console.error('Error creating subcategory:', error);
+      alert('Error creating subcategory');
+    }
+  };
+
+  const handleDeleteCategory = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this category? All its subcategories will be deleted.')) return;
+
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(`${API_BASE_URL}/api/categories/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        fetchCategories();
+        alert('Category deleted successfully!');
+      } else {
+        alert(data.message || 'Failed to delete category');
+      }
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      alert('Error deleting category');
+    }
+  };
+
+  const handleDeleteSubcategory = async (categoryId, subName) => {
+    if (!window.confirm(`Are you sure you want to delete the subcategory "${subName}"?`)) return;
+
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(`${API_BASE_URL}/api/categories/${categoryId}/subcategories/${encodeURIComponent(subName)}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        fetchCategories();
+        alert('Subcategory deleted successfully!');
+      } else {
+        alert(data.message || 'Failed to delete subcategory');
+      }
+    } catch (error) {
+      console.error('Error deleting subcategory:', error);
+      alert('Error deleting subcategory');
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken');
+    navigate.push('/admin');
+  };
+
+  const handleInputChange = (index, e) => {
+    const { name, value, type, checked } = e.target;
+    const updatedForms = [...productForms];
+    updatedForms[index] = {
+      ...updatedForms[index],
+      [name]: type === 'checkbox' ? checked : value
+    };
+    setProductForms(updatedForms);
+  };
+
+  const handleSlotImageChange = (index, slotIndex, e) => {
+    if (e.target.files && e.target.files[0]) {
+      const updatedForms = [...productForms];
+      const newImages = [...updatedForms[index].tempImages];
+      newImages[slotIndex] = e.target.files[0];
+      updatedForms[index].tempImages = newImages;
+      setProductForms(updatedForms);
+    }
+  };
+
+  const removeSlotImage = (index, slotIndex) => {
+    const updatedForms = [...productForms];
+    const newImages = [...updatedForms[index].tempImages];
+    const existingImages = updatedForms[index].existingImages ? [...updatedForms[index].existingImages] : Array(5).fill(null);
+
+    newImages[slotIndex] = null;
+    existingImages[slotIndex] = null;
+
+    updatedForms[index].tempImages = newImages;
+    updatedForms[index].existingImages = existingImages;
+    setProductForms(updatedForms);
+  };
+
+  const addFormRow = () => {
+    if (productForms.length < 5) {
+      setProductForms([...productForms, initialProductState]);
+    }
+  };
+
+  const removeFormRow = (index) => {
+    if (productForms.length > 1) {
+      setProductForms(productForms.filter((_, i) => i !== index));
+    }
+  };
+
+  const handleBulkSubmit = async (e) => {
+    e.preventDefault();
+
+    // Required fields validation
+    for (let i = 0; i < productForms.length; i++) {
+      const f = productForms[i];
+      if (!f.name || !f.category || !f.price) {
+        alert(`Please fill in all required fields (Product Name, Category, Price) for Product #${i + 1}!`);
+        return;
+      }
+    }
+
+    setLoading(true);
+    let successCount = 0;
+
+    for (const form of productForms) {
+      const formData = new FormData();
+      Object.keys(form).forEach(key => {
+        if (key === 'tempImages' || key === 'existingImages') return;
+
+        if (key === 'sizes' || key === 'colors') {
+          const arr = form[key]
+            ? form[key]
+              .split(',')
+              .map(item => item.trim())
+              .filter(item => item !== '')
+            : [];
+
+          formData.append(key, JSON.stringify(arr));
+        } else {
+          formData.append(key, form[key]);
+        }
+      });
+
+      form.tempImages.filter(img => img !== null).forEach(image => {
+        formData.append('images', image);
+      });
+
+      try {
+        const token = localStorage.getItem('adminToken');
+        const response = await fetch(`${API_BASE_URL}/api/products`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData,
+        });
+
+        if (response.ok) {
+          successCount++;
+        }
+      } catch (error) {
+        console.error('Upload failed for one product');
+      }
+    }
+
+    alert(`Successfully added ${successCount} products!`);
+    setProductForms([initialProductState]);
+    fetchProducts();
+    setActiveTab('orders');
+    setLoading(false);
+  };
+
+  const handleEditSubmit = async (e) => {
+    if (e) e.preventDefault();
+
+    const form = productForms[0];
+    if (!form.name || !form.category || !form.price) {
+      alert('Please fill in all required fields (Product Name, Category, Price)!');
+      return;
+    }
+
+    setLoading(true);
+    console.log("Integrated edit submission starting. Editing ID:", editingProductId);
+
+    try {
+      const form = productForms[0];
+      const formData = new FormData();
+
+      Object.keys(form).forEach(key => {
+        if (key === 'tempImages' || key === 'existingImages') return; // Skip image arrays
+
+        if (key === 'sizes' || key === 'colors') {
+          const val = form[key];
+          const arr = typeof val === 'string'
+            ? val.split(',').map(item => item.trim()).filter(item => item !== '')
+            : Array.isArray(val) ? val : [];
+          formData.append(key, JSON.stringify(arr));
+        } else {
+          const val = form[key];
+          formData.append(key, val !== null && val !== undefined ? val : '');
+        }
+      });
+
+      const imageSlots = [];
+      let newFileCount = 0;
+
+      for (let i = 0; i < 5; i++) {
+        const file = form.tempImages?.[i];
+        const existingUrl = form.existingImages?.[i];
+
+        if (file) {
+          formData.append('images', file);
+          imageSlots.push(`new_${newFileCount}`);
+          newFileCount++;
+        } else if (existingUrl) {
+          imageSlots.push(existingUrl);
+        } else {
+          imageSlots.push('empty');
+        }
+      }
+      formData.append('imageSlots', JSON.stringify(imageSlots));
+
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(`${API_BASE_URL}/api/products/${editingProductId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        alert('Product updated successfully!');
+        setIsEditMode(false);
+        setEditingProductId(null);
+        setProductForms([initialProductState]);
+        fetchProducts();
+        setActiveTab('orders');
+      } else {
+        const data = await response.json();
+        alert(data.message || 'Failed to update product');
+      }
+    } catch (error) {
+      console.error('Update failed:', error);
+      alert('Error updating product');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    if (isEditMode) {
+      handleEditSubmit(e);
+    } else {
+      handleBulkSubmit(e);
+    }
+  };
+
+  const deleteProduct = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this product?')) return;
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response.ok) {
+        setProducts(products.filter(p => p._id !== id));
+      }
+    } catch (error) {
+      alert('Delete failed');
+    }
+  };
+
+
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'dashboard':
+        return (
+          <div className="space-y-10">
+            <h2 className="font-h text-3xl font-black text-brand-on-surface uppercase tracking-tight">Sales & CRM Overview</h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <motion.div whileHover={{ y: -5 }} className="bg-white p-8 rounded-[32px] shadow-xl shadow-brand-primary/5 border border-brand-surface-normal flex items-center gap-6 group">
+                <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Package size={28} />
+                </div>
+                <div>
+                  <p className="font-sans text-[10px] uppercase tracking-widest font-black text-brand-on-surface-variant opacity-60 mb-1">Total Products</p>
+                  <p className="font-h text-4xl font-black text-brand-on-surface">{products.length}</p>
+                </div>
+              </motion.div>
+
+              <motion.div whileHover={{ y: -5 }} className="bg-white p-8 rounded-[32px] shadow-xl shadow-brand-primary/5 border border-brand-surface-normal flex items-center gap-6 group">
+                <div className="w-16 h-16 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <ShoppingCart size={28} />
+                </div>
+                <div>
+                  <p className="font-sans text-[10px] uppercase tracking-widest font-black text-brand-on-surface-variant opacity-60 mb-1">Total Orders</p>
+                  <p className="font-h text-4xl font-black text-brand-on-surface">{orders.length}</p>
+                </div>
+              </motion.div>
+
+              <motion.div whileHover={{ y: -5 }} className="bg-white p-8 rounded-[32px] shadow-xl shadow-brand-primary/5 border border-brand-surface-normal flex items-center gap-6 group">
+                <div className="w-16 h-16 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Users size={28} />
+                </div>
+                <div>
+                  <p className="font-sans text-[10px] uppercase tracking-widest font-black text-brand-on-surface-variant opacity-60 mb-1">Registered Users</p>
+                  <p className="font-h text-4xl font-black text-brand-on-surface">{users.length}</p>
+                </div>
+              </motion.div>
+            </div>
+
+            <div className="bg-white p-10 rounded-[32px] shadow-xl border border-brand-surface-normal">
+              <h3 className="font-h text-2xl font-bold mb-8">Recently Added Products</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                {products.slice(0, 5).map(product => (
+                  <div key={product._id} className="group flex flex-col bg-brand-surface-low rounded-2xl overflow-hidden hover:shadow-xl transition-all border border-brand-surface-normal hover:border-brand-primary/20">
+                    <div className="aspect-square bg-white flex items-center justify-center overflow-hidden">
+                      {product.images?.[0] ? (
+                        <img src={product.images[0]} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="" />
+                      ) : (
+                        <div className="text-xs text-gray-400 font-sans font-bold uppercase tracking-widest">No Image</div>
+                      )}
+                    </div>
+                    <div className="p-4 flex flex-col flex-grow">
+                      <p className="font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-1 line-clamp-1">{product.team || product.category}</p>
+                      <p className="font-h text-sm font-bold text-brand-on-surface line-clamp-2 mb-3">{product.name}</p>
+                      <p className="font-h text-lg font-black text-brand-primary mt-auto">₹{product.price}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      case 'products':
+        return (
+          <div className="space-y-8 max-w-6xl mx-auto">
+            <div className="flex justify-between items-center bg-white p-6 rounded-[24px] shadow-sm border border-brand-surface-normal">
+              <div>
+                <h2 className="font-h text-3xl font-black text-brand-on-surface uppercase tracking-tight">{isEditMode ? 'Edit Product' : 'Add New Products'}</h2>
+                <p className="font-sans text-xs font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60 mt-1">{isEditMode ? 'Modify existing product details' : 'Add up to 5 products at once'}</p>
+              </div>
+              {!isEditMode && (
+                <button
+                  onClick={addFormRow}
+                  disabled={productForms.length >= 5}
+                  className="bg-brand-primary text-white text-sm px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-black transition-colors disabled:opacity-50 shadow-lg shadow-brand-primary/20"
+                >
+                  <Plus size={18} /> Add Another Product
+                </button>
+              )}
+            </div>
+
+            <form onSubmit={handleFormSubmit} className="space-y-10">
+              {productForms.map((form, index) => (
+                <div key={index} className="bg-white p-10 rounded-[32px] shadow-xl border border-brand-surface-normal relative group">
+                  {productForms.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeFormRow(index)}
+                      className="absolute top-6 right-6 bg-red-50 text-red-600 hover:bg-red-100 p-3 rounded-full transition-all hover:scale-110 shadow-sm"
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  )}
+
+                  <div className="mb-8 border-b border-brand-surface-normal pb-4">
+                    <h3 className="font-h text-2xl font-bold text-brand-on-surface">{isEditMode ? 'Product Details' : `Product #${index + 1}`}</h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div className="col-span-1 md:col-span-2 lg:col-span-1">
+                      <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Product Name*</label>
+                      <input name="name" value={form.name} onChange={(e) => handleInputChange(index, e)} type="text" className="w-full px-5 py-4 bg-brand-surface rounded-2xl border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all" placeholder="e.g. Argentina Home Jersey" required />
+                    </div>
+                    <div>
+                      <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Team (Country/Club)</label>
+                      <SearchableDropdown
+                        options={teams.map(t => t.name)}
+                        value={form.team}
+                        onChange={(val) => handleDirectFieldChange(index, 'team', val)}
+                        placeholder="Search Team..."
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Category*</label>
+                      <SearchableDropdown
+                        options={categories.map(c => c.name)}
+                        value={form.category}
+                        onChange={(val) => handleDirectFieldChange(index, 'category', val)}
+                        placeholder="Search Category..."
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Subcategory</label>
+                      <SearchableDropdown
+                        options={(() => {
+                          const parentCat = categories.find(c => c.name === form.category);
+                          return parentCat ? parentCat.subcategories : [];
+                        })()}
+                        value={form.subcategory}
+                        onChange={(val) => handleDirectFieldChange(index, 'subcategory', val)}
+                        placeholder={form.category ? "Select Subcategory..." : "Select Category first"}
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Price (INR)*</label>
+                      <input name="price" value={form.price} onChange={(e) => handleInputChange(index, e)} type="number" className="w-full px-5 py-4 bg-brand-surface rounded-2xl border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all" placeholder="e.g. 1999" required />
+                    </div>
+                    <div>
+                      <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Discount Price</label>
+                      <input name="discount_price" value={form.discount_price} onChange={(e) => handleInputChange(index, e)} type="number" className="w-full px-5 py-4 bg-brand-surface rounded-2xl border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all" placeholder="e.g. 1499" />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+                    <div>
+                      <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Stock</label>
+                      <input name="stock" value={form.stock} onChange={(e) => handleInputChange(index, e)} type="number" className="w-full px-5 py-4 bg-brand-surface rounded-2xl border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all" placeholder="e.g. 50" />
+                    </div>
+                    <div className="col-span-1 lg:col-span-2">
+                      <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Sizes Available</label>
+                      <div className="flex flex-wrap gap-3">
+                        {['S', 'M', 'L', 'XL', 'XXL', 'XXXL'].map(size => {
+                          const sizeList = form.sizes ? form.sizes.split(',').map(s => s.trim()).filter(s => s !== '') : [];
+                          const isSelected = sizeList.includes(size);
+                          return (
+                            <button
+                              key={size}
+                              type="button"
+                              onClick={() => {
+                                let newSizes;
+                                if (isSelected) {
+                                  newSizes = sizeList.filter(s => s !== size).join(', ');
+                                } else {
+                                  newSizes = [...sizeList, size].join(', ');
+                                }
+                                handleDirectFieldChange(index, 'sizes', newSizes);
+                              }}
+                              className={cn(
+                                "w-14 h-14 rounded-2xl font-h font-black text-lg transition-all active:scale-95 flex items-center justify-center border-2",
+                                isSelected
+                                  ? 'bg-brand-primary text-white border-brand-primary shadow-lg shadow-brand-primary/20'
+                                  : 'bg-brand-surface text-brand-on-surface-variant border-transparent hover:border-brand-primary/30'
+                              )}
+                            >
+                              {size}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+                    <div>
+                      <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Colors (Select options)</label>
+                      <SearchableMultiDropdown
+                        options={['Red', 'Blue', 'White', 'Black', 'Yellow', 'Green', 'Orange', 'Purple', 'Grey', 'Gold', 'Silver', 'Navy Blue', 'Sky Blue', 'Pink', 'Burgundy', 'Maroon']}
+                        selectedValues={form.colors ? form.colors.split(',').map(c => c.trim()).filter(c => c !== '') : []}
+                        onChange={(selectedColorsArray) => {
+                          handleDirectFieldChange(index, 'colors', selectedColorsArray.join(', '));
+                        }}
+                        placeholder="Search & Select Colors..."
+                      />
+                    </div>
+                    <div className="flex items-center gap-8 bg-brand-surface p-4 rounded-2xl">
+                      <label className="flex items-center gap-3 cursor-pointer group">
+                        <div className={cn("w-6 h-6 rounded flex items-center justify-center transition-colors", form.isAvailable ? "bg-brand-primary text-white" : "bg-white border border-brand-surface-normal group-hover:border-brand-primary")}>
+                          {form.isAvailable && <Check size={16} strokeWidth={3} />}
+                        </div>
+                        <input name="isAvailable" checked={form.isAvailable} onChange={(e) => handleInputChange(index, e)} type="checkbox" className="hidden" />
+                        <span className="font-h font-bold text-brand-on-surface">Available in Store</span>
+                      </label>
+                      <label className="flex items-center gap-3 cursor-pointer group">
+                        <div className={cn("w-6 h-6 rounded flex items-center justify-center transition-colors", form.customNameNumber ? "bg-brand-primary text-white" : "bg-white border border-brand-surface-normal group-hover:border-brand-primary")}>
+                          {form.customNameNumber && <Check size={16} strokeWidth={3} />}
+                        </div>
+                        <input name="customNameNumber" checked={form.customNameNumber} onChange={(e) => handleInputChange(index, e)} type="checkbox" className="hidden" />
+                        <span className="font-h font-bold text-brand-on-surface">Customizable (Name/No.)</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="mt-8">
+                    <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Description*</label>
+                    <textarea name="description" value={form.description} onChange={(e) => handleInputChange(index, e)} className="w-full px-5 py-4 bg-brand-surface rounded-2xl border-none focus:ring-2 focus:ring-brand-primary outline-none font-sans text-brand-on-surface transition-all resize-y min-h-[120px]" placeholder="Detailed product description..." required></textarea>
+                  </div>
+
+                  <div className="mt-10">
+                    <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-4 ml-2">Product Images (First is Main)</label>
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-6">
+                      {Array(5).fill(null).map((_, slotIndex) => {
+                        const file = form.tempImages[slotIndex];
+                        const existingUrl = form.existingImages?.[slotIndex];
+                        const previewUrl = file ? URL.createObjectURL(file) : existingUrl;
+                        const isMain = slotIndex === 0;
+
+                        return (
+                          <div
+                            key={slotIndex}
+                            className={cn(
+                              "relative aspect-[3/4] rounded-[24px] flex flex-col items-center justify-center overflow-hidden transition-all duration-300 group cursor-pointer border-2",
+                              previewUrl ? "border-transparent shadow-md" : isMain ? "border-brand-primary bg-brand-primary/5 hover:bg-brand-primary/10" : "border-dashed border-brand-surface-normal bg-brand-surface hover:bg-brand-surface-low"
+                            )}
+                          >
+                            {previewUrl ? (
+                              <>
+                                <img src={previewUrl} alt={`Slot ${slotIndex + 1}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                                  <span className="text-[10px] font-sans font-black uppercase tracking-widest text-white">{isMain ? 'Main Image' : `Sub Image ${slotIndex}`}</span>
+                                  <span className="text-white/70 text-xs font-bold">{file ? 'New Upload' : 'Existing'}</span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); removeSlotImage(index, slotIndex); }}
+                                  className="absolute top-3 right-3 bg-white/90 backdrop-blur text-red-600 p-2 rounded-xl hover:bg-red-600 hover:text-white transition-all active:scale-90 shadow-lg opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </>
+                            ) : (
+                              <label className="cursor-pointer w-full h-full flex flex-col items-center justify-center p-4 text-center">
+                                <input type="file" accept="image/*" onChange={(e) => handleSlotImageChange(index, slotIndex, e)} className="hidden" />
+                                <div className={cn("w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-transform group-hover:scale-110 group-active:scale-95", isMain ? "bg-brand-primary text-white shadow-lg shadow-brand-primary/30" : "bg-white text-brand-on-surface shadow-sm")}>
+                                  <Plus size={20} strokeWidth={3} />
+                                </div>
+                                <span className={cn("text-[10px] font-black uppercase tracking-widest", isMain ? "text-brand-primary" : "text-brand-on-surface-variant opacity-60")}>
+                                  {isMain ? 'Add Main' : `Add Image ${slotIndex}`}
+                                </span>
+                              </label>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              <div className="flex gap-6 sticky bottom-6 z-20">
+                {isEditMode && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsEditMode(false);
+                      setEditingProductId(null);
+                      setProductForms([initialProductState]);
+                      setActiveTab('all-products');
+                    }}
+                    className="flex-1 bg-white border border-brand-surface-normal text-brand-on-surface px-8 py-5 rounded-[24px] font-h font-black uppercase tracking-widest hover:bg-brand-surface-low transition-all shadow-xl hover:shadow-2xl active:scale-95"
+                  >
+                    Cancel Edit
+                  </button>
+                )}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className={cn(
+                    "px-8 py-5 rounded-[24px] font-h font-black uppercase tracking-widest transition-all shadow-xl shadow-brand-primary/30 active:scale-95 text-lg",
+                    loading ? "opacity-70 cursor-not-allowed" : "hover:shadow-2xl hover:shadow-brand-primary/40",
+                    isEditMode ? "flex-[2] bg-brand-primary text-white" : "w-full bg-brand-primary text-white"
+                  )}
+                >
+                  {isEditMode
+                    ? (loading ? 'Saving Changes...' : 'Save Changes')
+                    : (loading ? 'Publishing Products...' : `Publish ${productForms.length} Product(s)`)
+                  }
+                </button>
+              </div>
+            </form>
+          </div>
+        );
+      case 'categories':
+        return (
+          <div className="space-y-8 max-w-7xl mx-auto">
+            <div className="flex justify-between items-center bg-white p-6 rounded-[24px] shadow-sm border border-brand-surface-normal">
+              <div>
+                <h2 className="font-h text-3xl font-black text-brand-on-surface uppercase tracking-tight">Categories Matrix</h2>
+                <p className="font-sans text-xs font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60 mt-1">Manage product classification and hierarchy</p>
+              </div>
+              <div className="bg-brand-primary text-white text-sm px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-brand-primary/20">
+                <Tags size={18} />
+                {categories.length} Active Categories
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Create Category */}
+              <div className="bg-white p-8 rounded-[32px] shadow-xl border border-brand-surface-normal flex flex-col justify-between group hover:border-brand-primary/30 transition-colors">
+                <div>
+                  <h3 className="font-h text-2xl font-bold text-brand-on-surface mb-2">Create Root Category</h3>
+                  <p className="font-sans text-xs font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-8">Add a new high-level classification</p>
+                  <form onSubmit={handleCreateCategory} className="space-y-6">
+                    <div>
+                      <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Category Name*</label>
+                      <input
+                        type="text"
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        className="w-full px-5 py-4 bg-brand-surface rounded-2xl border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all"
+                        placeholder="e.g. Jerseys, Footwear, Accessories"
+                        required
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className="bg-brand-primary hover:bg-black text-white px-6 py-4 rounded-2xl font-h font-black uppercase tracking-widest w-full transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-brand-primary/20"
+                    >
+                      <Plus size={20} strokeWidth={3} /> Add Category
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              {/* Create Subcategory */}
+              <div className="bg-white p-8 rounded-[32px] shadow-xl border border-brand-surface-normal flex flex-col justify-between group hover:border-brand-primary/30 transition-colors">
+                <div>
+                  <h3 className="font-h text-2xl font-bold text-brand-on-surface mb-2">Create Subcategory</h3>
+                  <p className="font-sans text-xs font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-8">Group products under a root category</p>
+                  <form onSubmit={handleCreateSubcategory} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Parent Category*</label>
+                        <select
+                          value={selectedParentCategoryId}
+                          onChange={(e) => setSelectedParentCategoryId(e.target.value)}
+                          className="w-full px-5 py-4 bg-brand-surface rounded-2xl border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all appearance-none cursor-pointer"
+                          required
+                        >
+                          <option value="">Select Parent...</option>
+                          {categories.map(cat => (
+                            <option key={cat._id} value={cat._id}>{cat.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Subcategory Name*</label>
+                        <input
+                          type="text"
+                          value={newSubcategoryName}
+                          onChange={(e) => setNewSubcategoryName(e.target.value)}
+                          className="w-full px-5 py-4 bg-brand-surface rounded-2xl border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all"
+                          placeholder="e.g. Premier League"
+                          required
+                        />
+                      </div>
+                    </div>
+                    <button
+                      type="submit"
+                      className="bg-brand-primary hover:bg-black text-white px-6 py-4 rounded-2xl font-h font-black uppercase tracking-widest w-full transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-brand-primary/20 mt-6"
+                    >
+                      <Plus size={20} strokeWidth={3} /> Add Subcategory
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            {/* List & Manage */}
+            <div className="bg-white p-8 rounded-[32px] shadow-xl border border-brand-surface-normal">
+              <div className="flex items-center gap-3 mb-8 border-b border-brand-surface-normal pb-4">
+                <div className="w-10 h-10 bg-brand-surface-low rounded-xl flex items-center justify-center text-brand-primary">
+                  <Tags size={20} strokeWidth={3} />
+                </div>
+                <h3 className="font-h text-2xl font-bold text-brand-on-surface">Directory Structure</h3>
+              </div>
+
+              {categories.length === 0 ? (
+                <div className="text-center py-16 bg-brand-surface rounded-2xl border-2 border-dashed border-brand-surface-normal">
+                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-brand-on-surface-variant opacity-40">
+                    <Tags size={32} />
+                  </div>
+                  <p className="font-h text-xl font-bold text-brand-on-surface">No Categories Found</p>
+                  <p className="font-sans text-xs font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60 mt-2">Create your first category above</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {categories.map((cat) => (
+                    <div
+                      key={cat._id}
+                      className="bg-brand-surface rounded-[24px] p-6 flex flex-col justify-between hover:shadow-lg transition-all duration-300 group relative overflow-hidden"
+                    >
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-brand-primary/5 to-transparent rounded-bl-full -z-10 transition-transform group-hover:scale-150"></div>
+
+                      <div>
+                        <div className="flex justify-between items-start mb-6">
+                          <div>
+                            <h4 className="font-h text-xl font-black text-brand-on-surface">{cat.name}</h4>
+                            <span className="font-sans text-[10px] font-black uppercase tracking-widest text-brand-primary bg-brand-primary/10 px-2 py-1 rounded-md mt-2 inline-block">
+                              {cat.subcategories.length} {cat.subcategories.length === 1 ? 'Sub' : 'Subs'}
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => handleDeleteCategory(cat._id)}
+                            className="text-brand-on-surface-variant opacity-40 hover:opacity-100 hover:text-red-500 hover:bg-red-50 p-2 rounded-xl transition-all active:scale-90"
+                            title="Delete Category"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+
+                        <div className="bg-white rounded-2xl p-4 border border-brand-surface-normal h-48 overflow-y-auto custom-scrollbar">
+                          {cat.subcategories.length === 0 ? (
+                            <div className="h-full flex flex-col items-center justify-center text-center opacity-50">
+                              <span className="font-sans text-[10px] font-black uppercase tracking-widest">No Subcategories</span>
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              {cat.subcategories.map((sub, i) => (
+                                <div
+                                  key={i}
+                                  className="flex items-center justify-between bg-brand-surface px-4 py-3 rounded-xl border border-brand-surface-normal group/sub hover:border-brand-primary/30 transition-colors"
+                                >
+                                  <span className="font-h text-sm font-bold text-brand-on-surface">{sub}</span>
+                                  <button
+                                    onClick={() => handleDeleteSubcategory(cat._id, sub)}
+                                    className="text-brand-on-surface-variant opacity-0 group-hover/sub:opacity-100 hover:text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition-all"
+                                    title="Delete Subcategory"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      case 'all-products':
+        return (
+          <div className="space-y-8">
+            <div className="flex justify-between items-center bg-white p-6 rounded-[24px] shadow-sm border border-brand-surface-normal">
+              <div>
+                <h2 className="font-h text-3xl font-black text-brand-on-surface uppercase tracking-tight">Manage Products</h2>
+                <p className="font-sans text-xs font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60 mt-1">View, edit or delete existing inventory</p>
+              </div>
+              <button
+                onClick={() => {
+                  setProductForms([initialProductState]);
+                  setIsEditMode(false);
+                  setActiveTab('products');
+                }}
+                className="bg-brand-primary text-white text-sm px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-black transition-colors shadow-lg shadow-brand-primary/20"
+              >
+                <Plus size={18} />
+                Add New Product
+              </button>
+            </div>
+
+            <div className="bg-white rounded-[32px] shadow-xl border border-brand-surface-normal overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-brand-surface-low border-b border-brand-surface-normal">
+                  <tr>
+                    <th className="px-6 py-5 font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 rounded-tl-2xl w-24">Image</th>
+                    <th className="px-6 py-5 font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60">Product Details</th>
+                    <th className="px-6 py-5 font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60">Category & Team</th>
+                    <th className="px-6 py-5 font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60">Price</th>
+                    <th className="px-6 py-5 font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 rounded-tr-2xl text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-brand-surface-normal">
+                  {products.map((product) => (
+                    <tr key={product._id} className="hover:bg-brand-surface-low/50 transition-colors group">
+                      <td className="px-6 py-4">
+                        <div className="w-16 h-16 rounded-xl overflow-hidden bg-brand-surface-low border border-brand-surface-normal">
+                          {product.images?.[0] ? (
+                            <img src={product.images[0]} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400 font-bold uppercase tracking-widest">No Img</div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="font-h text-sm font-bold text-brand-on-surface line-clamp-2">{product.name}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col gap-1">
+                          <span className="font-sans text-xs font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-80">{product.category}</span>
+                          <span className="font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-40">{product.team || 'No Team'}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col gap-1">
+                          {product.discount_price ? (
+                            <>
+                              <span className="font-h text-base font-black text-brand-on-surface">₹{product.discount_price}</span>
+                              <span className="font-sans text-[10px] font-bold line-through text-brand-on-surface-variant opacity-40">₹{product.price}</span>
+                            </>
+                          ) : (
+                            <span className="font-h text-base font-black text-brand-on-surface">₹{product.price}</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex justify-end gap-3">
+                          <button
+                            onClick={() => {
+                              setIsEditMode(true);
+                              setEditingProductId(product._id);
+
+                              const productFormState = {
+                                name: product.name || '',
+                                description: product.description || '',
+                                brand: product.brand || '',
+                                team: product.team || '',
+                                category: product.category || '',
+                                subcategory: product.subcategory || '',
+                                price: product.price || '',
+                                discount_price: product.discount_price || '',
+                                stock: product.stock || 0,
+                                isAvailable: product.isAvailable !== undefined ? product.isAvailable : true,
+                                sizes: Array.isArray(product.sizes) ? product.sizes.join(', ') : product.sizes || '',
+                                colors: Array.isArray(product.colors) ? product.colors.join(', ') : product.colors || '',
+                                customNameNumber: product.customNameNumber || false,
+                                tempImages: Array(5).fill(null),
+                                existingImages: [
+                                  product.images?.[0] || null,
+                                  product.images?.[1] || null,
+                                  product.images?.[2] || null,
+                                  product.images?.[3] || null,
+                                  product.images?.[4] || null
+                                ]
+                              };
+
+                              setProductForms([productFormState]);
+                              setActiveTab('products');
+                            }}
+                            className="p-2.5 rounded-xl text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition-all active:scale-95"
+                            title="Edit Product"
+                          >
+                            <Edit size={18} />
+                          </button>
+                          <button
+                            onClick={() => deleteProduct(product._id)}
+                            className="p-2.5 rounded-xl text-red-600 hover:bg-red-50 hover:text-red-700 transition-all active:scale-95"
+                            title="Delete Product"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {products.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-12 text-center text-gray-500 font-sans font-bold text-sm uppercase tracking-widest">
+                        No products found. Start by adding one.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      case 'orders':
+        return (
+          <div className="space-y-8">
+            <div className="flex justify-between items-center bg-white p-6 rounded-[24px] shadow-sm border border-brand-surface-normal">
+              <div>
+                <h2 className="font-h text-3xl font-black text-brand-on-surface uppercase tracking-tight">Customer Orders</h2>
+                <p className="font-sans text-xs font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60 mt-1">Manage and track all shipments</p>
+              </div>
+              <div className="bg-brand-primary text-white text-sm px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-brand-primary/20">
+                <ShoppingCart size={18} />
+                {orders.length} Orders Total
+              </div>
+            </div>
+
+            <div className="bg-white rounded-[32px] shadow-xl border border-brand-surface-normal overflow-hidden overflow-x-auto p-4">
+              <table className="w-full text-left min-w-[1000px]">
+                <thead className="bg-brand-surface-low border-b border-brand-surface-normal">
+                  <tr>
+                    <th className="px-6 py-5 font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 rounded-tl-2xl">Order ID & Date</th>
+                    <th className="px-6 py-5 font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60">Customer</th>
+                    <th className="px-6 py-5 font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60">Items</th>
+                    <th className="px-6 py-5 font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60">Address</th>
+                    <th className="px-6 py-5 font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60">Total & Payment</th>
+                    <th className="px-6 py-5 font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 rounded-tr-2xl">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-brand-surface-normal">
+                  {orders.map((order) => (
+                    <tr key={order._id} className="hover:bg-brand-surface-low/50 transition-colors align-top group">
+                      <td className="px-6 py-6">
+                        <div className="flex flex-col gap-1">
+                          <span className="font-mono text-sm font-bold text-brand-primary">#{order._id.substring(order._id.length - 8)}</span>
+                          <span className="text-xs font-sans font-bold text-brand-on-surface-variant opacity-60">{new Date(order.createdAt).toLocaleString()}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-6">
+                        <div className="flex flex-col gap-1">
+                          <span className="text-sm font-h font-bold text-brand-on-surface">{order.shippingAddress?.name || 'N/A'}</span>
+                          <span className="text-xs font-sans font-bold text-brand-on-surface-variant opacity-60">{order.user?.phone || 'N/A'}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-6">
+                        <div className="space-y-3">
+                          {order.items.map((item, idx) => (
+                            <div key={idx} className="flex items-center gap-3 bg-brand-surface-low p-2 rounded-xl border border-brand-surface-normal group-hover:bg-white transition-colors">
+                              <img src={item.image} className="w-10 h-10 object-cover rounded-lg bg-white" />
+                              <div className="min-w-0">
+                                <p className="text-xs font-h font-bold line-clamp-1">{item.name}</p>
+                                <p className="text-[10px] font-sans font-bold text-brand-on-surface-variant opacity-60 mt-0.5">Size: {item.size} × {item.quantity}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-6 py-6">
+                        <div className="text-xs font-sans text-brand-on-surface max-w-[200px] leading-relaxed">
+                          <p className="font-bold text-brand-on-surface">{order.shippingAddress?.locality}</p>
+                          <p className="text-brand-on-surface-variant opacity-80">{order.shippingAddress?.address}</p>
+                          <p className="text-brand-on-surface-variant opacity-80">{order.shippingAddress?.city}, {order.shippingAddress?.state} - {order.shippingAddress?.pincode}</p>
+                        </div>
+                      </td>
+                      <td className="px-6 py-6">
+                        <div className="flex flex-col gap-1.5">
+                          <span className="text-base font-h font-black text-brand-on-surface">₹{order.totalAmount}</span>
+                          <span className={cn(
+                            "text-[9px] uppercase tracking-widest font-black px-2 py-1 rounded-md inline-block w-max",
+                            order.paymentMethod === 'cod' ? "bg-orange-50 text-orange-600" : "bg-green-50 text-green-600"
+                          )}>
+                            {order.paymentMethod === 'cod' ? 'CASH ON DELIVERY' : 'ONLINE PAID'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-6">
+                        <select
+                          value={order.status}
+                          onChange={async (e) => {
+                            const newStatus = e.target.value;
+                            const token = localStorage.getItem('adminToken');
+                            await fetch(`${API_BASE_URL}/api/orders/${order._id}/status`, {
+                              method: 'PUT',
+                              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                              body: JSON.stringify({ status: newStatus })
+                            });
+                            fetchOrders();
+                          }}
+                          className={cn(
+                            "text-xs font-bold px-4 py-2.5 rounded-xl border outline-none cursor-pointer hover:shadow-md transition-all appearance-none",
+                            order.status === 'Processing' ? "bg-blue-50 text-blue-600 border-blue-200 hover:border-blue-300" :
+                              order.status === 'Shipped' ? "bg-amber-50 text-amber-600 border-amber-200 hover:border-amber-300" :
+                                order.status === 'Delivered' ? "bg-green-50 text-green-600 border-green-200 hover:border-green-300" :
+                                  "bg-red-50 text-red-600 border-red-200 hover:border-red-300"
+                          )}
+                        >
+                          <option value="Processing">⏳ Processing</option>
+                          <option value="Shipped">🚚 Shipped</option>
+                          <option value="Delivered">✅ Delivered</option>
+                          <option value="Cancelled">❌ Cancelled</option>
+                        </select>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      case 'banner':
+        return (
+          <div className="space-y-8 max-w-7xl mx-auto">
+            <div className="flex justify-between items-center bg-white p-6 rounded-[24px] shadow-sm border border-brand-surface-normal">
+              <div>
+                <h2 className="font-h text-3xl font-black text-brand-on-surface uppercase tracking-tight">
+                  {isBannerEditMode ? 'Edit Banner' : editingBannerId === 'new' ? 'Create Banner' : 'Home Banners'}
+                </h2>
+                <p className="font-sans text-xs font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60 mt-1">
+                  {isBannerEditMode || editingBannerId === 'new' ? 'Configure banner details and image' : 'Manage your storefront hero section'}
+                </p>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                {!isBannerEditMode && editingBannerId !== 'new' && (
+                  <button
+                    onClick={() => {
+                      setEditingBannerId('new');
+                      setBannerData({ title: '', subtitle: '', buttonText: '', imageUrl: '', linkUrl: '' });
+                      setBannerImage(null);
+                    }}
+                    className="bg-brand-primary text-white text-sm px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-black transition-colors shadow-lg shadow-brand-primary/20"
+                  >
+                    <Plus size={18} /> New Banner
+                  </button>
+                )}
+                {(isBannerEditMode || editingBannerId === 'new') && (
+                  <button
+                    onClick={() => {
+                      setIsBannerEditMode(false);
+                      setEditingBannerId(null);
+                    }}
+                    className="bg-brand-surface text-brand-on-surface hover:bg-brand-surface-low text-sm px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-colors border border-brand-surface-normal"
+                  >
+                    <X size={18} /> Cancel
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {isBannerEditMode || editingBannerId === 'new' ? (
+              <div className="bg-white p-10 rounded-[32px] shadow-xl border border-brand-surface-normal">
+                <form onSubmit={handleBannerSubmit} className="space-y-10">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <div className="space-y-8">
+                      <div>
+                        <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Banner Title*</label>
+                        <input
+                          type="text"
+                          value={bannerData.title}
+                          onChange={(e) => setBannerData({ ...bannerData, title: e.target.value })}
+                          className="w-full px-5 py-4 bg-brand-surface rounded-2xl border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-xl transition-all"
+                          placeholder="e.g. Wear Your Passion"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Banner Subtitle / Details*</label>
+                        <textarea
+                          rows={4}
+                          value={bannerData.subtitle}
+                          onChange={(e) => setBannerData({ ...bannerData, subtitle: e.target.value })}
+                          className="w-full px-5 py-4 bg-brand-surface rounded-2xl border-none focus:ring-2 focus:ring-brand-primary outline-none resize-none font-sans text-brand-on-surface transition-all"
+                          placeholder="Enter engaging banner details here..."
+                          required
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Call to Action (Button)</label>
+                          <input
+                            type="text"
+                            value={bannerData.buttonText}
+                            onChange={(e) => setBannerData({ ...bannerData, buttonText: e.target.value })}
+                            className="w-full px-5 py-4 bg-brand-surface rounded-2xl border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all"
+                            placeholder="e.g. Shop Now"
+                          />
+                        </div>
+                        <div>
+                          <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Redirect Link (Path)</label>
+                          <input
+                            type="text"
+                            value={bannerData.linkUrl}
+                            onChange={(e) => setBannerData({ ...bannerData, linkUrl: e.target.value })}
+                            className="w-full px-5 py-4 bg-brand-surface rounded-2xl border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-lg transition-all"
+                            placeholder="e.g. /category/jerseys"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4 h-full flex flex-col">
+                      <label className="block font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2 ml-2">Banner Hero Image*</label>
+                      <div className="flex-1 relative rounded-[32px] overflow-hidden group cursor-pointer border-4 border-dashed border-brand-surface-normal hover:border-brand-primary/50 transition-colors bg-brand-surface min-h-[300px]">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => setBannerImage(e.target.files[0])}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                          required={!isBannerEditMode}
+                        />
+                        {bannerImage || bannerData.imageUrl ? (
+                          <>
+                            <img
+                              src={bannerImage ? URL.createObjectURL(bannerImage) : bannerData.imageUrl}
+                              alt="Preview"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                            />
+                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-opacity duration-300">
+                              <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white mb-3">
+                                <Upload size={24} />
+                              </div>
+                              <span className="text-white font-h font-bold tracking-widest uppercase">Change Image</span>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
+                            <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center text-brand-primary shadow-lg shadow-brand-primary/10 mb-6 group-hover:scale-110 transition-transform">
+                              <Upload size={32} />
+                            </div>
+                            <p className="font-h text-xl font-bold text-brand-on-surface mb-2">Upload Banner Image</p>
+                            <p className="font-sans text-xs font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60">Click or drag & drop</p>
+                            <p className="font-sans text-[10px] text-brand-on-surface-variant opacity-40 mt-4">Recommended: 1920x1080px (16:9 ratio)</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-8 border-t border-brand-surface-normal flex justify-end">
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className={cn(
+                        "px-10 py-5 rounded-[24px] font-h font-black uppercase tracking-widest transition-all shadow-xl shadow-brand-primary/30 active:scale-95 text-lg min-w-[250px]",
+                        loading ? "opacity-70 cursor-not-allowed" : "hover:shadow-2xl hover:shadow-brand-primary/40",
+                        "bg-brand-primary text-white"
+                      )}
+                    >
+                      {loading ? 'Processing...' : isBannerEditMode ? 'Save Changes' : 'Publish Banner'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            ) : (
+              <>
+                {banners.length === 0 ? (
+                  <div className="text-center py-24 bg-white rounded-[32px] border border-brand-surface-normal shadow-sm">
+                    <div className="w-20 h-20 bg-brand-surface rounded-full flex items-center justify-center mx-auto mb-6 text-brand-on-surface-variant opacity-40">
+                      <ImagePlus size={36} />
+                    </div>
+                    <p className="font-h text-2xl font-bold text-brand-on-surface">No Banners Configured</p>
+                    <p className="font-sans text-sm font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60 mt-2 mb-8">Add a banner to display on the storefront hero section</p>
+                    <button
+                      onClick={() => {
+                        setEditingBannerId('new');
+                        setBannerData({ title: '', subtitle: '', buttonText: '', imageUrl: '', linkUrl: '' });
+                        setBannerImage(null);
+                      }}
+                      className="bg-brand-primary text-white px-8 py-4 rounded-xl font-h font-bold shadow-lg shadow-brand-primary/20 hover:bg-black transition-colors inline-flex items-center gap-2"
+                    >
+                      <Plus size={20} /> Create First Banner
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {banners.map((banner) => (
+                      <div key={banner._id} className="bg-white rounded-[32px] shadow-xl border border-brand-surface-normal overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
+                        <div className="relative aspect-video overflow-hidden">
+                          <img src={banner.imageUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={banner.title} />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity"></div>
+                          
+                          <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0 duration-300">
+                            <button
+                              onClick={() => {
+                                setIsBannerEditMode(true);
+                                setEditingBannerId(banner._id);
+                                setBannerData({
+                                  title: banner.title,
+                                  subtitle: banner.subtitle,
+                                  buttonText: banner.buttonText,
+                                  imageUrl: banner.imageUrl,
+                                  linkUrl: banner.linkUrl || ''
+                                });
+                              }}
+                              className="bg-white/90 backdrop-blur-md text-brand-on-surface p-2.5 rounded-xl hover:bg-brand-primary hover:text-white transition-colors shadow-lg active:scale-95"
+                              title="Edit Banner"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteBanner(banner._id)}
+                              className="bg-white/90 backdrop-blur-md text-red-600 p-2.5 rounded-xl hover:bg-red-600 hover:text-white transition-colors shadow-lg active:scale-95"
+                              title="Delete Banner"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                        <div className="p-6 relative">
+                          <div className="absolute -top-6 right-6 bg-brand-primary text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-md shadow-lg shadow-brand-primary/30 z-10">
+                            Active
+                          </div>
+                          <h3 className="font-h text-xl font-bold text-brand-on-surface line-clamp-1 mb-2">{banner.title}</h3>
+                          <p className="font-sans text-sm text-brand-on-surface-variant opacity-80 line-clamp-2 leading-relaxed">{banner.subtitle}</p>
+                          
+                          <div className="mt-6 pt-4 border-t border-brand-surface-normal flex items-center justify-between">
+                            <span className="font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-50 flex items-center gap-1">
+                              <Link2 size={12} /> {banner.linkUrl ? 'Has Link' : 'No Link'}
+                            </span>
+                            <span className="font-sans text-[10px] font-black uppercase tracking-widest text-brand-primary bg-brand-primary/5 px-2 py-1 rounded">
+                              {banner.buttonText || 'No Button'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        );
+      case 'users':
+        return (
+          <div className="space-y-8 max-w-7xl mx-auto">
+            <div className="flex justify-between items-center bg-white p-6 rounded-[24px] shadow-sm border border-brand-surface-normal">
+              <div>
+                <h2 className="font-h text-3xl font-black text-brand-on-surface uppercase tracking-tight">User Management</h2>
+                <p className="font-sans text-xs font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60 mt-1">Directory of registered customers</p>
+              </div>
+              <div className="bg-brand-primary text-white text-sm px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-brand-primary/20">
+                <Users size={18} />
+                {users.length} Total Users
+              </div>
+            </div>
+
+            <div className="bg-white rounded-[32px] shadow-xl border border-brand-surface-normal overflow-hidden overflow-x-auto p-4">
+              <table className="w-full text-left min-w-[800px]">
+                <thead className="bg-brand-surface-low border-b border-brand-surface-normal">
+                  <tr>
+                    <th className="px-6 py-5 font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 rounded-tl-2xl">Customer Details</th>
+                    <th className="px-6 py-5 font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60">Saved Addresses</th>
+                    <th className="px-6 py-5 font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60 rounded-tr-2xl text-right">Joined Date</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-brand-surface-normal">
+                  {users.map((user: any) => (
+                    <tr key={user._id} className="hover:bg-brand-surface-low/50 transition-colors align-top group">
+                      <td className="px-6 py-6">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 bg-brand-surface rounded-xl flex items-center justify-center text-brand-primary border border-brand-surface-normal group-hover:bg-brand-primary group-hover:text-white transition-colors">
+                            <Users size={20} strokeWidth={2.5} />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <span className="font-h text-lg font-black text-brand-on-surface">{user.phone}</span>
+                            <span className="font-sans text-[10px] font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60">Registered User</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-6">
+                        <div className="space-y-3">
+                          {user.addresses && user.addresses.length > 0 ? (
+                            user.addresses.map((addr: any, idx: number) => (
+                              <div key={idx} className="bg-brand-surface p-4 rounded-2xl border border-brand-surface-normal group-hover:border-brand-primary/20 transition-colors">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="font-h font-bold text-brand-on-surface">{addr.name}</span>
+                                  <span className="font-sans text-[9px] font-black uppercase tracking-widest text-brand-primary bg-brand-primary/10 px-2 py-0.5 rounded-md">{addr.addressType}</span>
+                                </div>
+                                <p className="font-sans text-xs text-brand-on-surface-variant opacity-80 leading-relaxed">
+                                  {addr.address}, {addr.locality}, {addr.city} - {addr.pincode}
+                                </p>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="bg-brand-surface p-4 rounded-2xl border border-brand-surface-normal border-dashed text-center">
+                              <span className="font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-40">No addresses saved</span>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-6 text-right">
+                        <div className="inline-flex flex-col items-end gap-1 bg-brand-surface-low px-4 py-2 rounded-xl">
+                          <span className="font-h font-bold text-brand-on-surface">{new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                          <span className="font-sans text-[9px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60">
+                            {new Date(user.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {users.length === 0 && (
+                    <tr>
+                      <td colSpan={3} className="px-6 py-16 text-center">
+                        <div className="w-16 h-16 bg-brand-surface rounded-full flex items-center justify-center mx-auto mb-4 text-brand-on-surface-variant opacity-40">
+                          <Users size={32} />
+                        </div>
+                        <p className="font-h text-xl font-bold text-brand-on-surface">No Users Found</p>
+                        <p className="font-sans text-xs font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60 mt-2">Registered users will appear here</p>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      default:
+        return <div>Select a tab</div>;
+    }
+  };
+
+  const navItems = [
+    { id: 'dashboard', label: 'Dashboard & CRM', icon: <TrendingUp size={20} /> },
+    { id: 'orders', label: 'Customer Orders', icon: <ShoppingCart size={20} /> },
+    { id: 'products', label: 'Add Products', icon: <PackagePlus size={20} /> },
+    { id: 'all-products', label: 'Manage Products', icon: <Package size={20} /> },
+    { id: 'categories', label: 'Categories', icon: <Tags size={20} /> },
+    { id: 'banner', label: 'Home Banner', icon: <LayoutDashboard size={20} /> },
+    { id: 'users', label: 'Users', icon: <Users size={20} /> },
+  ];
+
+  return (
+    <div className="min-h-screen bg-brand-surface font-sans flex text-brand-on-surface">
+      {/* Sidebar */}
+      <aside className="w-[280px] bg-white border-r border-brand-surface-normal flex flex-col fixed h-full z-20 shadow-2xl shadow-brand-primary/5">
+        <div className="p-8 pb-4">
+          <Link href="/" className="inline-block">
+            <h1 className="font-h text-3xl font-black uppercase tracking-tight">
+              Kit<span className="text-brand-primary">Bay</span>
+            </h1>
+            <p className="font-sans text-[10px] font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60 mt-1">Admin Portal</p>
+          </Link>
+        </div>
+
+        <nav className="flex-1 px-4 space-y-2 mt-8 overflow-y-auto">
+          {navItems.map((item) => {
+            const isActive = activeTab === item.id || (item.id === 'products' && isEditMode);
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  if (item.id === 'products' && !isEditMode) {
+                    setProductForms([initialProductState]);
+                  }
+                  setActiveTab(item.id);
+                }}
+                className={cn(
+                  "w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-sm font-bold uppercase tracking-widest transition-all relative group overflow-hidden",
+                  isActive
+                    ? "text-brand-primary bg-brand-surface-low"
+                    : "text-brand-on-surface-variant hover:bg-brand-surface-low/50 hover:text-brand-on-surface"
+                )}
+              >
+                {isActive && (
+                  <motion.div layoutId="activeTab" className="absolute left-0 top-0 bottom-0 w-1 bg-brand-primary rounded-r-full" />
+                )}
+                <div className={cn("transition-transform group-hover:scale-110", isActive ? "scale-110" : "")}>
+                  {item.icon}
+                </div>
+                <span>{item.id === 'products' && isEditMode ? 'Edit Product' : item.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+
+        <div className="p-6 border-t border-brand-surface-normal">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-3 px-4 py-4 bg-red-50 text-red-600 rounded-2xl text-sm font-bold uppercase tracking-widest hover:bg-red-100 transition-all active:scale-95 border border-red-100"
+          >
+            <LogOut size={18} />
+            <span>Logout</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <div className="flex-1 ml-[280px] flex flex-col min-h-screen">
+        {/* Top Header */}
+        <header className="h-24 bg-white/80 backdrop-blur-xl border-b border-brand-surface-normal flex items-center justify-between px-10 sticky top-0 z-10 shadow-sm">
+          <div>
+            <h2 className="font-h text-2xl font-bold uppercase tracking-tight text-brand-on-surface">
+              {navItems.find(i => i.id === activeTab)?.label || 'Dashboard'}
+            </h2>
+            <p className="font-sans text-xs font-bold uppercase tracking-widest text-brand-on-surface-variant opacity-60 mt-1">
+              {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-6">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-on-surface-variant opacity-40" size={18} />
+              <input
+                type="text"
+                placeholder="Search..."
+                className="bg-brand-surface pl-12 pr-4 py-3 rounded-xl border-none focus:ring-2 focus:ring-brand-primary outline-none font-sans text-sm w-64 transition-all"
+              />
+            </div>
+            <button className="relative p-3 bg-brand-surface rounded-xl hover:bg-brand-surface-low transition-colors text-brand-on-surface-variant">
+              <Bell size={20} />
+              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+            </button>
+            <div className="flex items-center gap-3 pl-6 border-l border-brand-surface-normal">
+              <div className="w-10 h-10 rounded-full bg-brand-primary/10 text-brand-primary flex items-center justify-center font-h font-bold">
+                A
+              </div>
+              <div className="hidden md:block">
+                <p className="font-sans text-sm font-bold text-brand-on-surface">Admin User</p>
+                <p className="font-sans text-[10px] font-black uppercase tracking-widest text-brand-on-surface-variant opacity-60">Superadmin</p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Dynamic Content */}
+        <main className="flex-1 p-10 overflow-x-hidden">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="max-w-[1400px] mx-auto w-full"
+            >
+              {renderContent()}
+            </motion.div>
+          </AnimatePresence>
+        </main>
+      </div>
+    </div>
+  );
+};
+
+export default AdminDashboard;
