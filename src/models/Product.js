@@ -28,7 +28,8 @@ const productSchema = new mongoose.Schema({
     rating: { type: Number, required: true },
     text: { type: String, required: true },
     name: { type: String, required: true },
-    date: { type: String, required: true }
+    date: { type: String, required: true },
+    images: [{ type: String }]
   }]
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
 

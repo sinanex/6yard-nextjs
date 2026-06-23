@@ -260,8 +260,7 @@ const AdminDashboard = () => {
       { size: 'M', stock: '' },
       { size: 'L', stock: '' },
       { size: 'XL', stock: '' },
-      { size: 'XXL', stock: '' },
-      { size: 'XXXL', stock: '' }
+      { size: 'XXL', stock: '' }
     ],
     salesTag: '',
     colors: '',
@@ -1256,6 +1255,7 @@ const AdminDashboard = () => {
                     <th className="px-6 py-2.5 font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 rounded-tl-2xl w-24">Image</th>
                     <th className="px-6 py-2.5 font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60">Product Details</th>
                     <th className="px-6 py-2.5 font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60">Category</th>
+                    <th className="px-6 py-2.5 font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60">Stock Qty</th>
                     <th className="px-6 py-2.5 font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60">Price</th>
                     <th className="px-6 py-2.5 font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 rounded-tr-2xl text-right">Actions</th>
                   </tr>
@@ -1288,6 +1288,20 @@ const AdminDashboard = () => {
                       <td className="px-4 py-2">
                         <div className="flex flex-col gap-1">
                           <span className="text-sm text-gray-500 text-brand-on-surface-variant opacity-80">{product.category}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-2 max-w-[200px]">
+                        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide snap-x">
+                          {product.sizeStocks && product.sizeStocks.length > 0 ? (
+                            product.sizeStocks.map((sz: any, i: number) => (
+                              <div key={i} className="flex flex-col items-center justify-center bg-brand-surface-low border border-brand-surface-normal rounded-md px-2 py-1 min-w-[40px] snap-start">
+                                <span className="text-[10px] font-bold text-brand-on-surface-variant opacity-60">{sz.size}</span>
+                                <span className="text-xs font-bold text-brand-primary">{sz.stock}</span>
+                              </div>
+                            ))
+                          ) : (
+                            <span className="text-xs text-brand-on-surface-variant opacity-60">N/A</span>
+                          )}
                         </div>
                       </td>
                       <td className="px-4 py-2">
@@ -1328,8 +1342,7 @@ const AdminDashboard = () => {
                                       { size: 'M', stock: '' },
                                       { size: 'L', stock: '' },
                                       { size: 'XL', stock: '' },
-                                      { size: 'XXL', stock: '' },
-                                      { size: 'XXXL', stock: '' }
+                                      { size: 'XXL', stock: '' }
                                     ],
                                 salesTag: product.salesTag || '',
                                 colors: Array.isArray(product.colors) ? product.colors.join(', ') : product.colors || '',

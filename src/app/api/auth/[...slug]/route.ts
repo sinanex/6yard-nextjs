@@ -8,25 +8,25 @@ import Settings from '@/models/Settings';
 export async function POST(req: NextRequest, { params }: { params: Promise<{ slug: string[] }> }) {
   await dbConnect();
   const slug = (await params).slug.join('/');
-  
+
   if (slug === 'register') {
     try {
       const body = await req.json();
       const { name, email, password, role } = body;
-      
+
       const existingUser = await (User as any).findOne({ email });
       if (existingUser) {
         return NextResponse.json({ message: 'User already exists' }, { status: 400 });
       }
-      
+
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
-      
+
       const user = new User({
         name, email, password: hashedPassword, role: role || 'user'
       });
       await user.save();
-      
+
       return NextResponse.json({ message: 'User registered successfully' }, { status: 201 });
     } catch (error: any) {
       return NextResponse.json({ message: error.message }, { status: 500 });
@@ -41,8 +41,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
       if (!settings) {
         settings = { adminUsername: 'admin', adminPassword: 'admin' };
       }
+      const validAdminUser = settings.adminUsername || 'admin';
+      const validAdminPass = settings.adminPassword || 'admin';
 
-      if (email === settings.adminUsername && password === settings.adminPassword) {
+      if (email === validAdminUser && password === validAdminPass) {
         const token = jwt.sign(
           { userId: 'db-admin', role: 'admin' },
           process.env.JWT_SECRET || 'secret',

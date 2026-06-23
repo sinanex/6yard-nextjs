@@ -82,7 +82,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const updateQuantity = async (itemId: string, quantity: number) => {
     if (quantity < 1) return;
-    const currentCart = cartItems.map(item => 
+    const currentCart = cartItems.map(item =>
       item._id === itemId ? { ...item, quantity } : item
     );
     setCartItems(currentCart);

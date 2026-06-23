@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/dbConnect';
 import Product from '@/models/Product';
 
+import { uploadToCloudinary } from '@/lib/cloudinary';
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -10,14 +12,26 @@ export async function POST(
     await connectToDatabase();
     const { id } = await params;
 
-    const body = await request.json();
-    const { rating, text, name, date } = body;
+    const formData = await request.formData();
+    const rating = Number(formData.get('rating'));
+    const text = formData.get('text') as string;
+    const name = formData.get('name') as string;
+    const date = formData.get('date') as string;
 
     if (!rating || !text || !name || !date) {
       return NextResponse.json(
         { error: 'Missing required review fields' },
         { status: 400 }
       );
+    }
+
+    const imageFiles = formData.getAll('images') as File[];
+    const uploadedImages = [];
+    if (imageFiles && imageFiles.length > 0) {
+      for (const file of imageFiles) {
+        const url = await uploadToCloudinary(file, 'kitbay/reviews');
+        uploadedImages.push(url);
+      }
     }
 
     const product = await Product.findById(id);
@@ -33,7 +47,7 @@ export async function POST(
       product.reviews = [];
     }
     
-    product.reviews.unshift({ rating, text, name, date });
+    product.reviews.unshift({ rating, text, name, date, images: uploadedImages });
     
     // Update average rating and count
     product.reviews_count = product.reviews.length;

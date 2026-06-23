@@ -16,7 +16,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, isSelectable, isSelected, onSelect, onQuickAdd }: ProductCardProps) {
   return (
-    <motion.div 
+    <motion.div
       className="group cursor-pointer"
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
@@ -24,40 +24,25 @@ export default function ProductCard({ product, isSelectable, isSelected, onSelec
     >
       <Link href={`/product/${product.id}`}>
         <div className="relative aspect-[3/4] bg-brand-surface-normal rounded-2xl overflow-hidden mb-4 shadow-sm group-hover:shadow-xl group-hover:-translate-y-1 transition-all duration-300">
-          <img 
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-            src={product.image} 
-            alt={product.name} 
+          <img
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+            src={product.image}
+            alt={product.name}
           />
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all" />
-          
-          {product.isNew && !product.salesTag && (
-            <div className="absolute top-4 left-4 bg-brand-primary text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
-              New Season
-            </div>
-          )}
-          {product.isSale && !product.salesTag && (
-            <div className="absolute top-4 left-4 bg-red-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
-              Sale
-            </div>
-          )}
+
           {product.salesTag && (
-            <div 
-              className="absolute top-4 left-4 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest shadow-lg"
+            <div
+              className="absolute top-2 left-2 text-white text-[8px] font-bold px-2 py-0.5 rounded-md uppercase tracking-tight pointer-events-none select-none z-10 shadow-sm"
               style={{ backgroundColor: product.salesTagColor || '#ff0000' }}
             >
               {product.salesTag}
             </div>
           )}
-          {product.isBestSeller && (
-            <div className="absolute top-4 left-4 bg-brand-on-surface text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
-              Best Seller
-            </div>
-          )}
 
           {isSelectable && (
             <div className="absolute top-4 left-4 z-20">
-              <div 
+              <div
                 className={cn(
                   "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all",
                   isSelected ? "bg-brand-primary border-brand-primary" : "bg-white/50 border-white backdrop-blur-sm"
@@ -73,14 +58,14 @@ export default function ProductCard({ product, isSelectable, isSelected, onSelec
             </div>
           )}
 
-          <button 
+          <button
             onClick={(e) => onQuickAdd?.(e, product)}
             className="absolute bottom-4 right-4 bg-white text-brand-on-surface p-3 rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-all active:scale-90 hover:bg-brand-surface-bright z-20"
           >
             <ShoppingCart size={20} />
           </button>
-          
-          <button 
+
+          <button
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
             className="absolute top-4 right-4 w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-brand-on-surface-variant opacity-0 group-hover:opacity-100 transition-all hover:text-red-500 z-10"
           >
@@ -88,13 +73,13 @@ export default function ProductCard({ product, isSelectable, isSelected, onSelec
           </button>
         </div>
       </Link>
-      
-      <p className="font-sans text-[10px] text-brand-primary mb-1 uppercase tracking-widest font-bold">{product.category}</p>
-      <h3 className="font-sans font-bold text-brand-on-surface mb-1 group-hover:text-brand-primary transition-colors">{product.name}</h3>
-      <div className="flex items-center gap-2">
-        <p className="font-h text-brand-primary font-bold">₹{product.price.toFixed(2)}</p>
+
+      <p className="font-sans text-[9px] text-brand-primary mb-0.5 uppercase tracking-tight font-bold leading-none">{product.category}</p>
+      <h3 className="font-sans text-xs leading-tight font-bold text-brand-on-surface mb-0.5 group-hover:text-brand-primary transition-colors line-clamp-2">{product.name}</h3>
+      <div className="flex items-center gap-1.5">
+        <p className="font-h text-sm text-brand-primary font-bold">₹{product.price.toFixed(2)}</p>
         {product.originalPrice && (
-          <p className="font-h text-brand-on-surface-variant text-sm line-through opacity-50">
+          <p className="font-h text-brand-on-surface-variant text-[10px] line-through opacity-50">
             ₹{product.originalPrice.toFixed(2)}
           </p>
         )}

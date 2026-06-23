@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronRight, ShoppingBag, Heart, Shield, Truck, Verified, Star, Plus, Minus, ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronRight, ShoppingBag, Heart, Shield, Truck, Verified, Star, Plus, Minus, ChevronDown, ChevronUp, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/lib/utils';
 import ProductCard from '@/components/ProductCard';
@@ -24,18 +24,95 @@ const RELATED_PRODUCTS: Product[] = [
   { _id: 'rem-2', id: 'rem-2', name: 'Home Socks 24/25', category: 'Training', price: 18.00, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA-1t0-egD2l-PeCCChC_jzV3QTUqEh8aeaeDCnU5k1mwoqj32vGHGZ_cr_sukPN-sMT7EUul0AKyW0tXAefZgnHtdurIdeivHvAq43LOhK5SkgQ3LpySG2A0k33VPCqgZUBXVyWdv74QA_s3yJ7oIQVPspVGKhLmROqMrHuXJvPkV3C2EL2z3Gpu0IzsmNs96zXCr3psBs7lbwqAQJv9RR_4LDenyCPMPGZoyMSxYVXAM6b4qBJNYpx4tjYLNGYbsyUHIi4Jj6VRk', images: ['https://lh3.googleusercontent.com/aida-public/AB6AXuA-1t0-egD2l-PeCCChC_jzV3QTUqEh8aeaeDCnU5k1mwoqj32vGHGZ_cr_sukPN-sMT7EUul0AKyW0tXAefZgnHtdurIdeivHvAq43LOhK5SkgQ3LpySG2A0k33VPCqgZUBXVyWdv74QA_s3yJ7oIQVPspVGKhLmROqMrHuXJvPkV3C2EL2z3Gpu0IzsmNs96zXCr3psBs7lbwqAQJv9RR_4LDenyCPMPGZoyMSxYVXAM6b4qBJNYpx4tjYLNGYbsyUHIi4Jj6VRk'] },
   { _id: 'rem-3', id: 'rem-3', name: 'Elite Performance Cleats', category: 'Football', price: 199.99, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDQNUc3ftOij7Bj9Ezh-tRGZHvg24ciwytkQqrWSTJ1khsiZwsCf0rOM3qtsvVkq8kfUrk-ifOCbbRHyqh2D7UuzG-z7EqPHecGHCMTQPYQt-EsRWo8GvUG3p_RFySePC9SPUsZMeWfHTUwT0SAH8i-pap61Z0YVNyKw0RBfANImxjONbXnco8G2uZw_tV42iEUrY3lPJaaT3r1yJsZk74yzdL8AogwHiVuyuJgCEQ8Y4668cS2hXlPqgnvHFRfqipgEB6mxSsGaFo', images: ['https://lh3.googleusercontent.com/aida-public/AB6AXuDQNUc3ftOij7Bj9Ezh-tRGZHvg24ciwytkQqrWSTJ1khsiZwsCf0rOM3qtsvVkq8kfUrk-ifOCbbRHyqh2D7UuzG-z7EqPHecGHCMTQPYQt-EsRWo8GvUG3p_RFySePC9SPUsZMeWfHTUwT0SAH8i-pap61Z0YVNyKw0RBfANImxjONbXnco8G2uZw_tV42iEUrY3lPJaaT3r1yJsZk74yzdL8AogwHiVuyuJgCEQ8Y4668cS2hXlPqgnvHFRfqipgEB6mxSsGaFo'] },
   { _id: 'rem-4', id: 'rem-4', name: 'Anthem Jacket 24/25', category: 'Training', price: 110.00, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC_sVWjkZ9pxd6d_4QyWv9cFZPk0khxtskZ2an-DetgIdgTj9OQFgu3YM5z0OTUhNr_8IgPtW7Y1GbiatnIdSbkMDJMVXr3vOls1IvUmtGKnF5nymsOcAf22N_snjPpsc53SYNV_Cx0Zfz0Nrh3SlKZJFzI2LxI7rJFqV9GA6FxxVrDGIK7o4x-2tTw94iETn6pVkJqxOAMr-2OF3sXJyypAGZZui7rv-u192RQ87LDi27XyupZDOoF6zMxi2I6tvAkSTAE9nC1rDE', images: ['https://lh3.googleusercontent.com/aida-public/AB6AXuC_sVWjkZ9pxd6d_4QyWv9cFZPk0khxtskZ2an-DetgIdgTj9OQFgu3YM5z0OTUhNr_8IgPtW7Y1GbiatnIdSbkMDJMVXr3vOls1IvUmtGKnF5nymsOcAf22N_snjPpsc53SYNV_Cx0Zfz0Nrh3SlKZJFzI2LxI7rJFqV9GA6FxxVrDGIK7o4x-2tTw94iETn6pVkJqxOAMr-2OF3sXJyypAGZZui7rv-u192RQ87LDi27XyupZDOoF6zMxi2I6tvAkSTAE9nC1rDE'] },
+  { _id: 'rem-4', id: 'rem-4', name: 'Anthem Jacket 24/25', category: 'Training', price: 110.00, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC_sVWjkZ9pxd6d_4QyWv9cFZPk0khxtskZ2an-DetgIdgTj9OQFgu3YM5z0OTUhNr_8IgPtW7Y1GbiatnIdSbkMDJMVXr3vOls1IvUmtGKnF5nymsOcAf22N_snjPpsc53SYNV_Cx0Zfz0Nrh3SlKZJFzI2LxI7rJFqV9GA6FxxVrDGIK7o4x-2tTw94iETn6pVkJqxOAMr-2OF3sXJyypAGZZui7rv-u192RQ87LDi27XyupZDOoF6zMxi2I6tvAkSTAE9nC1rDE', images: ['https://lh3.googleusercontent.com/aida-public/AB6AXuC_sVWjkZ9pxd6d_4QyWv9cFZPk0khxtskZ2an-DetgIdgTj9OQFgu3YM5z0OTUhNr_8IgPtW7Y1GbiatnIdSbkMDJMVXr3vOls1IvUmtGKnF5nymsOcAf22N_snjPpsc53SYNV_Cx0Zfz0Nrh3SlKZJFzI2LxI7rJFqV9GA6FxxVrDGIK7o4x-2tTw94iETn6pVkJqxOAMr-2OF3sXJyypAGZZui7rv-u192RQ87LDi27XyupZDOoF6zMxi2I6tvAkSTAE9nC1rDE'] },
 ];
+
+const DeliveryTimeline = ({ settings }: { settings: any }) => {
+  const [timeLeft, setTimeLeft] = useState({ hrs: 0, mins: 0 });
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      const endOfDay = new Date(now);
+      endOfDay.setHours(23, 59, 59, 999);
+      const diffMs = endOfDay.getTime() - now.getTime();
+      setTimeLeft({
+        hrs: Math.floor(diffMs / (1000 * 60 * 60)),
+        mins: Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
+      });
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const minProcessing = settings?.processingTimeFrom || 2;
+  const maxProcessing = settings?.processingTimeTo || 4;
+  const minDelivery = settings?.deliveryTimeFrom || 5;
+  const maxDelivery = settings?.deliveryTimeTo || 7;
+
+  const processMinD = new Date(); processMinD.setDate(processMinD.getDate() + minProcessing);
+  const processMaxD = new Date(); processMaxD.setDate(processMaxD.getDate() + maxProcessing);
+
+  const d1 = new Date(); d1.setDate(d1.getDate() + minProcessing + minDelivery);
+  const d2 = new Date(); d2.setDate(d2.getDate() + maxProcessing + maxDelivery);
+
+  const formatFull = (d: Date) => d.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const formatShort = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+  return (
+    <div className="bg-white border border-brand-surface-normal rounded-xl p-4 md:p-6 mb-6">
+      <p className="font-sans text-[15px] text-gray-800 leading-relaxed mb-8">
+        Order within <span className="font-bold">{timeLeft.hrs} h {timeLeft.mins} min</span> for delivery between <span className="font-bold">{formatFull(d1)} - {formatFull(d2)}</span>.
+      </p>
+
+      <div className="relative">
+        <div className="absolute top-[35px] left-[15%] right-[15%] h-[1.5px] bg-gray-800 z-0"></div>
+
+        <div className="flex justify-between items-start relative z-10">
+          <div className="flex flex-col items-center flex-1 bg-white">
+            <ShoppingBag size={24} strokeWidth={1.5} className="text-gray-900 mb-2" />
+            <div className="w-[7px] h-[7px] rounded-full bg-gray-900 ring-[6px] ring-white mb-2"></div>
+            <div className="text-center bg-white px-1">
+              <p className="font-bold text-[13px] text-gray-900">{formatShort(new Date())}</p>
+              <p className="text-[13px] text-gray-600 mt-0.5">Purchased</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col items-center flex-1 bg-white">
+            <Truck size={26} strokeWidth={1.5} className="text-gray-900 mb-2" />
+            <div className="w-[7px] h-[7px] rounded-full bg-gray-900 ring-[6px] ring-white mb-2"></div>
+            <div className="text-center bg-white px-1">
+              <p className="font-bold text-[13px] text-gray-900">{formatShort(processMinD)} - {formatShort(processMaxD).split(' ')[1]}</p>
+              <p className="text-[13px] text-gray-600 mt-0.5">Processing</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col items-center flex-1 bg-white">
+            <MapPin size={24} strokeWidth={1.5} className="text-gray-900 mb-2" />
+            <div className="w-[7px] h-[7px] rounded-full bg-gray-900 ring-[6px] ring-white mb-2"></div>
+            <div className="text-center bg-white px-1">
+              <p className="font-bold text-[13px] text-gray-900">{formatShort(d1)} - {formatShort(d2).split(' ')[1]}</p>
+              <p className="text-[13px] text-gray-600 mt-0.5">Delivered</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default function ProductDetail() {
   const { id } = useParams() as { id: string };
   const navigate = useRouter();
   const [selectedSize, setSelectedSize] = useState('M');
   const [activeImage, setActiveImage] = useState(0);
-  const [openAccordion, setOpenAccordion] = useState<string | null>('specs');
+  const [openAccordion, setOpenAccordion] = useState<string | null>('description');
   const [isAdding, setIsAdding] = useState(false);
   const [isBuying, setIsBuying] = useState(false);
   const { addToCart } = useCart();
   const [product, setProduct] = useState<any>(null);
+  const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   const [zoomStyle, setZoomStyle] = useState<React.CSSProperties>({ transformOrigin: 'center' });
@@ -46,30 +123,74 @@ export default function ProductDetail() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
 
-  const [reviewsList, setReviewsList] = useState<{ rating: number, text: string, name: string, date: string }[]>([]);
+  const [reviewsList, setReviewsList] = useState<{ rating: number, text: string, name: string, date: string, images?: string[] }[]>([]);
   const [newReview, setNewReview] = useState({ rating: 5, text: '', name: '' });
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewImages, setReviewImages] = useState<File[]>([]);
+
+  const compressImage = (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx?.drawImage(img, 0, 0, img.width, img.height);
+          canvas.toBlob((blob) => {
+            if (blob) {
+              resolve(new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() }));
+            } else {
+              reject(new Error("Canvas to Blob failed"));
+            }
+          }, 'image/jpeg', 0.6);
+        };
+        img.onerror = error => reject(error);
+      };
+      reader.onerror = error => reject(error);
+    });
+  };
 
   const handleAddReview = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newReview.text.trim() || !newReview.name.trim()) return;
     setIsSubmittingReview(true);
     try {
-      const reviewData = {
-        ...newReview,
-        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-      };
-      
+      const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      const formData = new FormData();
+      formData.append('rating', newReview.rating.toString());
+      formData.append('text', newReview.text);
+      formData.append('name', newReview.name);
+      formData.append('date', dateStr);
+
+      const previewUrls: string[] = [];
+
+      for (const file of reviewImages) {
+        const compressedFile = await compressImage(file);
+        formData.append('images', compressedFile);
+        previewUrls.push(URL.createObjectURL(compressedFile)); // For optimistic UI
+      }
+
       const res = await fetch(`/api/products/${id}/reviews`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(reviewData)
+        body: formData
       });
-      
+
       if (!res.ok) throw new Error("Failed to submit review");
-      
-      setReviewsList([reviewData, ...reviewsList]);
+
+      // Assume success, update local state
+      const newReviewData = { ...newReview, date: dateStr, images: previewUrls };
+      setReviewsList([newReviewData, ...reviewsList]);
+
+      // Reset form
       setNewReview({ rating: 5, text: '', name: '' });
+      setReviewImages([]);
+      setShowReviewForm(false);
     } catch (err) {
       alert("Failed to submit review. Please try again.");
     } finally {
@@ -197,18 +318,21 @@ export default function ProductDetail() {
     }
 
     setLoading(true);
-    fetch(`${API_BASE_URL}/api/products/${id}`)
-      .then(res => {
+    Promise.all([
+      fetch(`${API_BASE_URL}/api/products/${id}`).then(res => {
         if (!res.ok) throw new Error("Product not found");
         return res.json();
-      })
-      .then(data => {
-        setProduct(data);
-        if (data.sizes && data.sizes.length > 0) {
-          setSelectedSize(data.sizes[0]);
+      }),
+      fetch(`${API_BASE_URL}/api/settings`).then(res => res.json()).catch(() => null)
+    ])
+      .then(([productData, settingsData]) => {
+        setProduct(productData);
+        if (settingsData) setSettings(settingsData);
+        if (productData.sizes && productData.sizes.length > 0) {
+          setSelectedSize(productData.sizes[0]);
         }
-        if (data.reviews) {
-          setReviewsList(data.reviews);
+        if (productData.reviews) {
+          setReviewsList(productData.reviews);
         }
       })
       .catch(err => {
@@ -267,7 +391,7 @@ export default function ProductDetail() {
     );
   }
 
-  const SIZE_ORDER = ['S', 'M', 'L', 'XL', 'XXL', 'XXXL', '3XL', '4XL'];
+  const SIZE_ORDER = ['S', 'M', 'L', 'XL', 'XXL'];
   const rawSizes = product.sizes && product.sizes.length > 0 ? product.sizes : ['S', 'M', 'L', 'XL', 'XXL'];
   const sizes = [...rawSizes].sort((a, b) => {
     const idxA = SIZE_ORDER.indexOf(a.toUpperCase());
@@ -297,7 +421,7 @@ export default function ProductDetail() {
   };
 
   return (
-    <main className="max-w-[1280px] mx-auto px-6 pt-24 pb-20">
+    <main className="max-w-[1280px] mx-auto px-6 pt-20 pb-12">
       <>
         <title>{`6YARD | ${product.name}`}</title>
         <meta name="description" content={product.description || `Get your hands on the premium ${product.name} from 6YARD. High performance athletic gear, premium sizes, and custom prints available.`} />
@@ -317,7 +441,7 @@ export default function ProductDetail() {
       </>
 
       {/* Breadcrumbs */}
-      <nav className="flex items-center space-x-2 text-xs font-sans text-brand-on-surface-variant mb-8 uppercase tracking-widest">
+      <nav className="flex items-center space-x-2 text-xs font-sans text-brand-on-surface-variant mb-4 uppercase tracking-widest">
         <Link className="hover:text-brand-primary transition-colors" href="/">Home</Link>
         <ChevronRight size={14} />
         <Link className="hover:text-brand-primary transition-colors" href="/">Shop</Link>
@@ -325,11 +449,11 @@ export default function ProductDetail() {
         <span className="text-brand-on-surface font-black">{product.name}</span>
       </nav>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left: Gallery */}
         <div className="lg:col-span-7 space-y-6">
           <motion.div
-            className="relative aspect-[4/5] rounded-xl overflow-hidden bg-white shadow-xl group border border-brand-surface-normal cursor-zoom-in"
+            className="relative aspect-[4/5] rounded-xl overflow-hidden bg-brand-surface-normal group cursor-zoom-in"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             onMouseMove={handleMouseMove}
@@ -348,9 +472,20 @@ export default function ProductDetail() {
               style={isZoomed ? zoomStyle : { transform: 'scale(1)', transformOrigin: 'center' }}
               src={productImages[activeImage]}
             />
-            <div className="absolute top-4 left-4 bg-brand-primary text-white text-[10px] font-bold px-4 py-1.5 rounded-full uppercase tracking-[0.2em] pointer-events-none select-none z-10">
-              NEW ARRIVAL
-            </div>
+            {(() => {
+              const isSoldOut = product.stock !== undefined && product.stock <= 0;
+              const displayTag = isSoldOut ? "Sold Out" : product.salesTag;
+              const displayTagColor = isSoldOut ? "#333333" : product.salesTagColor || '#ff0000';
+              if (!displayTag) return null;
+              return (
+                <div
+                  className="absolute top-4 left-4 text-white text-[10px] font-bold px-4 py-1.5 rounded-full uppercase tracking-[0.2em] pointer-events-none select-none z-10 shadow-lg"
+                  style={{ backgroundColor: displayTagColor }}
+                >
+                  {displayTag}
+                </div>
+              );
+            })()}
 
             {/* Desktop Hint */}
             <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md text-white text-[10px] px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none select-none hidden md:block z-10">
@@ -377,8 +512,8 @@ export default function ProductDetail() {
                 key={idx}
                 onClick={() => setActiveImage(idx)}
                 className={cn(
-                  "aspect-square rounded-xl overflow-hidden border-2 transition-all duration-300",
-                  activeImage === idx ? "border-brand-primary scale-95 shadow-lg" : "border-transparent hover:opacity-70"
+                  "aspect-square rounded-xl overflow-hidden transition-all duration-300",
+                  activeImage === idx ? "opacity-100 ring-2 ring-brand-primary ring-offset-2 scale-95" : "opacity-60 hover:opacity-100"
                 )}
               >
                 <img className="w-full h-full object-cover" src={img} alt={`Thumb ${idx}`} />
@@ -390,7 +525,7 @@ export default function ProductDetail() {
         {/* Right: Info */}
         <div className="lg:col-span-5 lg:sticky lg:top-32 space-y-8">
           <div>
-            <span className="text-brand-primary font-sans font-bold uppercase tracking-[0.3em] text-[10px]">Official Merchandise</span>
+
             <h1 className="font-h text-[40px] text-brand-on-surface mt-2 mb-4 leading-[1.1] font-bold">{product.name}</h1>
             <div className="flex items-center gap-4">
               <span className="font-h text-[32px] text-brand-primary font-bold">₹{(product.discount_price || product.price).toFixed(2)}</span>
@@ -400,9 +535,6 @@ export default function ProductDetail() {
             </div>
           </div>
 
-          <p className="font-sans text-brand-on-surface-variant leading-relaxed">
-            {product.description}
-          </p>
 
           {/* Size Selection */}
           <div className="space-y-4">
@@ -427,22 +559,33 @@ export default function ProductDetail() {
             </AnimatePresence>
 
             <div className="flex flex-wrap gap-3">
-              {sizes.map(size => (
+              {sizes.map(size => {
+                const sizeStockInfo = product?.sizeStocks?.find((s: any) => s.size === size);
+                const isOutOfStock = sizeStockInfo ? sizeStockInfo.stock <= 0 : false;
+                return (
                 <button
                   key={size}
-                  onClick={() => setSelectedSize(size)}
+                  onClick={() => !isOutOfStock && setSelectedSize(size)}
+                  disabled={isOutOfStock}
                   className={cn(
-                    "w-14 h-14 rounded-xl flex items-center justify-center border-2 font-h transition-all active:scale-90",
-                    selectedSize === size
+                    "relative w-14 h-14 rounded-xl flex items-center justify-center border-2 font-h transition-all overflow-hidden",
+                    isOutOfStock ? "opacity-50 cursor-not-allowed border-brand-surface-normal text-brand-on-surface-variant" : "active:scale-90",
+                    selectedSize === size && !isOutOfStock
                       ? "border-brand-primary font-bold"
-                      : "border-brand-surface-normal text-brand-on-surface-variant hover:border-brand-primary-hover"
+                      : !isOutOfStock ? "border-brand-surface-normal text-brand-on-surface-variant hover:border-brand-primary-hover" : ""
                   )}
                 >
-                  {size}
+                  <span className={isOutOfStock ? "opacity-50" : ""}>{size}</span>
+                  {isOutOfStock && (
+                    <div className="absolute w-full h-[1.5px] top-1/2 -translate-y-1/2 bg-brand-on-surface-variant pointer-events-none"></div>
+                  )}
                 </button>
-              ))}
+              )})}
             </div>
           </div>
+
+          {/* Estimated Delivery */}
+          {settings && <DeliveryTimeline settings={settings} />}
 
           {/* Action Buttons */}
           <div className="flex flex-col md:flex-row gap-4">
@@ -512,113 +655,15 @@ export default function ProductDetail() {
             </button>
           </div>
 
-          {/* Trust Badges */}
-          <div className="grid grid-cols-2 gap-4 pt-8 border-t border-brand-surface-normal">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-brand-surface-low flex items-center justify-center text-brand-primary">
-                <Truck size={18} />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] uppercase font-bold tracking-widest">Free Shipping</span>
-                <span className="text-[10px] text-brand-on-surface-variant opacity-60">Orders over ₹1500</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-brand-surface-low flex items-center justify-center text-brand-primary">
-                <Verified size={18} />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] uppercase font-bold tracking-widest">Authentic</span>
-                <span className="text-[10px] text-brand-on-surface-variant opacity-60">100% Genuine Gear</span>
-              </div>
-            </div>
-          </div>
+
         </div>
       </div>
 
-      {/* Accordions */}
       <div className="mt-24 max-w-4xl mx-auto space-y-4">
         {[
-          {
-            id: 'specs', title: 'Product Specifications', content: (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-brand-on-surface-variant font-sans py-4">
-                <ul className="space-y-3 list-disc list-inside marker:text-brand-primary">
-                  <li>100% Recycled Polyester Mock Eyelet</li>
-                  <li>HEAT.RDY Moisture-wicking technology</li>
-                  <li>Mesh underarm inserts for airflow</li>
-                  <li>Ribbed crewneck and cuffs</li>
-                </ul>
-                <ul className="space-y-3 list-disc list-inside marker:text-brand-primary">
-                  <li>Slim athletic fit</li>
-                  <li>Official embroidered club crest</li>
-                  <li>Product code: MN-HME-2425</li>
-                  <li>Imported</li>
-                </ul>
-              </div>
-            )
-          },
+          { id: 'description', title: 'Product Description', content: <p className="py-4 text-brand-on-surface-variant leading-relaxed">{product.description}</p> },
           { id: 'shipping', title: 'Shipping & Returns', content: <p className="py-4 text-brand-on-surface-variant">Standard shipping (3-5 days) available for all orders. Returns accepted within 30 days of delivery.</p> },
-          {
-            id: 'reviews', title: `Customer Reviews (${reviewsList.length})`, content: (
-              <div className="py-4 space-y-8">
-                {/* Add Review Form */}
-                <form onSubmit={handleAddReview} className="bg-brand-surface-lowest border border-brand-surface-normal p-6 rounded-2xl space-y-4">
-                  <h3 className="font-h font-bold text-lg">Write a Review</h3>
-                  <div className="flex items-center gap-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button type="button" key={star} onClick={() => setNewReview({ ...newReview, rating: star })} className="text-brand-primary transition-transform active:scale-90">
-                        <Star size={24} fill={star <= newReview.rating ? "currentColor" : "none"} />
-                      </button>
-                    ))}
-                  </div>
-                  <div className="grid grid-cols-1 gap-4">
-                    <input
-                      type="text"
-                      placeholder="Your Name"
-                      required
-                      value={newReview.name}
-                      onChange={(e) => setNewReview({ ...newReview, name: e.target.value })}
-                      className="w-full bg-brand-surface border border-brand-surface-normal rounded-xl px-4 py-3 font-sans outline-none focus:border-brand-primary"
-                    />
-                    <textarea
-                      placeholder="Share your thoughts about this product..."
-                      required
-                      rows={3}
-                      value={newReview.text}
-                      onChange={(e) => setNewReview({ ...newReview, text: e.target.value })}
-                      className="w-full bg-brand-surface border border-brand-surface-normal rounded-xl px-4 py-3 font-sans outline-none focus:border-brand-primary resize-none"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={isSubmittingReview || !newReview.text.trim() || !newReview.name.trim()}
-                    className="bg-brand-primary hover:bg-brand-primary-hover text-white font-sans font-bold py-3 px-6 rounded-xl uppercase tracking-widest text-xs transition-all disabled:opacity-50">
-                    {isSubmittingReview ? "Submitting..." : "Submit Review"}
-                  </button>
-                </form>
-
-                {/* List Reviews */}
-                <div className="space-y-6">
-                  {reviewsList.map((review, idx) => (
-                    <div key={idx} className="border-b border-brand-surface-normal pb-6 last:border-0 last:pb-0">
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <div className="font-sans font-bold text-brand-on-surface">{review.name}</div>
-                          <div className="text-[10px] text-brand-on-surface-variant uppercase tracking-widest mt-1">{review.date}</div>
-                        </div>
-                        <div className="flex items-center text-brand-primary">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star key={i} size={14} fill={i < review.rating ? "currentColor" : "none"} />
-                          ))}
-                        </div>
-                      </div>
-                      <p className="font-sans text-brand-on-surface-variant text-sm mt-3 leading-relaxed">"{review.text}"</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )
-          },
+          { id: 'legal', title: 'Legal & Privacy', content: <p className="py-4 text-brand-on-surface-variant">All designs and logos are properties of their respective owners. By purchasing, you agree to our Terms of Service.</p> },
         ].map(section => (
           <div key={section.id} className="border-b border-brand-surface-normal">
             <button
@@ -642,6 +687,130 @@ export default function ProductDetail() {
             </AnimatePresence>
           </div>
         ))}
+      </div>
+
+      {/* Always Visible Reviews Section */}
+      <div className="mt-16 max-w-4xl mx-auto border-t border-brand-surface-normal pt-12">
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="font-h text-3xl font-bold">Customer Reviews ({reviewsList.length})</h2>
+          <button
+            onClick={() => setShowReviewForm(!showReviewForm)}
+            className="bg-brand-surface border border-brand-surface-normal hover:border-brand-primary text-brand-on-surface font-sans font-bold py-2 px-6 rounded-full uppercase tracking-widest text-xs transition-all"
+          >
+            {showReviewForm ? "Cancel" : "Write a Review"}
+          </button>
+        </div>
+        <div className="space-y-12">
+          {/* Add Review Form */}
+          <AnimatePresence>
+            {showReviewForm && (
+              <motion.form
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                onSubmit={handleAddReview}
+                className="bg-brand-surface-lowest border border-brand-surface-normal p-6 rounded-2xl space-y-4 overflow-hidden"
+              >
+                <h3 className="font-h font-bold text-lg">Write a Review</h3>
+                <div className="flex items-center gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button type="button" key={star} onClick={() => setNewReview({ ...newReview, rating: star })} className="text-brand-primary transition-transform active:scale-90">
+                      <Star size={24} fill={star <= newReview.rating ? "currentColor" : "none"} />
+                    </button>
+                  ))}
+                </div>
+                <div className="grid grid-cols-1 gap-4">
+                  <input
+                    type="text"
+                    placeholder="Your Name"
+                    required
+                    value={newReview.name}
+                    onChange={(e) => setNewReview({ ...newReview, name: e.target.value })}
+                    className="w-full bg-brand-surface border border-brand-surface-normal rounded-xl px-4 py-3 font-sans outline-none focus:border-brand-primary"
+                  />
+                  <textarea
+                    placeholder="Share your thoughts about this product..."
+                    required
+                    rows={3}
+                    value={newReview.text}
+                    onChange={(e) => setNewReview({ ...newReview, text: e.target.value })}
+                    className="w-full bg-brand-surface border border-brand-surface-normal rounded-xl px-4 py-3 font-sans outline-none focus:border-brand-primary resize-none"
+                  />
+                </div>
+
+                {/* Image Upload Option */}
+                <div>
+                  <label className="flex items-center gap-2 cursor-pointer text-brand-on-surface-variant hover:text-brand-primary transition-colors w-max">
+                    <div className="w-10 h-10 rounded-full bg-brand-surface border border-brand-surface-normal flex items-center justify-center">
+                      <Plus size={18} />
+                    </div>
+                    <span className="font-sans text-sm font-bold">Add Photos</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={(e) => {
+                        if (e.target.files) {
+                          setReviewImages(Array.from(e.target.files));
+                        }
+                      }}
+                    />
+                  </label>
+                  {reviewImages.length > 0 && (
+                    <div className="flex gap-2 mt-4 overflow-x-auto">
+                      {reviewImages.map((file, idx) => (
+                        <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden border border-brand-surface-normal flex-shrink-0">
+                          <img src={URL.createObjectURL(file)} alt="preview" className="w-full h-full object-cover" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmittingReview || !newReview.text.trim() || !newReview.name.trim()}
+                  className="bg-brand-primary hover:bg-brand-primary-hover text-white font-sans font-bold py-3 px-6 rounded-xl uppercase tracking-widest text-xs transition-all disabled:opacity-50 mt-2">
+                  {isSubmittingReview ? "Submitting..." : "Submit Review"}
+                </button>
+              </motion.form>
+            )}
+          </AnimatePresence>
+
+          {/* List Reviews */}
+          <div className="space-y-6">
+            {reviewsList.length === 0 ? (
+              <p className="text-brand-on-surface-variant font-sans py-4">No reviews yet. Be the first to review this product!</p>
+            ) : (
+              reviewsList.map((review, idx) => (
+                <div key={idx} className="border-b border-brand-surface-normal pb-6 last:border-0 last:pb-0">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <div className="font-sans font-bold text-brand-on-surface">{review.name}</div>
+                      <div className="text-[10px] text-brand-on-surface-variant uppercase tracking-widest mt-1">{review.date}</div>
+                    </div>
+                    <div className="flex items-center text-brand-primary">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star key={i} size={14} fill={i < review.rating ? "currentColor" : "none"} />
+                      ))}
+                    </div>
+                  </div>
+                  <p className="font-sans text-brand-on-surface-variant text-sm mt-3 leading-relaxed">"{review.text}"</p>
+                  {review.images && review.images.length > 0 && (
+                    <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
+                      {review.images.map((img, i) => (
+                        <div key={i} className="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 border border-brand-surface-normal">
+                          <img src={img} alt="review" className="w-full h-full object-cover" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
       </div>
 
 

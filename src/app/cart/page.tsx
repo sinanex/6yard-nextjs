@@ -12,16 +12,6 @@ import { cn } from '@/lib/utils';
 import { useCart } from '@/context/CartContext';
 import AuthModal from '@/components/AuthModal';
 
-const RELATED_PRODUCTS: Product[] = [
-  { _id: 'rem-1', id: 'rem-1', name: 'Match Day Shorts 24/25', category: 'Training', price: 45.00, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAtsxW-3BYThB30FuJIwHJ2rtE_YfYgZP0cPJNGbVT8GG5oyTAgZwqPuUgHNKR61dZf__VjyRpUfOjyfoT8hwxZ5phVhkr9j4hvU3j2RrHW0nkHdU_CvyjrueugLGgrxZXnZhfbnpT1UUCm8jwrEkLK2LOMbYYS6pzyXCMtfOif1us9e_b4vq16-p1XrrqpPN0TPp890Xio5EVJJsP3EZR4zsvBAYEWtW0jgc2lLPz2qP0QTWbGdEWy6LBp2_JBgSIysR9v7Fk7BE8', images: ['https://lh3.googleusercontent.com/aida-public/AB6AXuAtsxW-3BYThB30FuJIwHJ2rtE_YfYgZP0cPJNGbVT8GG5oyTAgZwqPuUgHNKR61dZf__VjyRpUfOjyfoT8hwxZ5phVhkr9j4hvU3j2RrHW0nkHdU_CvyjrueugLGgrxZXnZhfbnpT1UUCm8jwrEkLK2LOMbYYS6pzyXCMtfOif1us9e_b4vq16-p1XrrqpPN0TPp890Xio5EVJJsP3EZR4zsvBAYEWtW0jgc2lLPz2qP0QTWbGdEWy6LBp2_JBgSIysR9v7Fk7BE8'] },
-  { _id: 'rem-2', id: 'rem-2', name: 'Home Socks 24/25', category: 'Training', price: 18.00, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA-1t0-egD2l-PeCCChC_jzV3QTUqEh8aeaeDCnU5k1mwoqj32vGHGZ_cr_sukPN-sMT7EUul0AKyW0tXAefZgnHtdurIdeivHvAq43LOhK5SkgQ3LpySG2A0k33VPCqgZUBXVyWdv74QA_s3yJ7oIQVPspVGKhLmROqMrHuXJvPkV3C2EL2z3Gpu0IzsmNs96zXCr3psBs7lbwqAQJv9RR_4LDenyCPMPGZoyMSxYVXAM6b4qBJNYpx4tjYLNGYbsyUHIi4Jj6VRk', images: ['https://lh3.googleusercontent.com/aida-public/AB6AXuA-1t0-egD2l-PeCCChC_jzV3QTUqEh8aeaeDCnU5k1mwoqj32vGHGZ_cr_sukPN-sMT7EUul0AKyW0tXAefZgnHtdurIdeivHvAq43LOhK5SkgQ3LpySG2A0k33VPCqgZUBXVyWdv74QA_s3yJ7oIQVPspVGKhLmROqMrHuXJvPkV3C2EL2z3Gpu0IzsmNs96zXCr3psBs7lbwqAQJv9RR_4LDenyCPMPGZoyMSxYVXAM6b4qBJNYpx4tjYLNGYbsyUHIi4Jj6VRk'] },
-  { _id: 'rem-3', id: 'rem-3', name: 'Elite Performance Cleats', category: 'Football', price: 199.99, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDQNUc3ftOij7Bj9Ezh-tRGZHvg24ciwytkQqrWSTJ1khsiZwsCf0rOM3qtsvVkq8kfUrk-ifOCbbRHyqh2D7UuzG-z7EqPHecGHCMTQPYQt-EsRWo8GvUG3p_RFySePC9SPUsZMeWfHTUwT0SAH8i-pap61Z0YVNyKw0RBfANImxjONbXnco8G2uZw_tV42iEUrY3lPJaaT3r1yJsZk74yzdL8AogwHiVuyuJgCEQ8Y4668cS2hXlPqgnvHFRfqipgEB6mxSsGaFo', images: ['https://lh3.googleusercontent.com/aida-public/AB6AXuDQNUc3ftOij7Bj9Ezh-tRGZHvg24ciwytkQqrWSTJ1khsiZwsCf0rOM3qtsvVkq8kfUrk-ifOCbbRHyqh2D7UuzG-z7EqPHecGHCMTQPYQt-EsRWo8GvUG3p_RFySePC9SPUsZMeWfHTUwT0SAH8i-pap61Z0YVNyKw0RBfANImxjONbXnco8G2uZw_tV42iEUrY3lPJaaT3r1yJsZk74yzdL8AogwHiVuyuJgCEQ8Y4668cS2hXlPqgnvHFRfqipgEB6mxSsGaFo'] },
-  { _id: 'rem-4', id: 'rem-4', name: 'Anthem Jacket 24/25', category: 'Training', price: 110.00, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC_sVWjkZ9pxd6d_4QyWv9cFZPk0khxtskZ2an-DetgIdgTj9OQFgu3YM5z0OTUhNr_8IgPtW7Y1GbiatnIdSbkMDJMVXr3vOls1IvUmtGKnF5nymsOcAf22N_snjPpsc53SYNV_Cx0Zfz0Nrh3SlKZJFzI2LxI7rJFqV9GA6FxxVrDGIK7o4x-2tTw94iETn6pVkJqxOAMr-2OF3sXJyypAGZZui7rv-u192RQ87LDi27XyupZDOoF6zMxi2I6tvAkSTAE9nC1rDE', images: ['https://lh3.googleusercontent.com/aida-public/AB6AXuC_sVWjkZ9pxd6d_4QyWv9cFZPk0khxtskZ2an-DetgIdgTj9OQFgu3YM5z0OTUhNr_8IgPtW7Y1GbiatnIdSbkMDJMVXr3vOls1IvUmtGKnF5nymsOcAf22N_snjPpsc53SYNV_Cx0Zfz0Nrh3SlKZJFzI2LxI7rJFqV9GA6FxxVrDGIK7o4x-2tTw94iETn6pVkJqxOAMr-2OF3sXJyypAGZZui7rv-u192RQ87LDi27XyupZDOoF6zMxi2I6tvAkSTAE9nC1rDE'] },
-];
-
-const FREE_SHIPPING_THRESHOLD = 1000;
-const SHIPPING_CHARGE = 100;
-
 export default function Cart() {
   const navigate = useRouter();
   const { cartItems, loading, updateQuantity, removeFromCart, totalAmount: cartTotal } = useCart();
@@ -34,6 +24,8 @@ export default function Cart() {
   const [newAddress, setNewAddress] = useState({
     name: '', phone: '', pincode: '', locality: '', address: '', city: '', state: '', country: 'India', landmark: '', alternatePhone: '', addressType: 'Home'
   });
+  const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
+  const [settings, setSettings] = useState<any>(null);
 
 
 
@@ -68,6 +60,20 @@ export default function Cart() {
 
   useEffect(() => {
     fetchProfile();
+    fetch(`${API_BASE_URL}/api/products`)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          const shuffled = data.sort(() => 0.5 - Math.random());
+          setRelatedProducts(shuffled.slice(0, 4));
+        }
+      })
+      .catch(err => console.error("Error fetching related products:", err));
+
+    fetch(`${API_BASE_URL}/api/settings`)
+      .then(res => res.json())
+      .then(data => setSettings(data))
+      .catch(err => console.error("Error fetching settings:", err));
   }, []);
 
   const handleUpdateQuantity = async (itemId: string, newQuantity: number) => {
@@ -83,14 +89,14 @@ export default function Cart() {
     const token = localStorage.getItem('userToken');
     try {
       const isUpdating = !!isEditingAddressId;
-      const url = isUpdating 
+      const url = isUpdating
         ? `${API_BASE_URL}/api/users/address/${isEditingAddressId}`
         : `${API_BASE_URL}/api/users/address`;
       const method = isUpdating ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
         method,
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
@@ -100,8 +106,8 @@ export default function Cart() {
       if (response.ok) {
         // data is the updated addresses array from the API
         setUser({ ...user, addresses: data });
-        const updatedAddr = isUpdating 
-          ? data.find((a: any) => a._id === isEditingAddressId) 
+        const updatedAddr = isUpdating
+          ? data.find((a: any) => a._id === isEditingAddressId)
           : data[data.length - 1];
         if (updatedAddr) {
           setSelectedAddressId(updatedAddr._id);
@@ -136,7 +142,7 @@ export default function Cart() {
     const profileData = await fetchProfile();
     setIsAuthModalOpen(false);
     setShowAddressOverlay(true);
-    
+
     if (!profileData?.addresses || profileData.addresses.length === 0) {
       setIsAddingAddress(true);
     }
@@ -144,10 +150,8 @@ export default function Cart() {
 
   const subtotal = cartTotal;
 
-  const isFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD;
-  const shippingCost = cartItems.length > 0 ? (isFreeShipping ? 0 : SHIPPING_CHARGE) : 0;
+  const shippingCost = cartItems.length > 0 ? (settings?.codDeliveryAmount || 100) : 0;
   const total = subtotal + shippingCost;
-  const amountToFreeShipping = FREE_SHIPPING_THRESHOLD - subtotal;
 
   if (loading) {
     return (
@@ -159,8 +163,8 @@ export default function Cart() {
 
   if (cartItems.length === 0) {
     return (
-      <div className="min-h-screen bg-brand-surface text-brand-on-surface pt-24 pb-32">
-        <main className="max-w-[1280px] mx-auto px-6 pt-8">
+      <div className="min-h-screen bg-brand-surface text-brand-on-surface pt-20 pb-16">
+        <main className="max-w-[1280px] mx-auto px-6 pt-4">
           <motion.div
             className="flex flex-col items-center justify-center py-32 text-center"
             initial={{ opacity: 0, scale: 0.9 }}
@@ -184,16 +188,16 @@ export default function Cart() {
   }
 
   return (
-    <div className="min-h-screen bg-brand-surface text-brand-on-surface pt-24 pb-32">
+    <div className="min-h-screen bg-brand-surface text-brand-on-surface pt-20 pb-16">
       <>
         <title>Shopping Cart | 6YARD STORE</title>
         <meta name="description" content="View your premium football kits and sports training gear in your shopping cart. Fast and secure checkout with free shipping over ₹1000." />
         <meta name="robots" content="noindex, follow" />
       </>
 
-      <main className="max-w-[1280px] mx-auto px-6 pt-8">
+      <main className="max-w-[1280px] mx-auto px-6 pt-4">
         {/* Breadcrumbs */}
-        <nav className="flex items-center space-x-2 text-[10px] font-sans text-brand-on-surface-variant mb-8 uppercase tracking-widest">
+        <nav className="flex items-center space-x-2 text-[10px] font-sans text-brand-on-surface-variant mb-4 uppercase tracking-widest">
           <Link className="hover:text-brand-primary transition-colors" href="/">Home</Link>
           <ChevronRight size={14} />
           <span className="text-brand-on-surface font-black">Cart</span>
@@ -209,44 +213,7 @@ export default function Cart() {
               </span>
             </div>
 
-            {/* Free Shipping Progress Bar */}
-            {!isFreeShipping && (
-              <motion.div
-                className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/60 rounded-2xl p-5"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <Truck size={18} className="text-amber-600" />
-                  <span className="font-sans text-sm font-bold text-amber-800">
-                    Add ₹{amountToFreeShipping.toFixed(2)} more for <span className="text-green-700">FREE shipping!</span>
-                  </span>
-                </div>
-                <div className="w-full bg-amber-200/50 rounded-full h-2 overflow-hidden">
-                  <motion.div
-                    className="h-full bg-gradient-to-r from-amber-400 to-green-500 rounded-full"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${Math.min((subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100)}%` }}
-                    transition={{ duration: 0.8, ease: "easeOut" }}
-                  />
-                </div>
-              </motion.div>
-            )}
 
-            {isFreeShipping && (
-              <motion.div
-                className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200/60 rounded-2xl p-5 flex items-center gap-3"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                  <Sparkles size={16} className="text-green-600" />
-                </div>
-                <span className="font-sans text-sm font-bold text-green-800">
-                  🎉 You've unlocked <span className="text-green-700">FREE shipping!</span>
-                </span>
-              </motion.div>
-            )}
 
             {/* Cart Items List */}
             <div className="space-y-4">
@@ -354,8 +321,8 @@ export default function Cart() {
 
                 <div className="flex justify-between items-center text-xs md:text-sm text-brand-on-surface-variant">
                   <span>Shipping</span>
-                  <span className={`font-bold text-xs uppercase tracking-widest ${isFreeShipping ? 'text-green-600' : 'text-brand-on-surface'}`}>
-                    {isFreeShipping ? 'FREE' : `₹${SHIPPING_CHARGE.toFixed(2)}`}
+                  <span className="font-bold text-xs uppercase tracking-widest text-brand-on-surface">
+                    ₹{shippingCost.toFixed(2)}
                   </span>
                 </div>
 
@@ -392,13 +359,7 @@ export default function Cart() {
             </div>
 
             {/* Trust Badges */}
-            <div className="grid grid-cols-3 gap-4 py-4">
-              <div className="flex flex-col items-center text-center gap-2">
-                <div className="w-12 h-12 bg-brand-surface-low rounded-full flex items-center justify-center">
-                  <Truck className="text-brand-on-surface-variant" size={20} />
-                </div>
-                <span className="font-sans text-[10px] uppercase tracking-widest font-bold text-brand-on-surface-variant">Free Delivery<br />over ₹1000</span>
-              </div>
+            <div className="grid grid-cols-2 gap-4 py-4">
               <div className="flex flex-col items-center text-center gap-2">
                 <div className="w-12 h-12 bg-brand-surface-low rounded-full flex items-center justify-center">
                   <ShieldCheck className="text-brand-on-surface-variant" size={20} />
@@ -419,11 +380,38 @@ export default function Cart() {
         <section className="mt-24 border-t border-brand-surface-normal pt-16">
           <h2 className="font-h text-[32px] font-bold mb-10 text-center uppercase tracking-widest text-brand-primary/20">You Might Also Like</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {RELATED_PRODUCTS.map((product) => (
-              <div key={product.id}>
-                <ProductCard product={product} />
-              </div>
-            ))}
+            {relatedProducts.length > 0 ? (
+              relatedProducts.map((product) => {
+                const mappedProduct: Product = {
+                  _id: product._id,
+                  id: product._id,
+                  name: product.name,
+                  category: product.category,
+                  price: product.discount_price || product.price,
+                  originalPrice: product.discount_price ? product.price : undefined,
+                  images: product.images || [],
+                  image: product.images?.[0] || 'https://via.placeholder.com/400',
+                  isNew: true,
+                  isSale: !!product.discount_price
+                };
+                return (
+                  <div key={product._id}>
+                    <ProductCard product={mappedProduct} />
+                  </div>
+                );
+              })
+            ) : (
+              Array.from({ length: 4 }).map((_, idx) => (
+                <div key={idx} className="bg-white rounded-3xl border border-brand-surface-normal p-4 space-y-4 animate-pulse">
+                  <div className="aspect-[3/4] bg-brand-surface-normal/40 rounded-2xl w-full" />
+                  <div className="h-3.5 bg-brand-surface-normal/50 rounded-full w-1/3" />
+                  <div className="space-y-2">
+                    <div className="h-5 bg-brand-surface-normal/60 rounded-full w-11/12" />
+                    <div className="h-5 bg-brand-surface-normal/60 rounded-full w-2/3" />
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </section>
       </main>
@@ -460,21 +448,21 @@ export default function Cart() {
                       <ChevronLeft size={16} /> Back to addresses
                     </button>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <input type="text" placeholder="Full Name" required value={newAddress.name} className="w-full px-4 py-3 bg-brand-surface border border-brand-surface-normal rounded-xl font-sans text-sm" onChange={e => setNewAddress({...newAddress, name: e.target.value})} />
-                      <input type="tel" placeholder="Phone Number" required value={newAddress.phone} className="w-full px-4 py-3 bg-brand-surface border border-brand-surface-normal rounded-xl font-sans text-sm" onChange={e => setNewAddress({...newAddress, phone: e.target.value})} />
-                      <input type="text" placeholder="Pincode" required value={newAddress.pincode} className="w-full px-4 py-3 bg-brand-surface border border-brand-surface-normal rounded-xl font-sans text-sm" onChange={e => setNewAddress({...newAddress, pincode: e.target.value})} />
-                      <input type="text" placeholder="Locality" required value={newAddress.locality} className="w-full px-4 py-3 bg-brand-surface border border-brand-surface-normal rounded-xl font-sans text-sm" onChange={e => setNewAddress({...newAddress, locality: e.target.value})} />
+                      <input type="text" placeholder="Full Name" required value={newAddress.name} className="w-full px-4 py-3 bg-brand-surface border border-brand-surface-normal rounded-xl font-sans text-sm" onChange={e => setNewAddress({ ...newAddress, name: e.target.value })} />
+                      <input type="tel" placeholder="Phone Number" required value={newAddress.phone} className="w-full px-4 py-3 bg-brand-surface border border-brand-surface-normal rounded-xl font-sans text-sm" onChange={e => setNewAddress({ ...newAddress, phone: e.target.value })} />
+                      <input type="text" placeholder="Pincode" required value={newAddress.pincode} className="w-full px-4 py-3 bg-brand-surface border border-brand-surface-normal rounded-xl font-sans text-sm" onChange={e => setNewAddress({ ...newAddress, pincode: e.target.value })} />
+                      <input type="text" placeholder="Locality" required value={newAddress.locality} className="w-full px-4 py-3 bg-brand-surface border border-brand-surface-normal rounded-xl font-sans text-sm" onChange={e => setNewAddress({ ...newAddress, locality: e.target.value })} />
                     </div>
-                    <textarea placeholder="House/Flat Number & Street Address" required value={newAddress.address} rows={3} className="w-full px-4 py-3 bg-brand-surface border border-brand-surface-normal rounded-xl font-sans resize-none text-sm" onChange={e => setNewAddress({...newAddress, address: e.target.value})} />
-                    <input type="text" placeholder="Landmark (Optional)" value={newAddress.landmark} className="w-full px-4 py-3 bg-brand-surface border border-brand-surface-normal rounded-xl font-sans text-sm" onChange={e => setNewAddress({...newAddress, landmark: e.target.value})} />
+                    <textarea placeholder="House/Flat Number & Street Address" required value={newAddress.address} rows={3} className="w-full px-4 py-3 bg-brand-surface border border-brand-surface-normal rounded-xl font-sans resize-none text-sm" onChange={e => setNewAddress({ ...newAddress, address: e.target.value })} />
+                    <input type="text" placeholder="Landmark (Optional)" value={newAddress.landmark} className="w-full px-4 py-3 bg-brand-surface border border-brand-surface-normal rounded-xl font-sans text-sm" onChange={e => setNewAddress({ ...newAddress, landmark: e.target.value })} />
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <input type="text" placeholder="City" required value={newAddress.city} className="w-full px-4 py-3 bg-brand-surface border border-brand-surface-normal rounded-xl font-sans text-sm" onChange={e => setNewAddress({...newAddress, city: e.target.value})} />
-                      <input type="text" placeholder="State" required value={newAddress.state} className="w-full px-4 py-3 bg-brand-surface border border-brand-surface-normal rounded-xl font-sans text-sm" onChange={e => setNewAddress({...newAddress, state: e.target.value})} />
-                      <input type="text" placeholder="Country" required value={newAddress.country} className="w-full px-4 py-3 bg-brand-surface border border-brand-surface-normal rounded-xl font-sans text-sm" onChange={e => setNewAddress({...newAddress, country: e.target.value})} />
+                      <input type="text" placeholder="City" required value={newAddress.city} className="w-full px-4 py-3 bg-brand-surface border border-brand-surface-normal rounded-xl font-sans text-sm" onChange={e => setNewAddress({ ...newAddress, city: e.target.value })} />
+                      <input type="text" placeholder="State" required value={newAddress.state} className="w-full px-4 py-3 bg-brand-surface border border-brand-surface-normal rounded-xl font-sans text-sm" onChange={e => setNewAddress({ ...newAddress, state: e.target.value })} />
+                      <input type="text" placeholder="Country" required value={newAddress.country} className="w-full px-4 py-3 bg-brand-surface border border-brand-surface-normal rounded-xl font-sans text-sm" onChange={e => setNewAddress({ ...newAddress, country: e.target.value })} />
                     </div>
                     <div className="flex gap-4">
                       {['Home', 'Work'].map(type => (
-                        <button key={type} type="button" onClick={() => setNewAddress({...newAddress, addressType: type})} className={`flex-1 py-3 rounded-xl font-sans font-bold text-xs uppercase tracking-widest border-2 transition-all ${newAddress.addressType === type ? 'border-brand-primary bg-brand-primary/5 text-brand-primary' : 'border-brand-surface-normal text-brand-on-surface-variant'}`}>
+                        <button key={type} type="button" onClick={() => setNewAddress({ ...newAddress, addressType: type })} className={`flex-1 py-3 rounded-xl font-sans font-bold text-xs uppercase tracking-widest border-2 transition-all ${newAddress.addressType === type ? 'border-brand-primary bg-brand-primary/5 text-brand-primary' : 'border-brand-surface-normal text-brand-on-surface-variant'}`}>
                           {type}
                         </button>
                       ))}
@@ -495,8 +483,8 @@ export default function Cart() {
                       </button>
                     )}
                     {user?.addresses?.map((addr: any) => (
-                      <div 
-                        key={addr._id} 
+                      <div
+                        key={addr._id}
                         onClick={() => setSelectedAddressId(addr._id)}
                         className={`p-6 rounded-2xl border-2 cursor-pointer transition-all ${selectedAddressId === addr._id ? 'border-brand-primary bg-brand-primary/5 shadow-md scale-[1.02]' : 'border-brand-surface-normal hover:border-brand-primary-hover'}`}
                       >
@@ -506,7 +494,7 @@ export default function Cart() {
                             <h3 className="font-bold text-brand-on-surface">{addr.name}</h3>
                           </div>
                           <div className="flex items-center gap-3">
-                            <button 
+                            <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setNewAddress({
@@ -543,7 +531,7 @@ export default function Cart() {
 
               {!isAddingAddress && (
                 <div className="p-8 border-t border-brand-surface-normal bg-brand-surface-lowest">
-                  <button 
+                  <button
                     disabled={!selectedAddressId}
                     onClick={handleCheckout}
                     className="w-full bg-black text-white py-4 rounded-2xl font-sans font-bold uppercase tracking-widest text-xs hover:bg-gray-800 transition-all shadow-xl disabled:opacity-50"

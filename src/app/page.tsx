@@ -194,7 +194,7 @@ export default function Home() {
                   src={banners[currentBannerIndex]?.imageUrl || heroBanner}
                   alt="Sports hero"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end px-6 md:px-12 pb-12 md:pb-20 max-w-[1280px] mx-auto">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end px-6 md:px-[50px] pb-12 md:pb-20 w-full">
                   <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -239,7 +239,7 @@ export default function Home() {
         {/* Categories Section */}
         {categories.length > 0 && (
           <section className="py-3 bg-white w-full">
-            <div className="px-2 md:px-3 max-w-[1280px] mx-auto">
+            <div className="px-2 md:px-[50px] w-full">
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
                 {categories.map((cat, idx) => (
                   <motion.div
@@ -275,16 +275,16 @@ export default function Home() {
 
 
         {/* Trending Section */}
-        <section className="py-20 overflow-hidden">
-          <div className="max-w-[1280px] mx-auto px-6 md:px-12 mb-10">
+        <section className="py-20 overflow-hidden w-full px-6 md:px-[50px]">
+          <div className="mb-10">
             <h2 className="font-h text-[32px] font-bold">Trending Now</h2>
           </div>
 
-          <div className="flex gap-4 md:gap-6 overflow-x-auto pb-10 px-6 md:px-[calc((100vw-min(1280px,100vw-48px))/2)] no-scrollbar scroll-smooth">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6 pb-10">
             {loading ? (
               // Show loading skeleton cards in horizontal scroll (e.g., 4 items)
               Array.from({ length: 4 }).map((_, idx) => (
-                <div key={idx} className="w-[165px] md:w-[280px] bg-white rounded-2xl md:rounded-3xl border border-brand-surface-normal p-3 md:p-4 space-y-3 md:space-y-4 animate-pulse flex-shrink-0">
+                <div key={idx} className="bg-white rounded-2xl md:rounded-3xl border border-brand-surface-normal p-3 md:p-4 space-y-3 md:space-y-4 animate-pulse">
                   <div className="aspect-[3/4] bg-brand-surface-normal/40 rounded-xl md:rounded-2xl w-full" />
                   <div className="h-3 bg-brand-surface-normal/50 rounded-full w-1/3" />
                   <div className="space-y-2">
@@ -301,6 +301,7 @@ export default function Home() {
               products.map((product) => {
                 const displayPrice = product.discount_price ? product.discount_price : product.price;
                 const originalPrice = product.discount_price ? product.price : undefined;
+                const isSoldOut = product.stock <= 0;
                 const mappedProduct: Product = {
                   _id: product._id,
                   id: product._id,
@@ -310,11 +311,14 @@ export default function Home() {
                   originalPrice: originalPrice,
                   images: product.images || [],
                   image: product.images?.[0] || 'https://images.unsplash.com/photo-1541002442-9f5985aa8023',
-                  isNew: true,
-                  isSale: !!product.discount_price
+                  isNew: product.isNew || false,
+                  isSale: !!product.discount_price,
+                  stock: product.stock,
+                  salesTag: isSoldOut ? "Sold Out" : product.salesTag,
+                  salesTagColor: isSoldOut ? "#333333" : product.salesTagColor
                 };
                 return (
-                  <div key={product._id} className="w-[165px] md:w-[280px] flex-shrink-0">
+                  <div key={product._id} className="w-full">
                     <ProductCard product={mappedProduct} />
                   </div>
                 );

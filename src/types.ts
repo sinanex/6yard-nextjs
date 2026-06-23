@@ -16,6 +16,7 @@ export interface Product {
   stock?: number;
   isAvailable?: boolean;
   sizes?: string[];
+  sizeStocks?: { size: string; stock: number }[];
   colors?: string[];
   rating?: number;
   reviews_count?: number;
