@@ -121,6 +121,7 @@ export default function ProductDetail() {
   const [touchStartY, setTouchStartY] = useState<number | null>(null);
   const [lastTap, setLastTap] = useState<number>(0);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<'cart' | 'buy' | null>(null);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
 
   const [reviewsList, setReviewsList] = useState<{ rating: number, text: string, name: string, date: string, images?: string[] }[]>([]);
@@ -355,8 +356,17 @@ export default function ProductDetail() {
       });
   }, [id]);
 
-  const handleAddToCart = async () => {
+  const handleAddToCart = async (skipAuthCheck = false) => {
     if (!product) return;
+
+    if (!skipAuthCheck && typeof window !== 'undefined') {
+      const token = localStorage.getItem('userToken');
+      if (!token) {
+        setPendingAction('cart');
+        setIsAuthModalOpen(true);
+        return;
+      }
+    }
 
     setIsAdding(true);
     try {
@@ -369,8 +379,17 @@ export default function ProductDetail() {
     }
   };
 
-  const handleBuyNow = async () => {
+  const handleBuyNow = async (skipAuthCheck = false) => {
     if (!product) return;
+
+    if (!skipAuthCheck && typeof window !== 'undefined') {
+      const token = localStorage.getItem('userToken');
+      if (!token) {
+        setPendingAction('buy');
+        setIsAuthModalOpen(true);
+        return;
+      }
+    }
 
     setIsBuying(true);
     try {
@@ -590,7 +609,7 @@ export default function ProductDetail() {
           {/* Action Buttons */}
           <div className="flex flex-col md:flex-row gap-4">
             <button
-              onClick={handleAddToCart}
+              onClick={() => handleAddToCart()}
               disabled={isAdding || isBuying}
               className="w-full bg-white border-2 border-brand-surface-normal hover:border-brand-primary text-brand-on-surface font-sans font-bold py-5 rounded-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed">
               <AnimatePresence mode="wait">
@@ -626,7 +645,7 @@ export default function ProductDetail() {
             </button>
 
             <button
-              onClick={handleBuyNow}
+              onClick={() => handleBuyNow()}
               disabled={isAdding || isBuying}
               className="w-full bg-brand-primary hover:bg-brand-primary-hover text-white font-sans font-bold py-5 rounded-xl shadow-2xl shadow-brand-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed">
               <AnimatePresence mode="wait">
@@ -816,8 +835,15 @@ export default function ProductDetail() {
 
       <AuthModal
         isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        onSuccess={() => handleAddToCart()}
+        onClose={() => {
+          setIsAuthModalOpen(false);
+          setPendingAction(null);
+        }}
+        onSuccess={() => {
+          if (pendingAction === 'cart') handleAddToCart(true);
+          else if (pendingAction === 'buy') handleBuyNow(true);
+          setPendingAction(null);
+        }}
       />
     </main>
   );

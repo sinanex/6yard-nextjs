@@ -25,6 +25,9 @@ import {
   ImagePlus,
   Link2,
   Settings as SettingsIcon,
+  Cloud,
+  Database,
+  Activity
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { API_BASE_URL } from '@/config';
@@ -241,6 +244,7 @@ const AdminDashboard = () => {
   // Edit mode state variables
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingProductId, setEditingProductId] = useState<any>(null);
+  const [cloudinaryUsage, setCloudinaryUsage] = useState<any>(null);
 
   // Multi-Product Form State
   const initialProductState = {
@@ -308,6 +312,9 @@ const AdminDashboard = () => {
     if (activeTab === 'orders' || activeTab === 'dashboard') {
       fetchProducts();
     }
+    if (activeTab === 'dashboard') {
+      fetchCloudinaryUsage();
+    }
     if (activeTab === 'categories' || activeTab === 'products') {
       fetchCategories();
       fetchTeams();
@@ -338,6 +345,21 @@ const AdminDashboard = () => {
       }
     } catch (error) {
       console.error('Error fetching orders:', error);
+    }
+  };
+
+  const fetchCloudinaryUsage = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(`${API_BASE_URL}/api/settings/cloudinary-usage`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setCloudinaryUsage(data);
+      }
+    } catch (error) {
+      console.error('Error fetching cloudinary usage:', error);
     }
   };
 
@@ -901,7 +923,80 @@ const AdminDashboard = () => {
               </motion.div>
             </div>
 
-            <div className="bg-white p-4 md:p-6 rounded-xl shadow-xl border border-brand-surface-normal">
+            {/* Cloudinary Usage Section */}
+            {cloudinaryUsage && (
+              <div className="bg-white p-4 md:p-6 rounded-xl shadow-xl border border-brand-surface-normal mt-6">
+                <h3 className="font-h text-lg font-bold mb-6 flex items-center gap-2">
+                  <Cloud size={20} className="text-blue-500" /> Media & Storage Usage (Cloudinary)
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                  <div className="bg-brand-surface p-4 rounded-lg border border-brand-surface-normal relative overflow-hidden group">
+                    <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 transition-transform">
+                      <Database size={100} />
+                    </div>
+                    <p className="font-sans text-[10px] uppercase tracking-widest font-bold text-brand-on-surface-variant opacity-60 mb-2">Storage Used</p>
+                    <div className="flex items-end gap-2">
+                      <p className="font-h text-2xl font-bold text-brand-on-surface">
+                        {cloudinaryUsage.storage ? (cloudinaryUsage.storage.usage / (1024 * 1024 * 1024)).toFixed(2) : 0} <span className="text-sm">GB</span>
+                      </p>
+                      <p className="text-xs text-brand-on-surface-variant opacity-60 mb-1">
+                        / {cloudinaryUsage.storage ? (cloudinaryUsage.storage.limit / (1024 * 1024 * 1024)).toFixed(2) : 0} GB Limit
+                      </p>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-1.5 mt-3">
+                      <div 
+                        className="bg-blue-500 h-1.5 rounded-full" 
+                        style={{ width: `${cloudinaryUsage.storage ? (cloudinaryUsage.storage.usage / cloudinaryUsage.storage.limit) * 100 : 0}%` }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div className="bg-brand-surface p-4 rounded-lg border border-brand-surface-normal relative overflow-hidden group">
+                    <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 transition-transform">
+                      <Activity size={100} />
+                    </div>
+                    <p className="font-sans text-[10px] uppercase tracking-widest font-bold text-brand-on-surface-variant opacity-60 mb-2">Bandwidth Used (Last 30 Days)</p>
+                    <div className="flex items-end gap-2">
+                      <p className="font-h text-2xl font-bold text-brand-on-surface">
+                        {cloudinaryUsage.bandwidth ? (cloudinaryUsage.bandwidth.usage / (1024 * 1024 * 1024)).toFixed(2) : 0} <span className="text-sm">GB</span>
+                      </p>
+                      <p className="text-xs text-brand-on-surface-variant opacity-60 mb-1">
+                        / {cloudinaryUsage.bandwidth ? (cloudinaryUsage.bandwidth.limit / (1024 * 1024 * 1024)).toFixed(2) : 0} GB Limit
+                      </p>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-1.5 mt-3">
+                      <div 
+                        className="bg-purple-500 h-1.5 rounded-full" 
+                        style={{ width: `${cloudinaryUsage.bandwidth ? (cloudinaryUsage.bandwidth.usage / cloudinaryUsage.bandwidth.limit) * 100 : 0}%` }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div className="bg-brand-surface p-4 rounded-lg border border-brand-surface-normal relative overflow-hidden group">
+                    <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 transition-transform">
+                      <Cloud size={100} />
+                    </div>
+                    <p className="font-sans text-[10px] uppercase tracking-widest font-bold text-brand-on-surface-variant opacity-60 mb-2">Total Credits Used</p>
+                    <div className="flex items-end gap-2">
+                      <p className="font-h text-2xl font-bold text-brand-on-surface">
+                        {cloudinaryUsage.credits ? cloudinaryUsage.credits.usage.toFixed(2) : 0} 
+                      </p>
+                      <p className="text-xs text-brand-on-surface-variant opacity-60 mb-1">
+                        / {cloudinaryUsage.credits ? cloudinaryUsage.credits.limit : 0} Limit
+                      </p>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-1.5 mt-3">
+                      <div 
+                        className="bg-green-500 h-1.5 rounded-full" 
+                        style={{ width: `${cloudinaryUsage.credits ? (cloudinaryUsage.credits.usage / cloudinaryUsage.credits.limit) * 100 : 0}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="bg-white p-4 md:p-6 rounded-xl shadow-xl border border-brand-surface-normal mt-6">
               <h3 className="font-h text-lg font-bold mb-8">Recently Added Products</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:p-6">
                 {products.slice(0, 5).map(product => (
