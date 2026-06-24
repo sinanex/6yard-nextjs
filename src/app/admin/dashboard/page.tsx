@@ -226,6 +226,7 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [orderSearchQuery, setOrderSearchQuery] = useState('');
+  const [orderCurrentPage, setOrderCurrentPage] = useState(1);
   const [orderFilterFromDate, setOrderFilterFromDate] = useState('');
   const [orderFilterToDate, setOrderFilterToDate] = useState('');
   const [orderFilterPayment, setOrderFilterPayment] = useState('all');
@@ -1664,20 +1665,20 @@ const AdminDashboard = () => {
                 <label className="block text-xs font-bold text-brand-on-surface-variant opacity-60 mb-1">Search</label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-on-surface-variant opacity-40" size={16} />
-                  <input type="text" placeholder="ID, Name, Phone, Tracking" value={orderSearchQuery} onChange={(e) => setOrderSearchQuery(e.target.value)} className="w-full pl-9 pr-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none text-sm" />
+                  <input type="text" placeholder="ID, Name, Phone, Tracking" value={orderSearchQuery} onChange={(e) => { setOrderSearchQuery(e.target.value); setOrderCurrentPage(1); }} className="w-full pl-9 pr-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none text-sm" />
                 </div>
               </div>
               <div>
                 <label className="block text-xs font-bold text-brand-on-surface-variant opacity-60 mb-1">From Date</label>
-                <input type="date" value={orderFilterFromDate} onChange={(e) => setOrderFilterFromDate(e.target.value)} className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none text-sm" />
+                <input type="date" value={orderFilterFromDate} onChange={(e) => { setOrderFilterFromDate(e.target.value); setOrderCurrentPage(1); }} className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none text-sm" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-brand-on-surface-variant opacity-60 mb-1">To Date</label>
-                <input type="date" value={orderFilterToDate} onChange={(e) => setOrderFilterToDate(e.target.value)} className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none text-sm" />
+                <input type="date" value={orderFilterToDate} onChange={(e) => { setOrderFilterToDate(e.target.value); setOrderCurrentPage(1); }} className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none text-sm" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-brand-on-surface-variant opacity-60 mb-1">Payment Method</label>
-                <select value={orderFilterPayment} onChange={(e) => setOrderFilterPayment(e.target.value)} className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none text-sm cursor-pointer">
+                <select value={orderFilterPayment} onChange={(e) => { setOrderFilterPayment(e.target.value); setOrderCurrentPage(1); }} className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none text-sm cursor-pointer">
                   <option value="all">All Methods</option>
                   <option value="online">Online Payment</option>
                   <option value="cod">Cash on Delivery</option>
@@ -1685,7 +1686,7 @@ const AdminDashboard = () => {
               </div>
               <div>
                 <label className="block text-xs font-bold text-brand-on-surface-variant opacity-60 mb-1">Status</label>
-                <select value={orderFilterStatus} onChange={(e) => setOrderFilterStatus(e.target.value)} className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none text-sm cursor-pointer">
+                <select value={orderFilterStatus} onChange={(e) => { setOrderFilterStatus(e.target.value); setOrderCurrentPage(1); }} className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none text-sm cursor-pointer">
                   <option value="all">All Statuses</option>
                   <option value="Processing">Processing</option>
                   <option value="Shipped">Shipped</option>
@@ -1707,7 +1708,7 @@ const AdminDashboard = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-brand-surface-normal">
-                  {filteredOrders.map((order) => (
+                  {filteredOrders.slice((orderCurrentPage - 1) * 20, orderCurrentPage * 20).map((order) => (
                     <tr
                       key={order._id}
                       onClick={() => {
@@ -1786,6 +1787,28 @@ const AdminDashboard = () => {
                 </tbody>
               </table>
             </div>
+
+            {filteredOrders.length > 20 && (
+              <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-brand-surface-normal">
+                <button
+                  onClick={() => setOrderCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={orderCurrentPage === 1}
+                  className="px-4 py-2 bg-brand-surface rounded-lg disabled:opacity-50 text-sm font-bold text-brand-on-surface hover:bg-brand-surface-normal transition-colors"
+                >
+                  &larr; Previous
+                </button>
+                <span className="text-sm font-bold text-brand-on-surface-variant opacity-80">
+                  Page {orderCurrentPage} of {Math.ceil(filteredOrders.length / 20)}
+                </span>
+                <button
+                  onClick={() => setOrderCurrentPage(p => Math.min(Math.ceil(filteredOrders.length / 20), p + 1))}
+                  disabled={orderCurrentPage >= Math.ceil(filteredOrders.length / 20)}
+                  className="px-4 py-2 bg-brand-surface rounded-lg disabled:opacity-50 text-sm font-bold text-brand-on-surface hover:bg-brand-surface-normal transition-colors"
+                >
+                  Next &rarr;
+                </button>
+              </div>
+            )}
           </div>
         );
       }
