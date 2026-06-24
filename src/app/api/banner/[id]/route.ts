@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import Banner from '@/models/Banner';
 import { verifyAuth } from '@/lib/auth';
-import { uploadToCloudinary } from '@/lib/cloudinary';
+import { uploadToCloudinary, deleteFromCloudinary } from '@/lib/cloudinary';
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -46,6 +46,21 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     const id = (await params).id;
     const banner = await (Banner as any).findByIdAndDelete(id);
     if (!banner) return NextResponse.json({ message: 'Banner not found' }, { status: 404 });
+
+    if (banner.imageUrl) {
+      try {
+        const uploadIndex = banner.imageUrl.indexOf('/upload/');
+        if (uploadIndex !== -1) {
+          const afterUpload = banner.imageUrl.substring(uploadIndex + 8);
+          const withoutVersion = afterUpload.substring(afterUpload.indexOf('/') + 1);
+          const publicId = withoutVersion.substring(0, withoutVersion.lastIndexOf('.'));
+          if (publicId) await deleteFromCloudinary(publicId);
+        }
+      } catch (e) {
+        console.error("Failed to delete banner image from Cloudinary", banner.imageUrl, e);
+      }
+    }
+
     return NextResponse.json({ message: 'Banner deleted successfully' });
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });

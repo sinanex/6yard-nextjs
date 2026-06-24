@@ -182,14 +182,14 @@ const SearchableMultiDropdown = ({
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search colors..."
+              placeholder="Search..."
               className="w-full px-3 py-1.5 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-black focus:border-black"
               autoFocus
             />
           </div>
           <div className="py-1">
             {filteredOptions.length === 0 ? (
-              <div className="px-4 py-2 text-sm text-gray-500">No colors found</div>
+              <div className="px-4 py-2 text-sm text-gray-500">No options found</div>
             ) : (
               filteredOptions.map((option, idx) => {
                 const isChecked = selectedValues.includes(option);
@@ -255,7 +255,7 @@ const AdminDashboard = () => {
     description: '',
     brand: '',
     team: '',
-    category: '',
+    category: [],
     subcategory: '',
     price: '',
     discount_price: '',
@@ -709,7 +709,7 @@ const AdminDashboard = () => {
     // Required fields validation
     for (let i = 0; i < productForms.length; i++) {
       const f = productForms[i];
-      if (!f.name || !f.category || !f.price) {
+      if (!f.name || !f.category || f.category.length === 0 || !f.price) {
         alert(`Please fill in all required fields (Product Name, Category, Price) for Product #${i + 1}!`);
         return;
       }
@@ -726,13 +726,16 @@ const AdminDashboard = () => {
         if (key === 'sizeStocks') {
           const validSizeStocks = form[key].filter((s: any) => s.size && s.stock !== '');
           formData.append(key, JSON.stringify(validSizeStocks));
-        } else if (key === 'sizes' || key === 'colors') {
-          const arr = form[key]
-            ? form[key]
+        } else if (key === 'sizes' || key === 'colors' || key === 'category') {
+          let arr = [];
+          if (Array.isArray(form[key])) {
+            arr = form[key];
+          } else if (form[key]) {
+            arr = form[key]
               .split(',')
               .map((item: any) => item.trim())
-              .filter((item: any) => item !== '')
-            : [];
+              .filter((item: any) => item !== '');
+          }
 
           formData.append(key, JSON.stringify(arr));
         } else {
@@ -778,7 +781,7 @@ const AdminDashboard = () => {
     if (e) e.preventDefault();
 
     const form = productForms[0];
-    if (!form.name || !form.category || !form.price) {
+    if (!form.name || !form.category || form.category.length === 0 || !form.price) {
       alert('Please fill in all required fields (Product Name, Category, Price)!');
       return;
     }
@@ -796,7 +799,7 @@ const AdminDashboard = () => {
         if (key === 'sizeStocks') {
           const validSizeStocks = form[key].filter((s: any) => s.size && s.stock !== '');
           formData.append(key, JSON.stringify(validSizeStocks));
-        } else if (key === 'sizes' || key === 'colors') {
+        } else if (key === 'sizes' || key === 'colors' || key === 'category') {
           const val = form[key];
           const arr = typeof val === 'string'
             ? val.split(',').map((item: any) => item.trim()).filter((item: any) => item !== '')
@@ -1186,9 +1189,9 @@ const AdminDashboard = () => {
 
                     <div>
                       <label className="block font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-2 ml-2">Category*</label>
-                      <SearchableDropdown
+                      <SearchableMultiDropdown
                         options={categories.map(c => c.name)}
-                        value={form.category}
+                        selectedValues={form.category}
                         onChange={(val) => handleDirectFieldChange(index, 'category', val)}
                         placeholder="Search Category..."
                       />
@@ -1505,7 +1508,7 @@ const AdminDashboard = () => {
                       </td>
                       <td className="px-4 py-2">
                         <div className="flex flex-col gap-1">
-                          <span className="text-sm text-gray-500 text-brand-on-surface-variant opacity-80">{product.category}</span>
+                          <span className="text-sm text-gray-500 text-brand-on-surface-variant opacity-80">{Array.isArray(product.category) ? product.category.join(', ') : product.category}</span>
                         </div>
                       </td>
                       <td className="px-4 py-2 max-w-[200px]">
@@ -1546,7 +1549,7 @@ const AdminDashboard = () => {
                                 description: product.description || '',
                                 brand: product.brand || '',
                                 team: product.team || '',
-                                category: product.category || '',
+                                category: Array.isArray(product.category) ? product.category : (product.category ? [product.category] : []),
                                 subcategory: product.subcategory || '',
                                 price: product.price || '',
                                 discount_price: product.discount_price || '',
@@ -1853,7 +1856,7 @@ const AdminDashboard = () => {
               .totals-table td.right { text-align: right; }
               .grand-total { border-top: 2px solid #000; border-bottom: 2px solid #000; font-weight: bold; font-size: 16px; }
               .grand-total td { padding: 10px 5px; }
-              .footer { margin-top: 40px; font-size: 10px; line-height: 1.4; color: #555; border-top: 1px dashed #ccc; padding-top: 10px; text-align: center; }
+              .footer { margin-top: 40px; font-size: 10px; line-height: 1.4; color: #555; border-top: 1pxpinn dashed #ccc; padding-top: 10px; text-align: center; }
               @media print {
                 body { padding: 0; }
               }

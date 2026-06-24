@@ -22,3 +22,15 @@ export const uploadToCloudinary = async (file: File, folder: string): Promise<st
     uploadStream.end(buffer);
   });
 };
+
+export const deleteFromCloudinary = async (publicId: string): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader.destroy(publicId, (error, result) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve();
+      }
+    });
+  });
+};

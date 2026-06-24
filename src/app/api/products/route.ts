@@ -41,6 +41,9 @@ export async function POST(req: NextRequest) {
     if (typeof productData.sizes === 'string') {
       try { productData.sizes = JSON.parse(productData.sizes); } catch (e) {}
     }
+    if (typeof productData.category === 'string' && productData.category.startsWith('[')) {
+      try { productData.category = JSON.parse(productData.category); } catch (e) {}
+    }
     if (typeof productData.colors === 'string') {
       try { productData.colors = JSON.parse(productData.colors); } catch (e) {}
     }

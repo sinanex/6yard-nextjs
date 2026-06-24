@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import Product from '@/models/Product';
 import { verifyAuth } from '@/lib/auth';
-import { uploadToCloudinary } from '@/lib/cloudinary';
+import { uploadToCloudinary, deleteFromCloudinary } from '@/lib/cloudinary';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -35,6 +35,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     if (typeof updateQuery.sizes === 'string') {
       try { updateQuery.sizes = JSON.parse(updateQuery.sizes); } catch (e) {}
+    }
+    if (typeof updateQuery.category === 'string' && updateQuery.category.startsWith('[')) {
+      try { updateQuery.category = JSON.parse(updateQuery.category); } catch (e) {}
     }
     if (typeof updateQuery.colors === 'string') {
       try { updateQuery.colors = JSON.parse(updateQuery.colors); } catch (e) {}
@@ -130,6 +133,25 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     const id = (await params).id;
     const deletedProduct = await (Product as any).findByIdAndDelete(id);
     if (!deletedProduct) return NextResponse.json({ message: 'Product not found' }, { status: 404 });
+
+    if (deletedProduct.images && Array.isArray(deletedProduct.images)) {
+      for (const imgUrl of deletedProduct.images) {
+        try {
+          const uploadIndex = imgUrl.indexOf('/upload/');
+          if (uploadIndex !== -1) {
+            const afterUpload = imgUrl.substring(uploadIndex + 8);
+            const withoutVersion = afterUpload.substring(afterUpload.indexOf('/') + 1);
+            const publicId = withoutVersion.substring(0, withoutVersion.lastIndexOf('.'));
+            if (publicId) {
+              await deleteFromCloudinary(publicId);
+            }
+          }
+        } catch (e) {
+          console.error("Failed to delete image from Cloudinary", imgUrl, e);
+        }
+      }
+    }
+
     return NextResponse.json({ message: 'Product deleted successfully' });
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
