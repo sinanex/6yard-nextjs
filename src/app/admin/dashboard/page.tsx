@@ -2029,31 +2029,38 @@ const AdminDashboard = () => {
                           <option value="Delivered">Delivered</option>
                         </select>
                      </div>
-                     <div className="flex-1">
-                       <label className="block text-xs font-bold text-brand-on-surface-variant opacity-60 mb-1">Tracking ID</label>
-                       <input
-                          type="text"
-                          placeholder="Enter Tracking ID..."
-                          defaultValue={order.trackingId || ''}
-                          onBlur={async (e) => {
-                            if (e.target.value !== order.trackingId) {
-                              const token = localStorage.getItem('adminToken');
-                              await fetch(`${API_BASE_URL}/api/orders/${order._id}/status`, {
-                                method: 'PUT',
-                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                                body: JSON.stringify({ status: order.status, trackingId: e.target.value })
-                              });
-                              fetchOrders();
-                            }
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') e.currentTarget.blur();
-                          }}
-                          className="w-full px-4 py-2.5 rounded-xl border border-brand-surface-normal outline-none focus:ring-2 focus:ring-brand-primary text-sm font-mono font-bold"
-                        />
+                     <div className="flex-1 flex gap-2 items-end">
+                       <div className="flex-1">
+                         <label className="block text-xs font-bold text-brand-on-surface-variant opacity-60 mb-1">Tracking ID</label>
+                         <input
+                            id={`tracking-input-${order._id}`}
+                            type="text"
+                            placeholder="Enter Tracking ID..."
+                            defaultValue={order.trackingId || ''}
+                            className="w-full px-4 py-2.5 rounded-xl border border-brand-surface-normal outline-none focus:ring-2 focus:ring-brand-primary text-sm font-mono font-bold"
+                          />
+                       </div>
+                       <button
+                         onClick={async () => {
+                           const val = (document.getElementById(`tracking-input-${order._id}`) as HTMLInputElement)?.value;
+                           if (val !== undefined && val !== order.trackingId) {
+                             const token = localStorage.getItem('adminToken');
+                             await fetch(`${API_BASE_URL}/api/orders/${order._id}/status`, {
+                               method: 'PUT',
+                               headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                               body: JSON.stringify({ status: order.status, trackingId: val })
+                             });
+                             fetchOrders();
+                           }
+                         }}
+                         className="bg-brand-primary text-white px-4 py-2.5 rounded-xl font-bold text-sm h-[42px] flex items-center justify-center shadow-md active:scale-95 transition-transform"
+                         title="Save Tracking ID"
+                       >
+                         <Check size={16} />
+                       </button>
                      </div>
                    </div>
-                   <p className="text-[10px] text-brand-on-surface-variant opacity-60 mt-3">* Changes are saved automatically when selecting a new status or pressing Enter on the Tracking ID.</p>
+                   <p className="text-[10px] text-brand-on-surface-variant opacity-60 mt-3">* Changes to Status are saved automatically. Click the check button to save the Tracking ID.</p>
                  </div>
 
                  {/* Order Items */}
