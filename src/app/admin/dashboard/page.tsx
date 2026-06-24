@@ -2043,6 +2043,7 @@ const AdminDashboard = () => {
                               headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                               body: JSON.stringify({ status: order.status, trackingId: val })
                             });
+                            alert('Updated');
                             fetchOrders();
                           }
                         }}
