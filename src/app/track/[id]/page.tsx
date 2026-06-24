@@ -94,34 +94,49 @@ export default function TrackOrder() {
             <span className="text-brand-on-surface font-black">Track Order</span>
           </nav>
 
-          {/* Order Snapshot */}
-          <section className="bg-brand-on-surface text-white rounded-[32px] p-8 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-            <div className="relative z-10 flex flex-col md:flex-row justify-between gap-8">
-              <div className="space-y-4">
-                <span className="font-sans font-black text-xs uppercase tracking-widest opacity-60">Shipment Status</span>
-                <h2 className="font-h text-3xl font-bold leading-tight">{order.status || 'Processing'}</h2>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
-                    <Truck size={24} className="text-white" />
-                  </div>
-                  <div>
-                    <p className="font-sans text-xs text-white/60">Estimated Delivery</p>
-                    <p className="font-h font-bold text-lg">{formatDateRange(deliveryStart, deliveryEnd)}</p>
-                  </div>
-                </div>
+          {/* Order Details */}
+          <section className="bg-white rounded-[32px] p-8 shadow-xl border border-brand-surface-normal">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+              <div>
+                <p className="font-sans font-black text-xs uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2">Order ID</p>
+                <p className="font-h text-xl font-bold text-brand-on-surface">{order._id?.slice(-8).toUpperCase()}</p>
               </div>
-              <div className="self-end text-right">
-                <p className="font-sans text-xs text-white/80 mb-2 font-bold tracking-widest uppercase">Order ID: {order._id?.slice(-8).toUpperCase()}</p>
-                <div className="bg-white/10 px-4 py-3 rounded-xl border border-white/20 mt-4">
-                  <p className="font-sans text-xs text-white/60 uppercase tracking-widest font-bold mb-1">
-                    {order.paymentMethod === 'cod' ? 'To Pay on Delivery' : 'Paid Online'}
-                  </p>
-                  <p className="font-h text-2xl font-black text-white">
+
+              <div>
+                <p className="font-sans font-black text-xs uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2">Status</p>
+                <span className={cn(
+                  "font-sans text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border inline-block mt-0.5",
+                  order.status === 'Delivered' ? "bg-green-50 text-green-600 border-green-200" :
+                  order.status === 'Shipped' ? "bg-amber-50 text-amber-600 border-amber-200" :
+                  "bg-blue-50 text-blue-600 border-blue-200"
+                )}>
+                  {order.status || 'Processing'}
+                </span>
+              </div>
+              
+              <div>
+                <p className="font-sans font-black text-xs uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2">Total Amount</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <p className="font-h text-xl font-bold text-brand-primary">
                     ₹{order.paymentMethod === 'cod' ? (order.totalAmount - (order.advancePaid || 60)).toFixed(2) : order.totalAmount?.toFixed(2)}
                   </p>
+                  <span className="text-[10px] uppercase font-black tracking-widest bg-brand-surface-low px-2 py-1 rounded-md text-brand-on-surface-variant opacity-80 border border-brand-surface-normal">
+                    {order.paymentMethod === 'cod' ? 'COD' : 'Paid'}
+                  </span>
                 </div>
               </div>
+
+              <div>
+                <p className="font-sans font-black text-xs uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2">Estimated Delivery</p>
+                <p className="font-h text-xl font-bold text-brand-on-surface">{formatDateRange(deliveryStart, deliveryEnd)}</p>
+              </div>
+
+              {order.trackingId && (
+                <div>
+                  <p className="font-sans font-black text-xs uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-2">Tracking ID</p>
+                  <p className="font-h text-xl font-bold text-brand-on-surface tracking-wider">{order.trackingId}</p>
+                </div>
+              )}
             </div>
           </section>
 
