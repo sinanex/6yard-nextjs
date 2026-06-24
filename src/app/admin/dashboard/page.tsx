@@ -916,32 +916,22 @@ const AdminDashboard = () => {
           { name: 'Delivered', value: deliveredOrders.length, color: '#22c55e' },
           { name: 'Processing', value: processingOrders.length, color: '#3b82f6' },
           { name: 'Shipped', value: shippedOrders.length, color: '#f59e0b' },
-          { name: 'Cancelled', value: cancelledOrders.length, color: '#ef4444' },
         ].filter(d => d.value > 0);
 
         return (
           <div className="space-y-6">
             <h2 className="font-h text-base font-bold text-brand-on-surface uppercase tracking-tight">Sales & Analytics Overview</h2>
 
-            {/* Top KPI Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                { label: 'Total Orders', value: orders.length, icon: <ShoppingCart size={22} />, color: 'blue', bg: 'bg-blue-50', text: 'text-blue-600' },
-                { label: 'Delivered', value: deliveredOrders.length, icon: <Check size={22} />, color: 'green', bg: 'bg-green-50', text: 'text-green-600' },
-                { label: 'Processing', value: processingOrders.length, icon: <Activity size={22} />, color: 'purple', bg: 'bg-purple-50', text: 'text-purple-600' },
-                { label: 'Cancelled', value: cancelledOrders.length, icon: <X size={22} />, color: 'red', bg: 'bg-red-50', text: 'text-red-600' },
-              ].map((card) => (
-                <motion.div key={card.label} whileHover={{ y: -4 }} className="bg-white p-4 md:p-5 rounded-xl shadow-xl shadow-brand-primary/5 border border-brand-surface-normal flex items-center gap-3 group">
-                  <div className={`w-10 h-10 ${card.bg} ${card.text} rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0`}>
-                    {card.icon}
-                  </div>
-                  <div>
-                    <p className="font-sans text-[9px] uppercase tracking-widest font-bold text-brand-on-surface-variant opacity-60 mb-0.5">{card.label}</p>
-                    <p className="font-h text-2xl md:text-3xl font-bold text-brand-on-surface">{card.value}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+            {/* Top KPI Card */}
+            <motion.div whileHover={{ y: -4 }} className="bg-white p-4 md:p-5 rounded-xl shadow-xl shadow-brand-primary/5 border border-brand-surface-normal flex items-center gap-3 group w-full md:w-64">
+              <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+                <ShoppingCart size={22} />
+              </div>
+              <div>
+                <p className="font-sans text-[9px] uppercase tracking-widest font-bold text-brand-on-surface-variant opacity-60 mb-0.5">Total Orders</p>
+                <p className="font-h text-2xl md:text-3xl font-bold text-brand-on-surface">{orders.length}</p>
+              </div>
+            </motion.div>
 
             {/* Revenue Summary */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -968,186 +958,83 @@ const AdminDashboard = () => {
               </motion.div>
             </div>
 
-            {/* Charts Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
-              {/* Weekly Sales Bar Chart */}
-              <div className="lg:col-span-3 bg-white p-4 md:p-6 rounded-xl shadow-xl border border-brand-surface-normal">
-                <h3 className="font-h text-base font-bold mb-6">Weekly Sales (Last 7 Days)</h3>
-                <div className="space-y-3">
-                  {weeklyData.map((d, i) => {
-                    const maxSales = Math.max(...weeklyData.map(x => x.sales), 1);
-                    const pct = (d.sales / maxSales) * 100;
-                    return (
-                      <div key={i} className="flex items-center gap-3">
-                        <span className="font-sans text-xs font-bold text-brand-on-surface-variant opacity-60 w-8 flex-shrink-0">{d.day}</span>
-                        <div className="flex-1 h-7 bg-brand-surface rounded-lg overflow-hidden relative">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${pct}%` }}
-                            transition={{ duration: 0.8, delay: i * 0.08, ease: 'easeOut' }}
-                            className="h-full bg-gradient-to-r from-brand-primary to-brand-primary-hover rounded-lg"
-                          />
-                          {d.sales > 0 && (
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white text-[10px] font-bold">₹{d.sales.toLocaleString('en-IN')}</span>
-                          )}
-                        </div>
-                        <span className="font-sans text-xs font-bold text-brand-on-surface-variant w-14 text-right flex-shrink-0">{d.orders} orders</span>
-                      </div>
-                    );
-                  })}
-                  {weeklyData.every(d => d.sales === 0) && (
-                    <p className="text-center text-brand-on-surface-variant opacity-50 font-sans text-sm py-6">No orders in the last 7 days.</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Order Status Pie Chart (custom) */}
-              <div className="lg:col-span-2 bg-white p-4 md:p-6 rounded-xl shadow-xl border border-brand-surface-normal">
-                <h3 className="font-h text-base font-bold mb-6">Order Status</h3>
-                {orders.length === 0 ? (
-                  <p className="text-center text-brand-on-surface-variant opacity-50 font-sans text-sm py-8">No orders yet.</p>
-                ) : (
-                  <>
-                    {/* SVG Donut */}
-                    <div className="flex justify-center mb-6">
-                      <div className="relative w-40 h-40">
-                        <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
-                          {(() => {
-                            const total = pieData.reduce((s, d) => s + d.value, 0);
-                            let offset = 0;
-                            return pieData.map((seg, i) => {
-                              const pct = (seg.value / total) * 100;
-                              const dash = `${pct} ${100 - pct}`;
-                              const el = (
-                                <circle key={i} cx="18" cy="18" r="15.9155" fill="none"
-                                  stroke={seg.color} strokeWidth="3.5"
-                                  strokeDasharray={dash}
-                                  strokeDashoffset={-offset}
-                                  className="transition-all duration-1000"
-                                />
-                              );
-                              offset += pct;
-                              return el;
-                            });
-                          })()}
-                        </svg>
-                        <div className="absolute inset-0 flex flex-col items-center justify-center">
-                          <span className="font-h text-2xl font-bold text-brand-on-surface">{orders.length}</span>
-                          <span className="font-sans text-[9px] uppercase tracking-widest text-brand-on-surface-variant opacity-60">Total</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="space-y-2.5">
-                      {[
-                        { label: 'Delivered', value: deliveredOrders.length, color: 'bg-green-400' },
-                        { label: 'Processing', value: processingOrders.length, color: 'bg-blue-400' },
-                        { label: 'Shipped', value: shippedOrders.length, color: 'bg-amber-400' },
-                        { label: 'Cancelled', value: cancelledOrders.length, color: 'bg-red-400' },
-                      ].map(item => (
-                        <div key={item.label} className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <div className={`w-2.5 h-2.5 rounded-full ${item.color}`}></div>
-                            <span className="font-sans text-xs text-brand-on-surface-variant font-bold">{item.label}</span>
+            {/* Out of Stock / Sold Out Products */}
+            {(() => {
+              const outOfStockProducts = products.filter(p => {
+                if (p.sizeStocks && p.sizeStocks.length > 0) {
+                  return p.sizeStocks.every((s: any) => !s.stock || Number(s.stock) <= 0);
+                }
+                return !p.stock || Number(p.stock) <= 0;
+              });
+              return (
+                <div className="bg-white p-4 md:p-6 rounded-xl shadow-xl border border-brand-surface-normal">
+                  <div className="flex items-center justify-between mb-5">
+                    <h3 className="font-h text-base font-bold flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse inline-block"></span>
+                      Out of Stock / Sold Out Products
+                    </h3>
+                    <span className="bg-red-50 text-red-600 text-xs font-bold px-3 py-1 rounded-full border border-red-100">
+                      {outOfStockProducts.length} Products
+                    </span>
+                  </div>
+                  {outOfStockProducts.length === 0 ? (
+                    <p className="text-sm font-sans text-green-600 font-bold py-4 text-center">✅ All products are in stock!</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {outOfStockProducts.map(product => (
+                        <div key={product._id} className="flex items-center gap-3 p-3 rounded-xl bg-red-50 border border-red-100">
+                          <div className="w-12 h-12 rounded-lg overflow-hidden bg-white flex-shrink-0 border border-red-100">
+                            {product.images?.[0] ? (
+                              <img src={product.images[0]} className="w-full h-full object-cover" alt="" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">?</div>
+                            )}
                           </div>
-                          <span className="font-h font-bold text-sm text-brand-on-surface">{item.value}</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-h text-sm font-bold text-brand-on-surface line-clamp-1">{product.name}</p>
+                            <p className="font-sans text-xs text-brand-on-surface-variant opacity-60">{product.category}</p>
+                          </div>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-red-600 bg-red-100 px-2.5 py-1 rounded-lg flex-shrink-0">Sold Out</span>
                         </div>
                       ))}
                     </div>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Payment Method Breakdown Bar */}
-            {orders.length > 0 && (
-              <div className="bg-white p-4 md:p-6 rounded-xl shadow-xl border border-brand-surface-normal">
-                <h3 className="font-h text-base font-bold mb-4">Payment Method Split</h3>
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="font-sans text-xs font-bold text-orange-600 w-32 flex-shrink-0">Cash on Delivery</span>
-                  <div className="flex-1 h-5 bg-brand-surface rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${orders.length ? (codOrders.length / orders.length) * 100 : 0}%` }}
-                      transition={{ duration: 1, ease: 'easeOut' }}
-                      className="h-full bg-orange-400 rounded-full"
-                    />
-                  </div>
-                  <span className="font-h font-bold text-sm text-brand-on-surface w-12 text-right">{codOrders.length}</span>
+                  )}
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="font-sans text-xs font-bold text-green-600 w-32 flex-shrink-0">Online Payment</span>
-                  <div className="flex-1 h-5 bg-brand-surface rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${orders.length ? (onlineOrders.length / orders.length) * 100 : 0}%` }}
-                      transition={{ duration: 1, ease: 'easeOut', delay: 0.1 }}
-                      className="h-full bg-green-400 rounded-full"
-                    />
-                  </div>
-                  <span className="font-h font-bold text-sm text-brand-on-surface w-12 text-right">{onlineOrders.length}</span>
+              );
+            })()}
+
+            {/* Storage Usage */}
+            {cloudinaryUsage && (
+              <div className="bg-white p-4 md:p-6 rounded-xl shadow-xl border border-brand-surface-normal">
+                <h3 className="font-h text-base font-bold mb-5 flex items-center gap-2">
+                  <Cloud size={18} className="text-blue-500" /> Storage Usage
+                </h3>
+                <div className="space-y-4">
+                  {[
+                    { label: 'Storage', used: cloudinaryUsage.storage?.usage, limit: cloudinaryUsage.storage?.limit, color: 'bg-blue-400', unit: 'GB', divisor: 1024*1024*1024 },
+                    { label: 'Bandwidth', used: cloudinaryUsage.bandwidth?.usage, limit: cloudinaryUsage.bandwidth?.limit, color: 'bg-purple-400', unit: 'GB', divisor: 1024*1024*1024 },
+                  ].map(item => {
+                    const pct = item.limit ? (item.used / item.limit) * 100 : 0;
+                    return (
+                      <div key={item.label}>
+                        <div className="flex justify-between text-xs font-sans font-bold mb-1.5">
+                          <span className="text-brand-on-surface-variant opacity-60">{item.label}</span>
+                          <span className="text-brand-on-surface">{item.used ? (item.used / item.divisor).toFixed(2) : 0} / {item.limit ? (item.limit / item.divisor).toFixed(2) : 0} {item.unit}</span>
+                        </div>
+                        <div className="w-full bg-brand-surface rounded-full h-2">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${pct}%` }}
+                            transition={{ duration: 1 }}
+                            className={`h-2 rounded-full ${item.color}`}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
-
-            {/* Storage & Products Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              {/* Cloudinary Usage */}
-              {cloudinaryUsage && (
-                <div className="bg-white p-4 md:p-6 rounded-xl shadow-xl border border-brand-surface-normal">
-                  <h3 className="font-h text-base font-bold mb-5 flex items-center gap-2">
-                    <Cloud size={18} className="text-blue-500" /> Storage Usage
-                  </h3>
-                  <div className="space-y-4">
-                    {[
-                      { label: 'Storage', used: cloudinaryUsage.storage?.usage, limit: cloudinaryUsage.storage?.limit, color: 'bg-blue-400', unit: 'GB', divisor: 1024*1024*1024 },
-                      { label: 'Bandwidth', used: cloudinaryUsage.bandwidth?.usage, limit: cloudinaryUsage.bandwidth?.limit, color: 'bg-purple-400', unit: 'GB', divisor: 1024*1024*1024 },
-                    ].map(item => {
-                      const pct = item.limit ? (item.used / item.limit) * 100 : 0;
-                      return (
-                        <div key={item.label}>
-                          <div className="flex justify-between text-xs font-sans font-bold mb-1.5">
-                            <span className="text-brand-on-surface-variant opacity-60">{item.label}</span>
-                            <span className="text-brand-on-surface">{item.used ? (item.used / item.divisor).toFixed(2) : 0} / {item.limit ? (item.limit / item.divisor).toFixed(2) : 0} {item.unit}</span>
-                          </div>
-                          <div className="w-full bg-brand-surface rounded-full h-2">
-                            <motion.div
-                              initial={{ width: 0 }}
-                              animate={{ width: `${pct}%` }}
-                              transition={{ duration: 1 }}
-                              className={`h-2 rounded-full ${item.color}`}
-                            />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Recently Added Products */}
-              <div className="bg-white p-4 md:p-6 rounded-xl shadow-xl border border-brand-surface-normal">
-                <h3 className="font-h text-base font-bold mb-5">Recent Products</h3>
-                <div className="space-y-3">
-                  {products.slice(0, 4).map(product => (
-                    <div key={product._id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-brand-surface transition-colors">
-                      <div className="w-12 h-12 rounded-lg overflow-hidden bg-brand-surface-low flex-shrink-0">
-                        {product.images?.[0] ? (
-                          <img src={product.images[0]} className="w-full h-full object-cover" alt="" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">?</div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-h text-sm font-bold text-brand-on-surface line-clamp-1">{product.name}</p>
-                        <p className="font-sans text-xs text-brand-on-surface-variant opacity-60">{product.category}</p>
-                      </div>
-                      <p className="font-h text-sm font-bold text-brand-primary flex-shrink-0">₹{product.price}</p>
-                    </div>
-                  ))}
-                  {products.length === 0 && <p className="text-sm font-sans text-brand-on-surface-variant opacity-50 py-4 text-center">No products added yet.</p>}
-                </div>
-              </div>
-            </div>
           </div>
         );
       }
@@ -1770,7 +1657,6 @@ const AdminDashboard = () => {
                             <option value="Processing">⏳ Processing</option>
                             <option value="Shipped">🚚 Shipped</option>
                             <option value="Delivered">✅ Delivered</option>
-                            <option value="Cancelled">❌ Cancelled</option>
                           </select>
 
                           <input
