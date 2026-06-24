@@ -27,7 +27,8 @@ import {
   Settings as SettingsIcon,
   Cloud,
   Database,
-  Activity
+  Activity,
+  Printer
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { API_BASE_URL } from '@/config';
@@ -229,6 +230,7 @@ const AdminDashboard = () => {
   const [orderFilterToDate, setOrderFilterToDate] = useState('');
   const [orderFilterPayment, setOrderFilterPayment] = useState('all');
   const [orderFilterStatus, setOrderFilterStatus] = useState('all');
+  const [viewingOrderId, setViewingOrderId] = useState<string | null>(null);
   const [settings, setSettings] = useState({
     processingTimeFrom: 2, processingTimeTo: 4,
     deliveryTimeFrom: 5, deliveryTimeTo: 7,
@@ -1703,7 +1705,14 @@ const AdminDashboard = () => {
                 </thead>
                 <tbody className="divide-y divide-brand-surface-normal">
                   {filteredOrders.map((order) => (
-                    <tr key={order._id} className="hover:bg-brand-surface-low/50 transition-colors align-top group">
+                    <tr
+                      key={order._id}
+                      onClick={() => {
+                        setViewingOrderId(order._id);
+                        setActiveTab('order-details');
+                      }}
+                      className="hover:bg-brand-surface-low/50 transition-colors align-top group cursor-pointer"
+                    >
                       <td className="px-6 py-6">
                         <div className="flex flex-col gap-1">
                           <span className="font-mono text-sm font-bold text-brand-primary">#{order._id.substring(order._id.length - 8)}</span>
@@ -1718,9 +1727,9 @@ const AdminDashboard = () => {
                       </td>
                       <td className="px-6 py-6">
                         <div className="space-y-3">
-                          {order.items.map((item, idx) => (
+                          {order.items.map((item: any, idx: number) => (
                             <div key={idx} className="flex items-center gap-3 bg-brand-surface-low p-2 rounded-xl border border-brand-surface-normal group-hover:bg-white transition-colors">
-                              <img src={item.image} className="w-10 h-10 object-cover rounded-lg bg-white" />
+                              <img src={item.image} className="w-10 h-10 object-cover rounded-lg bg-white" alt={item.name} />
                               <div className="min-w-0">
                                 <p className="text-xs font-h font-bold line-clamp-1">{item.name}</p>
                                 <p className="text-[10px] font-sans font-bold text-brand-on-surface-variant opacity-60 mt-0.5">Size: {item.size} × {item.quantity}</p>
@@ -1749,54 +1758,24 @@ const AdminDashboard = () => {
                       </td>
                       <td className="px-6 py-6">
                         <div className="flex flex-col gap-3">
-                          <select
-                            value={order.status}
-                            onChange={async (e) => {
-                              const newStatus = e.target.value;
-                              const token = localStorage.getItem('adminToken');
-                              await fetch(`${API_BASE_URL}/api/orders/${order._id}/status`, {
-                                method: 'PUT',
-                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                                body: JSON.stringify({ status: newStatus })
-                              });
-                              fetchOrders();
-                            }}
-                            className={cn(
-                              "text-xs font-bold px-4 py-2.5 rounded-xl border outline-none cursor-pointer hover:shadow-md transition-all appearance-none",
-                              order.status === 'Processing' ? "bg-blue-50 text-blue-600 border-blue-200 hover:border-blue-300" :
-                                order.status === 'Shipped' ? "bg-amber-50 text-amber-600 border-amber-200 hover:border-amber-300" :
-                                  order.status === 'Delivered' ? "bg-green-50 text-green-600 border-green-200 hover:border-green-300" :
-                                    "bg-red-50 text-red-600 border-red-200 hover:border-red-300"
-                            )}
-                          >
-                            <option value="Processing">⏳ Processing</option>
-                            <option value="Shipped">🚚 Shipped</option>
-                            <option value="Delivered">✅ Delivered</option>
-                          </select>
-
-                          <input
-                            type="text"
-                            placeholder="Enter Tracking ID..."
-                            defaultValue={order.trackingId || ''}
-                            onBlur={async (e) => {
-                              if (e.target.value !== order.trackingId) {
-                                const token = localStorage.getItem('adminToken');
-                                await fetch(`${API_BASE_URL}/api/orders/${order._id}/status`, {
-                                  method: 'PUT',
-                                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                                  body: JSON.stringify({ status: order.status, trackingId: e.target.value })
-                                });
-                                fetchOrders();
-                              }
-                            }}
-                            className="text-xs px-3 py-2.5 border border-brand-surface-normal rounded-xl outline-none focus:ring-2 focus:ring-brand-primary w-full transition-all"
-                            title="Press Enter or click outside to save"
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                e.currentTarget.blur();
-                              }
-                            }}
-                          />
+                          <span className={cn(
+                            "text-xs font-bold px-4 py-2 rounded-xl border w-max",
+                            order.status === 'Processing' ? "bg-blue-50 text-blue-600 border-blue-200" :
+                              order.status === 'Shipped' ? "bg-amber-50 text-amber-600 border-amber-200" :
+                                order.status === 'Delivered' ? "bg-green-50 text-green-600 border-green-200" :
+                                  "bg-red-50 text-red-600 border-red-200"
+                          )}>
+                            {order.status === 'Processing' ? '⏳ Processing' :
+                              order.status === 'Shipped' ? '🚚 Shipped' :
+                                order.status === 'Delivered' ? '✅ Delivered' :
+                                  '❌ Cancelled'}
+                          </span>
+                          {order.trackingId && (
+                            <div className="text-[10px] font-sans font-bold text-brand-on-surface-variant opacity-80 uppercase tracking-widest">
+                              Track ID: <span className="text-brand-on-surface">{order.trackingId}</span>
+                            </div>
+                          )}
+                          <span className="text-[10px] text-brand-primary font-bold hover:underline mt-2">View Details &rarr;</span>
                         </div>
                       </td>
                     </tr>
@@ -1804,6 +1783,352 @@ const AdminDashboard = () => {
                 </tbody>
               </table>
             </div>
+          </div>
+        );
+      }
+      case 'order-details': {
+        const order = orders.find(o => o._id === viewingOrderId);
+        if (!order) {
+          return (
+            <div className="p-8 text-center bg-white rounded-xl shadow-sm border border-brand-surface-normal">
+              <p className="font-h font-bold text-lg mb-4 text-brand-on-surface">Order not found.</p>
+              <button onClick={() => setActiveTab('orders')} className="bg-brand-primary text-white px-6 py-3 rounded-xl font-bold">
+                Back to Orders
+              </button>
+            </div>
+          );
+        }
+
+        const handlePrintLabel = () => {
+          const printWindow = window.open('', '_blank');
+          if (!printWindow) return;
+          
+          const awb = order.trackingId || 'NOT-SHIPPED';
+          const orderIdStr = order._id.substring(order._id.length - 8);
+          const totalAmount = order.totalAmount;
+          const codAmount = order.paymentMethod === 'cod' ? totalAmount : 0;
+          const paymentType = order.paymentMethod === 'cod' ? 'COD - Surface' : 'Prepaid - Surface';
+          
+          const html = `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+            <meta charset="UTF-8">
+            <title>Shipping Label</title>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/JsBarcode/3.11.5/JsBarcode.all.min.js"></script>
+            <style>
+              * { box-sizing: border-box; }
+              body {
+                font-family: Arial, Helvetica, sans-serif;
+                background: #e9e9e9;
+                margin: 0;
+                padding: 16px;
+                display: flex;
+                justify-content: center;
+              }
+              .label {
+                width: 400px;
+                background: #fff;
+                border: 2px solid #000;
+                border-radius: 6px;
+                padding: 10px 14px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+              }
+              .row { display: flex; justify-content: space-between; align-items: center; }
+              .hr { border: none; border-top: 1px solid #888; margin: 5px 0; }
+              .hr-tight { margin: 3px 0 5px; }
+              .header-row { align-items: center; margin-bottom: 0; }
+              .header-center { justify-content: center; }
+              .seller-name { font-size: 22px; font-weight: 800; letter-spacing: 0.5px; line-height: 1; margin: 0; }
+              .barcode-wrap { text-align: center; margin: 0; }
+              .barcode-wrap svg { width: 100%; height: auto; max-height: 60px; display: block; }
+              .ship-block { display: flex; }
+              .ship-left { flex: 1.5; padding-right: 8px; }
+              .ship-right { flex: 1; border-left: 1px solid #888; padding-left: 10px; }
+              .ship-to-label { font-size: 15px; margin-bottom: 1px; }
+              .ship-to-label b { font-size: 16px; }
+              .ship-addr-line { font-size: 14px; margin: 0; }
+              .ship-city { font-weight: 700; font-size: 14.5px; margin: 0; }
+              .ship-state { font-weight: 700; font-size: 14.5px; }
+              .ship-pin { font-weight: 700; font-size: 14.5px; margin-top: 1px; }
+              .cod-label { font-size: 14px; font-weight: 700; }
+              .cod-amount { font-size: 17px; font-weight: 700; margin-top: 1px; }
+              .date-label { font-size: 13px; font-weight: 700; margin-top: 3px; }
+              .date-value { font-size: 13.5px; margin-top: 0; }
+              .seller-block { display: flex; justify-content: space-between; align-items: center; }
+              .seller-info { font-size: 13px; max-width: 195px; line-height: 1.3; }
+              .seller-info b { font-size: 14px; }
+              .order-barcode-box { text-align: center; width: 155px; }
+              .order-num { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+              .order-barcode-box svg { width: 100%; height: 42px; display: block; }
+              table.product-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 0; }
+              table.product-table th { text-align: left; font-weight: 700; padding-bottom: 1px; }
+              table.product-table th:nth-child(2),
+              table.product-table th:nth-child(3),
+              table.product-table th:nth-child(4) { text-align: right; }
+              table.product-table td { padding: 0; vertical-align: top; }
+              table.product-table td:nth-child(2),
+              table.product-table td:nth-child(3),
+              table.product-table td:nth-child(4) { text-align: right; }
+              .sku-line { color: #000; font-weight: 600; }
+              .footer { display: flex; justify-content: space-between; align-items: flex-end; font-size: 11px; margin-top: 4px; color: #222; }
+              .footer .return-addr { max-width: 320px; line-height: 1.3; }
+              .footer .page { font-weight: 600; white-space: nowrap; }
+              @media print {
+                body { background: #fff; padding: 0; }
+                .label { box-shadow: none; border-radius: 0; }
+              }
+            </style>
+            </head>
+            <body>
+            <div class="label">
+              <div class="row header-row header-center">
+                <div class="seller-name">6YARD</div>
+              </div>
+              <hr class="hr hr-tight">
+              <div class="barcode-wrap">
+                <svg id="barcode-awb"></svg>
+              </div>
+              <hr class="hr">
+              <div class="ship-block">
+                <div class="ship-left">
+                  <div class="ship-to-label">Ship to - <b>${order.shippingAddress?.name || 'Customer'}</b></div>
+                  <div class="ship-addr-line">${order.shippingAddress?.address || ''} ${order.shippingAddress?.locality || ''}</div>
+                  <div class="ship-city">${order.shippingAddress?.city || ''}</div>
+                  <div class="ship-state">(${order.shippingAddress?.state || ''})</div>
+                  <div class="ship-pin">PIN - ${order.shippingAddress?.pincode || ''}</div>
+                  <div class="ship-pin">Phone: ${order.shippingAddress?.phone || order.user?.phone || ''}</div>
+                </div>
+                <div class="ship-right">
+                  <div class="cod-label">${paymentType}</div>
+                  <div class="cod-amount">INR ${codAmount}</div>
+                  <hr class="hr">
+                  <div class="date-label">Date</div>
+                  <div class="date-value">${new Date(order.createdAt).toLocaleString()}</div>
+                </div>
+              </div>
+              <hr class="hr">
+              <div class="seller-block">
+                <div class="seller-info">
+                  <b>Seller:6YARD</b><br>
+                  Manjerithodi House, Mongam, kerala, 673642 ,
+                  Mongam, Kerala, India, 673642
+                </div>
+                <div class="order-barcode-box">
+                  <div class="order-num">${orderIdStr}</div>
+                  <svg id="barcode-order"></svg>
+                </div>
+              </div>
+              <hr class="hr">
+              <table class="product-table">
+                <thead>
+                  <tr>
+                    <th>Product Name &amp; Size</th>
+                    <th>Qty.</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${order.items.map((item: any) => `
+                    <tr>
+                      <td class="sku-line">${item.name} (Size: ${item.size})</td>
+                      <td>${item.quantity}</td>
+                      <td>${item.price}</td>
+                      <td>${item.price * item.quantity}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+              <hr class="hr">
+              <div class="footer">
+                <div class="return-addr">
+                  Return Address: Afnan pk 6 yard, metro square manjeri opposite Ksfe
+                  manjeri 676121 8590394491 , Manjeri, Kerala, India, 676121
+                </div>
+                <div class="page">Page 1 of 1</div>
+              </div>
+            </div>
+            <script>
+              window.onload = function() {
+                JsBarcode("#barcode-awb", "${awb}", {
+                  format: "CODE128",
+                  displayValue: false,
+                  height: 70,
+                  width: 2.2,
+                  margin: 0,
+                  background: "#ffffff",
+                  lineColor: "#000000"
+                });
+                JsBarcode("#barcode-order", "${orderIdStr}", {
+                  format: "CODE128",
+                  displayValue: false,
+                  height: 42,
+                  width: 2.2,
+                  margin: 0,
+                  background: "#ffffff",
+                  lineColor: "#000000"
+                });
+                setTimeout(function() {
+                  window.print();
+                }, 500);
+              };
+            </script>
+            </body>
+            </html>
+          `;
+          printWindow.document.write(html);
+          printWindow.document.close();
+        };
+
+        return (
+          <div className="space-y-6 max-w-5xl mx-auto">
+             {/* Header */}
+             <div className="flex justify-between items-center bg-white p-4 md:p-6 rounded-xl shadow-sm border border-brand-surface-normal">
+               <div className="flex items-center gap-4">
+                 <button onClick={() => setActiveTab('orders')} className="p-2 hover:bg-brand-surface rounded-lg transition-colors font-bold text-brand-on-surface-variant flex items-center gap-2">
+                   &larr; Back
+                 </button>
+                 <div>
+                   <h2 className="font-h text-xl font-bold text-brand-on-surface">Order #{order._id.substring(order._id.length - 8)}</h2>
+                   <p className="text-sm text-brand-on-surface-variant opacity-60 font-sans font-bold">{new Date(order.createdAt).toLocaleString()}</p>
+                 </div>
+               </div>
+               <button onClick={handlePrintLabel} className="bg-brand-primary text-white text-sm px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-brand-primary/20 flex items-center gap-2 transition-transform active:scale-95">
+                 <Printer size={16} />
+                 Print Label
+               </button>
+             </div>
+
+             {/* Content Grid */}
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+               {/* Left Column: Items and Update Status */}
+               <div className="md:col-span-2 space-y-6">
+                 {/* Update Status & Tracking */}
+                 <div className="bg-white p-5 rounded-xl shadow-sm border border-brand-surface-normal">
+                   <h3 className="font-h text-base font-bold mb-4">Update Order</h3>
+                   <div className="flex flex-col md:flex-row gap-4 items-end">
+                     <div className="flex-1">
+                       <label className="block text-xs font-bold text-brand-on-surface-variant opacity-60 mb-1">Status</label>
+                       <select
+                          value={order.status}
+                          onChange={async (e) => {
+                            const newStatus = e.target.value;
+                            const token = localStorage.getItem('adminToken');
+                            await fetch(`${API_BASE_URL}/api/orders/${order._id}/status`, {
+                              method: 'PUT',
+                              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                              body: JSON.stringify({ status: newStatus })
+                            });
+                            fetchOrders();
+                          }}
+                          className="w-full px-4 py-2.5 rounded-xl border border-brand-surface-normal outline-none focus:ring-2 focus:ring-brand-primary appearance-none cursor-pointer text-sm font-bold"
+                        >
+                          <option value="Processing">Processing</option>
+                          <option value="Shipped">Shipped</option>
+                          <option value="Delivered">Delivered</option>
+                        </select>
+                     </div>
+                     <div className="flex-1">
+                       <label className="block text-xs font-bold text-brand-on-surface-variant opacity-60 mb-1">Tracking ID</label>
+                       <input
+                          type="text"
+                          placeholder="Enter Tracking ID..."
+                          defaultValue={order.trackingId || ''}
+                          onBlur={async (e) => {
+                            if (e.target.value !== order.trackingId) {
+                              const token = localStorage.getItem('adminToken');
+                              await fetch(`${API_BASE_URL}/api/orders/${order._id}/status`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                body: JSON.stringify({ status: order.status, trackingId: e.target.value })
+                              });
+                              fetchOrders();
+                            }
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') e.currentTarget.blur();
+                          }}
+                          className="w-full px-4 py-2.5 rounded-xl border border-brand-surface-normal outline-none focus:ring-2 focus:ring-brand-primary text-sm font-mono font-bold"
+                        />
+                     </div>
+                   </div>
+                   <p className="text-[10px] text-brand-on-surface-variant opacity-60 mt-3">* Changes are saved automatically when selecting a new status or pressing Enter on the Tracking ID.</p>
+                 </div>
+
+                 {/* Order Items */}
+                 <div className="bg-white rounded-xl shadow-sm border border-brand-surface-normal overflow-hidden">
+                   <div className="p-4 border-b border-brand-surface-normal bg-brand-surface-low">
+                     <h3 className="font-h text-base font-bold">Order Items ({order.items.length})</h3>
+                   </div>
+                   <div className="divide-y divide-brand-surface-normal">
+                     {order.items.map((item: any, idx: number) => (
+                       <div key={idx} className="p-4 flex gap-4 items-center hover:bg-brand-surface-low/30 transition-colors">
+                         <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-lg bg-brand-surface-normal" />
+                         <div className="flex-1">
+                           <h4 className="font-h font-bold text-brand-on-surface">{item.name}</h4>
+                           <div className="flex gap-3 mt-1 text-xs font-bold text-brand-on-surface-variant opacity-80">
+                             <span>Size: {item.size}</span>
+                             <span>Qty: {item.quantity}</span>
+                           </div>
+                         </div>
+                         <div className="text-right font-h font-bold text-brand-on-surface">
+                           ₹{item.price * item.quantity}
+                         </div>
+                       </div>
+                     ))}
+                   </div>
+                 </div>
+               </div>
+
+               {/* Right Column: Customer & Summary */}
+               <div className="space-y-6">
+                 {/* Customer Details */}
+                 <div className="bg-white p-5 rounded-xl shadow-sm border border-brand-surface-normal">
+                   <h3 className="font-h text-base font-bold mb-4">Customer Details</h3>
+                   <div className="space-y-4">
+                     <div>
+                       <p className="text-[10px] uppercase tracking-widest font-bold text-brand-on-surface-variant opacity-60 mb-0.5">Name</p>
+                       <p className="font-sans font-bold text-sm text-brand-on-surface">{order.shippingAddress?.name || 'N/A'}</p>
+                     </div>
+                     <div>
+                       <p className="text-[10px] uppercase tracking-widest font-bold text-brand-on-surface-variant opacity-60 mb-0.5">Phone</p>
+                       <p className="font-sans font-bold text-sm text-brand-on-surface">{order.shippingAddress?.phone || order.user?.phone || 'N/A'}</p>
+                     </div>
+                     <div>
+                       <p className="text-[10px] uppercase tracking-widest font-bold text-brand-on-surface-variant opacity-60 mb-0.5">Shipping Address</p>
+                       <p className="font-sans font-bold text-sm text-brand-on-surface leading-relaxed mt-1">
+                         {order.shippingAddress?.locality}<br/>
+                         {order.shippingAddress?.address}<br/>
+                         {order.shippingAddress?.city}, {order.shippingAddress?.state}<br/>
+                         {order.shippingAddress?.pincode}
+                       </p>
+                     </div>
+                   </div>
+                 </div>
+
+                 {/* Payment Summary */}
+                 <div className="bg-white p-5 rounded-xl shadow-sm border border-brand-surface-normal">
+                   <h3 className="font-h text-base font-bold mb-4">Payment Summary</h3>
+                   <div className="space-y-3 font-sans font-bold text-sm">
+                     <div className="flex justify-between text-brand-on-surface-variant opacity-80">
+                       <span>Subtotal</span>
+                       <span>₹{order.totalAmount}</span>
+                     </div>
+                     <div className="flex justify-between text-brand-on-surface-variant opacity-80">
+                       <span>Method</span>
+                       <span className={cn("uppercase", order.paymentMethod === 'cod' ? "text-orange-600" : "text-green-600")}>
+                         {order.paymentMethod === 'cod' ? 'CASH ON DELIVERY' : 'ONLINE PAID'}
+                       </span>
+                     </div>
+                     <div className="pt-3 border-t border-brand-surface-normal flex justify-between text-base text-brand-on-surface">
+                       <span>Total</span>
+                       <span>₹{order.totalAmount}</span>
+                     </div>
+                   </div>
+                 </div>
+               </div>
+             </div>
           </div>
         );
       }
