@@ -80,34 +80,6 @@ export default function TrackOrder() {
   const deliveryStart = addDays(purchasedDate, delFrom);
   const deliveryEnd = addDays(purchasedDate, delTo);
 
-  const currentStatus = order.status?.toLowerCase() || 'pending';
-  const isPurchased = true;
-  const isProcessing = ['processing', 'shipped', 'delivered'].includes(currentStatus);
-  const isDelivered = currentStatus === 'delivered';
-
-  const timeline = [
-    {
-      icon: <ShoppingBag size={26} strokeWidth={2.5} />,
-      label: 'Purchased',
-      dateStr: formatDate(purchasedDate),
-      completed: isPurchased,
-      active: !isProcessing,
-    },
-    {
-      icon: <Package size={26} strokeWidth={2.5} />,
-      label: 'Processing',
-      dateStr: formatDateRange(processingStart, processingEnd),
-      completed: isProcessing,
-      active: isProcessing && !isDelivered,
-    },
-    {
-      icon: <PartyPopper size={26} strokeWidth={2.5} />,
-      label: 'Delivered',
-      dateStr: isDelivered ? formatDate(new Date(order.updatedAt)) : formatDateRange(deliveryStart, deliveryEnd),
-      completed: isDelivered,
-      active: false,
-    },
-  ];
 
   return (
     <div className="min-h-screen bg-brand-surface pt-24 pb-40">
@@ -178,57 +150,6 @@ export default function TrackOrder() {
             </div>
           </section>
 
-          {/* Delivery Timeline */}
-          <section className="bg-white rounded-[32px] p-8 shadow-xl border border-brand-surface-normal">
-            <h3 className="font-h text-2xl font-bold mb-10">Delivery Timeline</h3>
-            <div className="flex flex-col gap-0 relative">
-              {/* Connector line */}
-              <div className="absolute left-8 top-8 bottom-8 w-0.5 bg-brand-surface-normal rounded-full z-0" />
-
-              {timeline.map((step, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.15 }}
-                  className="flex gap-6 pb-10 last:pb-0 relative z-10"
-                >
-                  {/* Icon circle */}
-                  <div className={cn(
-                    "w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-lg transition-all",
-                    step.completed
-                      ? "bg-brand-primary text-white"
-                      : "bg-brand-surface-low text-brand-on-surface-variant border-2 border-brand-surface-normal opacity-50",
-                    step.active && "ring-8 ring-brand-primary/10 animate-pulse"
-                  )}>
-                    {step.completed ? <Check size={28} strokeWidth={3} /> : step.icon}
-                  </div>
-
-                  {/* Text */}
-                  <div className="flex flex-col justify-center">
-                    <p className={cn(
-                      "font-sans text-xs uppercase tracking-widest font-black mb-1",
-                      step.completed ? "text-brand-primary" : "text-brand-on-surface-variant opacity-40"
-                    )}>
-                      {step.dateStr}
-                    </p>
-                    <h4 className={cn(
-                      "font-h text-xl font-bold",
-                      step.completed ? "text-brand-on-surface" : "text-brand-on-surface-variant opacity-40"
-                    )}>
-                      {step.label}
-                    </h4>
-                    {step.active && (
-                      <span className="mt-1 inline-flex items-center gap-1 text-xs font-black uppercase tracking-widest text-brand-primary">
-                        <span className="w-1.5 h-1.5 rounded-full bg-brand-primary animate-ping inline-block" />
-                        In Progress
-                      </span>
-                    )}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </section>
         </div>
 
         {/* Support Sidebar */}
