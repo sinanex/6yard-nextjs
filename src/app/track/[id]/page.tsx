@@ -243,6 +243,17 @@ export default function TrackOrder() {
                 Our support team is available for delivery inquiries.
               </p>
               <div className="w-full space-y-3">
+                  {order.trackingId && (
+                    <a
+                      href={`https://myspeedpost.com/?n=${order.trackingId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full bg-brand-primary text-white py-4 rounded-xl font-sans font-bold flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all text-sm uppercase tracking-widest shadow-xl shadow-brand-primary/20"
+                    >
+                      <Truck size={18} />
+                      Track Shipment
+                    </a>
+                  )}
                 <a
                   href="https://wa.me/919876543210"
                   target="_blank"

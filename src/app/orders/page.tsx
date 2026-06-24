@@ -135,9 +135,16 @@ export default function Orders() {
                           </span>
                         </div>
                         {order.trackingId && (
-                          <p className="font-sans text-[10px] font-bold text-brand-on-surface-variant opacity-80 uppercase tracking-widest">
-                            Tracking: <span className="text-brand-on-surface select-all">{order.trackingId}</span>
-                          </p>
+                          <a
+                            href={`https://myspeedpost.com/?n=${order.trackingId}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center gap-1.5 font-sans text-[10px] font-bold text-brand-primary uppercase tracking-widest hover:underline"
+                          >
+                            <Truck size={12} />
+                            Track: {order.trackingId}
+                          </a>
                         )}
                       </div>
                       <p className="font-h text-2xl font-black text-brand-on-surface">
