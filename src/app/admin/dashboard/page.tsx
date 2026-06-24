@@ -311,6 +311,8 @@ const AdminDashboard = () => {
   useEffect(() => {
     if (activeTab === 'orders' || activeTab === 'dashboard') {
       fetchProducts();
+      fetchOrders();
+      fetchUsers();
     }
     if (activeTab === 'dashboard') {
       fetchCloudinaryUsage();
@@ -886,139 +888,269 @@ const AdminDashboard = () => {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'dashboard':
+      case 'dashboard': {
+        // --- Derived Analytics ---
+        const totalSales = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+        const deliveredOrders = orders.filter(o => o.status === 'Delivered');
+        const processingOrders = orders.filter(o => o.status === 'Processing');
+        const shippedOrders = orders.filter(o => o.status === 'Shipped');
+        const cancelledOrders = orders.filter(o => o.status === 'Cancelled');
+        const codOrders = orders.filter(o => o.paymentMethod === 'cod');
+        const onlineOrders = orders.filter(o => o.paymentMethod !== 'cod');
+        const codRevenue = codOrders.reduce((s, o) => s + (o.totalAmount || 0), 0);
+        const onlineRevenue = onlineOrders.reduce((s, o) => s + (o.totalAmount || 0), 0);
+
+        // Weekly bar chart data (last 7 days)
+        const weeklyData = Array.from({ length: 7 }, (_, i) => {
+          const d = new Date();
+          d.setDate(d.getDate() - (6 - i));
+          const dayStr = d.toLocaleDateString('en-US', { weekday: 'short' });
+          const dateStr = d.toISOString().split('T')[0];
+          const dayOrders = orders.filter(o => o.createdAt && o.createdAt.startsWith(dateStr));
+          const daySales = dayOrders.reduce((s, o) => s + (o.totalAmount || 0), 0);
+          return { day: dayStr, sales: daySales, orders: dayOrders.length };
+        });
+
+        // Pie chart data for order status
+        const pieData = [
+          { name: 'Delivered', value: deliveredOrders.length, color: '#22c55e' },
+          { name: 'Processing', value: processingOrders.length, color: '#3b82f6' },
+          { name: 'Shipped', value: shippedOrders.length, color: '#f59e0b' },
+          { name: 'Cancelled', value: cancelledOrders.length, color: '#ef4444' },
+        ].filter(d => d.value > 0);
+
         return (
           <div className="space-y-6">
-            <h2 className="font-h text-base font-bold text-brand-on-surface uppercase tracking-tight">Sales & CRM Overview</h2>
+            <h2 className="font-h text-base font-bold text-brand-on-surface uppercase tracking-tight">Sales & Analytics Overview</h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              <motion.div whileHover={{ y: -5 }} className="bg-white p-5 rounded-xl shadow-xl shadow-brand-primary/5 border border-brand-surface-normal flex items-center gap-4 md:p-6 group">
-                <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-md flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Package size={28} />
-                </div>
-                <div>
-                  <p className="font-sans text-[10px] uppercase tracking-widest font-bold text-brand-on-surface-variant opacity-60 mb-1">Total Products</p>
-                  <p className="font-h text-4xl font-bold text-brand-on-surface">{products.length}</p>
-                </div>
+            {/* Top KPI Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { label: 'Total Orders', value: orders.length, icon: <ShoppingCart size={22} />, color: 'blue', bg: 'bg-blue-50', text: 'text-blue-600' },
+                { label: 'Delivered', value: deliveredOrders.length, icon: <Check size={22} />, color: 'green', bg: 'bg-green-50', text: 'text-green-600' },
+                { label: 'Processing', value: processingOrders.length, icon: <Activity size={22} />, color: 'purple', bg: 'bg-purple-50', text: 'text-purple-600' },
+                { label: 'Cancelled', value: cancelledOrders.length, icon: <X size={22} />, color: 'red', bg: 'bg-red-50', text: 'text-red-600' },
+              ].map((card) => (
+                <motion.div key={card.label} whileHover={{ y: -4 }} className="bg-white p-4 md:p-5 rounded-xl shadow-xl shadow-brand-primary/5 border border-brand-surface-normal flex items-center gap-3 group">
+                  <div className={`w-10 h-10 ${card.bg} ${card.text} rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0`}>
+                    {card.icon}
+                  </div>
+                  <div>
+                    <p className="font-sans text-[9px] uppercase tracking-widest font-bold text-brand-on-surface-variant opacity-60 mb-0.5">{card.label}</p>
+                    <p className="font-h text-2xl md:text-3xl font-bold text-brand-on-surface">{card.value}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Revenue Summary */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <motion.div whileHover={{ y: -4 }} className="bg-gradient-to-br from-brand-primary to-brand-primary-hover p-5 md:p-6 rounded-xl shadow-xl shadow-brand-primary/20 text-white">
+                <p className="font-sans text-[10px] uppercase tracking-widest font-bold opacity-70 mb-1">Total Revenue</p>
+                <p className="font-h text-3xl md:text-4xl font-bold">₹{totalSales.toLocaleString('en-IN')}</p>
+                <p className="font-sans text-xs opacity-60 mt-2">From {orders.length} orders</p>
               </motion.div>
-
-              <motion.div whileHover={{ y: -5 }} className="bg-white p-5 rounded-xl shadow-xl shadow-brand-primary/5 border border-brand-surface-normal flex items-center gap-4 md:p-6 group">
-                <div className="w-10 h-10 bg-green-50 text-green-600 rounded-md flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <ShoppingCart size={28} />
+              <motion.div whileHover={{ y: -4 }} className="bg-white p-5 md:p-6 rounded-xl shadow-xl border border-brand-surface-normal">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-2.5 h-2.5 rounded-full bg-orange-400"></div>
+                  <p className="font-sans text-[10px] uppercase tracking-widest font-bold text-brand-on-surface-variant opacity-60">Cash on Delivery</p>
                 </div>
-                <div>
-                  <p className="font-sans text-[10px] uppercase tracking-widest font-bold text-brand-on-surface-variant opacity-60 mb-1">Total Orders</p>
-                  <p className="font-h text-4xl font-bold text-brand-on-surface">{orders.length}</p>
-                </div>
+                <p className="font-h text-2xl md:text-3xl font-bold text-brand-on-surface">₹{codRevenue.toLocaleString('en-IN')}</p>
+                <p className="font-sans text-xs text-brand-on-surface-variant opacity-60 mt-2">{codOrders.length} orders</p>
               </motion.div>
-
-              <motion.div whileHover={{ y: -5 }} className="bg-white p-5 rounded-xl shadow-xl shadow-brand-primary/5 border border-brand-surface-normal flex items-center gap-4 md:p-6 group">
-                <div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-md flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Users size={28} />
+              <motion.div whileHover={{ y: -4 }} className="bg-white p-5 md:p-6 rounded-xl shadow-xl border border-brand-surface-normal">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-2.5 h-2.5 rounded-full bg-green-400"></div>
+                  <p className="font-sans text-[10px] uppercase tracking-widest font-bold text-brand-on-surface-variant opacity-60">Online Payment</p>
                 </div>
-                <div>
-                  <p className="font-sans text-[10px] uppercase tracking-widest font-bold text-brand-on-surface-variant opacity-60 mb-1">Registered Users</p>
-                  <p className="font-h text-4xl font-bold text-brand-on-surface">{users.length}</p>
-                </div>
+                <p className="font-h text-2xl md:text-3xl font-bold text-brand-on-surface">₹{onlineRevenue.toLocaleString('en-IN')}</p>
+                <p className="font-sans text-xs text-brand-on-surface-variant opacity-60 mt-2">{onlineOrders.length} orders</p>
               </motion.div>
             </div>
 
-            {/* Cloudinary Usage Section */}
-            {cloudinaryUsage && (
-              <div className="bg-white p-4 md:p-6 rounded-xl shadow-xl border border-brand-surface-normal mt-6">
-                <h3 className="font-h text-lg font-bold mb-6 flex items-center gap-2">
-                  <Cloud size={20} className="text-blue-500" /> Media & Storage Usage (Cloudinary)
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                  <div className="bg-brand-surface p-4 rounded-lg border border-brand-surface-normal relative overflow-hidden group">
-                    <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 transition-transform">
-                      <Database size={100} />
-                    </div>
-                    <p className="font-sans text-[10px] uppercase tracking-widest font-bold text-brand-on-surface-variant opacity-60 mb-2">Storage Used</p>
-                    <div className="flex items-end gap-2">
-                      <p className="font-h text-2xl font-bold text-brand-on-surface">
-                        {cloudinaryUsage.storage ? (cloudinaryUsage.storage.usage / (1024 * 1024 * 1024)).toFixed(2) : 0} <span className="text-sm">GB</span>
-                      </p>
-                      <p className="text-xs text-brand-on-surface-variant opacity-60 mb-1">
-                        / {cloudinaryUsage.storage ? (cloudinaryUsage.storage.limit / (1024 * 1024 * 1024)).toFixed(2) : 0} GB Limit
-                      </p>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-1.5 mt-3">
-                      <div 
-                        className="bg-blue-500 h-1.5 rounded-full" 
-                        style={{ width: `${cloudinaryUsage.storage ? (cloudinaryUsage.storage.usage / cloudinaryUsage.storage.limit) * 100 : 0}%` }}
-                      ></div>
-                    </div>
-                  </div>
+            {/* Charts Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+              {/* Weekly Sales Bar Chart */}
+              <div className="lg:col-span-3 bg-white p-4 md:p-6 rounded-xl shadow-xl border border-brand-surface-normal">
+                <h3 className="font-h text-base font-bold mb-6">Weekly Sales (Last 7 Days)</h3>
+                <div className="space-y-3">
+                  {weeklyData.map((d, i) => {
+                    const maxSales = Math.max(...weeklyData.map(x => x.sales), 1);
+                    const pct = (d.sales / maxSales) * 100;
+                    return (
+                      <div key={i} className="flex items-center gap-3">
+                        <span className="font-sans text-xs font-bold text-brand-on-surface-variant opacity-60 w-8 flex-shrink-0">{d.day}</span>
+                        <div className="flex-1 h-7 bg-brand-surface rounded-lg overflow-hidden relative">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${pct}%` }}
+                            transition={{ duration: 0.8, delay: i * 0.08, ease: 'easeOut' }}
+                            className="h-full bg-gradient-to-r from-brand-primary to-brand-primary-hover rounded-lg"
+                          />
+                          {d.sales > 0 && (
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white text-[10px] font-bold">₹{d.sales.toLocaleString('en-IN')}</span>
+                          )}
+                        </div>
+                        <span className="font-sans text-xs font-bold text-brand-on-surface-variant w-14 text-right flex-shrink-0">{d.orders} orders</span>
+                      </div>
+                    );
+                  })}
+                  {weeklyData.every(d => d.sales === 0) && (
+                    <p className="text-center text-brand-on-surface-variant opacity-50 font-sans text-sm py-6">No orders in the last 7 days.</p>
+                  )}
+                </div>
+              </div>
 
-                  <div className="bg-brand-surface p-4 rounded-lg border border-brand-surface-normal relative overflow-hidden group">
-                    <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 transition-transform">
-                      <Activity size={100} />
+              {/* Order Status Pie Chart (custom) */}
+              <div className="lg:col-span-2 bg-white p-4 md:p-6 rounded-xl shadow-xl border border-brand-surface-normal">
+                <h3 className="font-h text-base font-bold mb-6">Order Status</h3>
+                {orders.length === 0 ? (
+                  <p className="text-center text-brand-on-surface-variant opacity-50 font-sans text-sm py-8">No orders yet.</p>
+                ) : (
+                  <>
+                    {/* SVG Donut */}
+                    <div className="flex justify-center mb-6">
+                      <div className="relative w-40 h-40">
+                        <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
+                          {(() => {
+                            const total = pieData.reduce((s, d) => s + d.value, 0);
+                            let offset = 0;
+                            return pieData.map((seg, i) => {
+                              const pct = (seg.value / total) * 100;
+                              const dash = `${pct} ${100 - pct}`;
+                              const el = (
+                                <circle key={i} cx="18" cy="18" r="15.9155" fill="none"
+                                  stroke={seg.color} strokeWidth="3.5"
+                                  strokeDasharray={dash}
+                                  strokeDashoffset={-offset}
+                                  className="transition-all duration-1000"
+                                />
+                              );
+                              offset += pct;
+                              return el;
+                            });
+                          })()}
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          <span className="font-h text-2xl font-bold text-brand-on-surface">{orders.length}</span>
+                          <span className="font-sans text-[9px] uppercase tracking-widest text-brand-on-surface-variant opacity-60">Total</span>
+                        </div>
+                      </div>
                     </div>
-                    <p className="font-sans text-[10px] uppercase tracking-widest font-bold text-brand-on-surface-variant opacity-60 mb-2">Bandwidth Used (Last 30 Days)</p>
-                    <div className="flex items-end gap-2">
-                      <p className="font-h text-2xl font-bold text-brand-on-surface">
-                        {cloudinaryUsage.bandwidth ? (cloudinaryUsage.bandwidth.usage / (1024 * 1024 * 1024)).toFixed(2) : 0} <span className="text-sm">GB</span>
-                      </p>
-                      <p className="text-xs text-brand-on-surface-variant opacity-60 mb-1">
-                        / {cloudinaryUsage.bandwidth ? (cloudinaryUsage.bandwidth.limit / (1024 * 1024 * 1024)).toFixed(2) : 0} GB Limit
-                      </p>
+                    <div className="space-y-2.5">
+                      {[
+                        { label: 'Delivered', value: deliveredOrders.length, color: 'bg-green-400' },
+                        { label: 'Processing', value: processingOrders.length, color: 'bg-blue-400' },
+                        { label: 'Shipped', value: shippedOrders.length, color: 'bg-amber-400' },
+                        { label: 'Cancelled', value: cancelledOrders.length, color: 'bg-red-400' },
+                      ].map(item => (
+                        <div key={item.label} className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2.5 h-2.5 rounded-full ${item.color}`}></div>
+                            <span className="font-sans text-xs text-brand-on-surface-variant font-bold">{item.label}</span>
+                          </div>
+                          <span className="font-h font-bold text-sm text-brand-on-surface">{item.value}</span>
+                        </div>
+                      ))}
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-1.5 mt-3">
-                      <div 
-                        className="bg-purple-500 h-1.5 rounded-full" 
-                        style={{ width: `${cloudinaryUsage.bandwidth ? (cloudinaryUsage.bandwidth.usage / cloudinaryUsage.bandwidth.limit) * 100 : 0}%` }}
-                      ></div>
-                    </div>
-                  </div>
+                  </>
+                )}
+              </div>
+            </div>
 
-                  <div className="bg-brand-surface p-4 rounded-lg border border-brand-surface-normal relative overflow-hidden group">
-                    <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 transition-transform">
-                      <Cloud size={100} />
-                    </div>
-                    <p className="font-sans text-[10px] uppercase tracking-widest font-bold text-brand-on-surface-variant opacity-60 mb-2">Total Credits Used</p>
-                    <div className="flex items-end gap-2">
-                      <p className="font-h text-2xl font-bold text-brand-on-surface">
-                        {cloudinaryUsage.credits ? cloudinaryUsage.credits.usage.toFixed(2) : 0} 
-                      </p>
-                      <p className="text-xs text-brand-on-surface-variant opacity-60 mb-1">
-                        / {cloudinaryUsage.credits ? cloudinaryUsage.credits.limit : 0} Limit
-                      </p>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-1.5 mt-3">
-                      <div 
-                        className="bg-green-500 h-1.5 rounded-full" 
-                        style={{ width: `${cloudinaryUsage.credits ? (cloudinaryUsage.credits.usage / cloudinaryUsage.credits.limit) * 100 : 0}%` }}
-                      ></div>
-                    </div>
+            {/* Payment Method Breakdown Bar */}
+            {orders.length > 0 && (
+              <div className="bg-white p-4 md:p-6 rounded-xl shadow-xl border border-brand-surface-normal">
+                <h3 className="font-h text-base font-bold mb-4">Payment Method Split</h3>
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="font-sans text-xs font-bold text-orange-600 w-32 flex-shrink-0">Cash on Delivery</span>
+                  <div className="flex-1 h-5 bg-brand-surface rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${orders.length ? (codOrders.length / orders.length) * 100 : 0}%` }}
+                      transition={{ duration: 1, ease: 'easeOut' }}
+                      className="h-full bg-orange-400 rounded-full"
+                    />
                   </div>
+                  <span className="font-h font-bold text-sm text-brand-on-surface w-12 text-right">{codOrders.length}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="font-sans text-xs font-bold text-green-600 w-32 flex-shrink-0">Online Payment</span>
+                  <div className="flex-1 h-5 bg-brand-surface rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${orders.length ? (onlineOrders.length / orders.length) * 100 : 0}%` }}
+                      transition={{ duration: 1, ease: 'easeOut', delay: 0.1 }}
+                      className="h-full bg-green-400 rounded-full"
+                    />
+                  </div>
+                  <span className="font-h font-bold text-sm text-brand-on-surface w-12 text-right">{onlineOrders.length}</span>
                 </div>
               </div>
             )}
 
-            <div className="bg-white p-4 md:p-6 rounded-xl shadow-xl border border-brand-surface-normal mt-6">
-              <h3 className="font-h text-lg font-bold mb-8">Recently Added Products</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:p-6">
-                {products.slice(0, 5).map(product => (
-                  <div key={product._id} className="group flex flex-col bg-brand-surface-low rounded-md overflow-hidden hover:shadow-xl transition-all border border-brand-surface-normal hover:border-brand-primary/20">
-                    <div className="aspect-square bg-white flex items-center justify-center overflow-hidden">
-                      {product.images?.[0] ? (
-                        <img src={product.images[0]} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="" />
-                      ) : (
-                        <div className="text-xs text-gray-400 font-sans font-bold uppercase tracking-widest">No Image</div>
-                      )}
-                    </div>
-                    <div className="p-4 flex flex-col flex-grow">
-                      <p className="font-sans text-xs font-medium text-gray-500 text-brand-on-surface-variant opacity-60 mb-1 line-clamp-1">{product.team || product.category}</p>
-                      <p className="font-h text-sm font-bold text-brand-on-surface line-clamp-2 mb-3">{product.name}</p>
-                      <p className="font-h text-lg font-bold text-brand-primary mt-auto">₹{product.price}</p>
-                    </div>
+            {/* Storage & Products Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              {/* Cloudinary Usage */}
+              {cloudinaryUsage && (
+                <div className="bg-white p-4 md:p-6 rounded-xl shadow-xl border border-brand-surface-normal">
+                  <h3 className="font-h text-base font-bold mb-5 flex items-center gap-2">
+                    <Cloud size={18} className="text-blue-500" /> Storage Usage
+                  </h3>
+                  <div className="space-y-4">
+                    {[
+                      { label: 'Storage', used: cloudinaryUsage.storage?.usage, limit: cloudinaryUsage.storage?.limit, color: 'bg-blue-400', unit: 'GB', divisor: 1024*1024*1024 },
+                      { label: 'Bandwidth', used: cloudinaryUsage.bandwidth?.usage, limit: cloudinaryUsage.bandwidth?.limit, color: 'bg-purple-400', unit: 'GB', divisor: 1024*1024*1024 },
+                    ].map(item => {
+                      const pct = item.limit ? (item.used / item.limit) * 100 : 0;
+                      return (
+                        <div key={item.label}>
+                          <div className="flex justify-between text-xs font-sans font-bold mb-1.5">
+                            <span className="text-brand-on-surface-variant opacity-60">{item.label}</span>
+                            <span className="text-brand-on-surface">{item.used ? (item.used / item.divisor).toFixed(2) : 0} / {item.limit ? (item.limit / item.divisor).toFixed(2) : 0} {item.unit}</span>
+                          </div>
+                          <div className="w-full bg-brand-surface rounded-full h-2">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${pct}%` }}
+                              transition={{ duration: 1 }}
+                              className={`h-2 rounded-full ${item.color}`}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                ))}
+                </div>
+              )}
+
+              {/* Recently Added Products */}
+              <div className="bg-white p-4 md:p-6 rounded-xl shadow-xl border border-brand-surface-normal">
+                <h3 className="font-h text-base font-bold mb-5">Recent Products</h3>
+                <div className="space-y-3">
+                  {products.slice(0, 4).map(product => (
+                    <div key={product._id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-brand-surface transition-colors">
+                      <div className="w-12 h-12 rounded-lg overflow-hidden bg-brand-surface-low flex-shrink-0">
+                        {product.images?.[0] ? (
+                          <img src={product.images[0]} className="w-full h-full object-cover" alt="" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">?</div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-h text-sm font-bold text-brand-on-surface line-clamp-1">{product.name}</p>
+                        <p className="font-sans text-xs text-brand-on-surface-variant opacity-60">{product.category}</p>
+                      </div>
+                      <p className="font-h text-sm font-bold text-brand-primary flex-shrink-0">₹{product.price}</p>
+                    </div>
+                  ))}
+                  {products.length === 0 && <p className="text-sm font-sans text-brand-on-surface-variant opacity-50 py-4 text-center">No products added yet.</p>}
+                </div>
               </div>
             </div>
           </div>
         );
+      }
       case 'products':
         return (
           <div className="space-y-5 max-w-6xl mx-auto">
@@ -1727,7 +1859,6 @@ const AdminDashboard = () => {
                           onChange={(e) => setBannerData({ ...bannerData, title: e.target.value })}
                           className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none font-h font-bold text-base transition-all"
                           placeholder="e.g. Wear Your Passion"
-                          required
                         />
                       </div>
                       <div>
@@ -1738,7 +1869,6 @@ const AdminDashboard = () => {
                           onChange={(e) => setBannerData({ ...bannerData, subtitle: e.target.value })}
                           className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none resize-none font-sans text-brand-on-surface transition-all"
                           placeholder="Enter engaging banner details here..."
-                          required
                         />
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:p-6">

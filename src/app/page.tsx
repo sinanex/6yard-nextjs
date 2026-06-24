@@ -175,9 +175,9 @@ export default function Home() {
         </>
 
         {/* Hero Section */}
-        <section className="relative h-[55vh] md:h-[500px] w-full overflow-hidden bg-black">
-          <AnimatePresence mode="popLayout" initial={false}>
-            {banners.length > 0 && (
+        {banners.length > 0 && (
+          <section className="relative h-[55vh] md:h-[500px] w-full overflow-hidden bg-black">
+            <AnimatePresence mode="popLayout" initial={false}>
               <motion.div
                 key={currentBannerIndex}
                 initial={{ x: 300, opacity: 0 }}
@@ -201,40 +201,46 @@ export default function Home() {
                     transition={{ duration: 0.8, delay: 0.2 }}
                     className="max-w-3xl"
                   >
-                    <h1 className="font-h text-white mb-3 md:mb-6 text-[32px] md:text-[72px] leading-[1] font-black uppercase italic tracking-tighter">
-                      {banners[currentBannerIndex]?.title || 'Wear Your Passion'}
-                    </h1>
-                    <p className="font-sans text-sm md:text-xl text-white/70 mb-6 md:mb-10 max-w-xl leading-relaxed">
-                      {banners[currentBannerIndex]?.subtitle || 'Experience the game in peak performance gear. Engineered for the fans, designed for the pros.'}
-                    </p>
-                    <button
-                      onClick={() => navigate.push(banners[currentBannerIndex]?.linkUrl || '/')}
-                      className="bg-brand-primary hover:bg-brand-primary-hover text-white px-8 py-4 md:px-12 md:py-5 rounded-xl md:rounded-2xl font-sans font-bold uppercase tracking-[0.2em] text-[10px] md:text-xs transition-all hover:scale-[1.05] shadow-2xl shadow-brand-primary/40 cursor-pointer active:scale-95"
-                    >
-                      {banners[currentBannerIndex]?.buttonText || 'Shop Now'}
-                    </button>
+                    {banners[currentBannerIndex]?.title && (
+                      <h1 className="font-h text-white mb-3 md:mb-6 text-[32px] md:text-[72px] leading-[1] font-black uppercase italic tracking-tighter">
+                        {banners[currentBannerIndex].title}
+                      </h1>
+                    )}
+                    {banners[currentBannerIndex]?.subtitle && (
+                      <p className="font-sans text-sm md:text-xl text-white/70 mb-6 md:mb-10 max-w-xl leading-relaxed">
+                        {banners[currentBannerIndex].subtitle}
+                      </p>
+                    )}
+                    {banners[currentBannerIndex]?.buttonText && (
+                      <button
+                        onClick={() => navigate.push(banners[currentBannerIndex]?.linkUrl || '/')}
+                        className="bg-brand-primary hover:bg-brand-primary-hover text-white px-8 py-4 md:px-12 md:py-5 rounded-xl md:rounded-2xl font-sans font-bold uppercase tracking-[0.2em] text-[10px] md:text-xs transition-all hover:scale-[1.05] shadow-2xl shadow-brand-primary/40 cursor-pointer active:scale-95"
+                      >
+                        {banners[currentBannerIndex].buttonText}
+                      </button>
+                    )}
                   </motion.div>
                 </div>
               </motion.div>
-            )}
-          </AnimatePresence>
+            </AnimatePresence>
 
-          {/* Carousel Indicators */}
-          {banners.length > 1 && (
-            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-3 z-30">
-              {banners.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setCurrentBannerIndex(idx)}
-                  className={cn(
-                    "h-1.5 rounded-full transition-all duration-500",
-                    currentBannerIndex === idx ? "w-12 bg-brand-primary" : "w-3 bg-white/30 hover:bg-white/60"
-                  )}
-                />
-              ))}
-            </div>
-          )}
-        </section>
+            {/* Carousel Indicators */}
+            {banners.length > 1 && (
+              <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-3 z-30">
+                {banners.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentBannerIndex(idx)}
+                    className={cn(
+                      "h-1.5 rounded-full transition-all duration-500",
+                      currentBannerIndex === idx ? "w-12 bg-brand-primary" : "w-3 bg-white/30 hover:bg-white/60"
+                    )}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+        )}
 
         {/* Categories Section */}
         {categories.length > 0 && (

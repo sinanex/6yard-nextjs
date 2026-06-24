@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 
 const bannerSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  subtitle: { type: String, required: true },
+  title: { type: String },
+  subtitle: { type: String },
   imageUrl: { type: String, required: true },
-  buttonText: { type: String, default: 'Shop Now' },
+  buttonText: { type: String },
   linkUrl: { type: String, default: '/' }
 }, { timestamps: true });
 

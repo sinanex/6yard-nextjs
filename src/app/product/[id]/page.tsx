@@ -545,11 +545,11 @@ export default function ProductDetail() {
         <div className="lg:col-span-5 lg:sticky lg:top-32 space-y-8">
           <div>
 
-            <h1 className="font-h text-[40px] text-brand-on-surface mt-2 mb-4 leading-[1.1] font-bold">{product.name}</h1>
+            <h1 className="font-h text-[24px] md:text-[32px] text-brand-on-surface mt-2 mb-3 leading-[1.2] font-bold">{product.name}</h1>
             <div className="flex items-center gap-4">
-              <span className="font-h text-[32px] text-brand-primary font-bold">₹{(product.discount_price || product.price).toFixed(2)}</span>
+              <span className="font-h text-[22px] md:text-[28px] text-brand-primary font-bold">₹{(product.discount_price || product.price).toFixed(2)}</span>
               {product.discount_price && (
-                <span className="text-brand-on-surface-variant line-through text-lg opacity-40">₹{product.price.toFixed(2)}</span>
+                <span className="text-brand-on-surface-variant line-through text-base opacity-40">₹{product.price.toFixed(2)}</span>
               )}
             </div>
           </div>
@@ -582,24 +582,25 @@ export default function ProductDetail() {
                 const sizeStockInfo = product?.sizeStocks?.find((s: any) => s.size === size);
                 const isOutOfStock = sizeStockInfo ? sizeStockInfo.stock <= 0 : false;
                 return (
-                <button
-                  key={size}
-                  onClick={() => !isOutOfStock && setSelectedSize(size)}
-                  disabled={isOutOfStock}
-                  className={cn(
-                    "relative w-14 h-14 rounded-xl flex items-center justify-center border-2 font-h transition-all overflow-hidden",
-                    isOutOfStock ? "opacity-50 cursor-not-allowed border-brand-surface-normal text-brand-on-surface-variant" : "active:scale-90",
-                    selectedSize === size && !isOutOfStock
-                      ? "border-brand-primary font-bold"
-                      : !isOutOfStock ? "border-brand-surface-normal text-brand-on-surface-variant hover:border-brand-primary-hover" : ""
-                  )}
-                >
-                  <span className={isOutOfStock ? "opacity-50" : ""}>{size}</span>
-                  {isOutOfStock && (
-                    <div className="absolute w-full h-[1.5px] top-1/2 -translate-y-1/2 bg-brand-on-surface-variant pointer-events-none"></div>
-                  )}
-                </button>
-              )})}
+                  <button
+                    key={size}
+                    onClick={() => !isOutOfStock && setSelectedSize(size)}
+                    disabled={isOutOfStock}
+                    className={cn(
+                      "relative w-14 h-14 rounded-xl flex items-center justify-center border-2 font-h transition-all overflow-hidden",
+                      isOutOfStock ? "opacity-50 cursor-not-allowed border-brand-surface-normal text-brand-on-surface-variant" : "active:scale-90",
+                      selectedSize === size && !isOutOfStock
+                        ? "border-brand-primary font-bold"
+                        : !isOutOfStock ? "border-brand-surface-normal text-brand-on-surface-variant hover:border-brand-primary-hover" : ""
+                    )}
+                  >
+                    <span className={isOutOfStock ? "opacity-50" : ""}>{size}</span>
+                    {isOutOfStock && (
+                      <div className="absolute w-full h-[1.5px] top-1/2 -translate-y-1/2 bg-brand-on-surface-variant pointer-events-none"></div>
+                    )}
+                  </button>
+                )
+              })}
             </div>
           </div>
 
@@ -681,8 +682,6 @@ export default function ProductDetail() {
       <div className="mt-24 max-w-4xl mx-auto space-y-4">
         {[
           { id: 'description', title: 'Product Description', content: <p className="py-4 text-brand-on-surface-variant leading-relaxed">{product.description}</p> },
-          { id: 'shipping', title: 'Shipping & Returns', content: <p className="py-4 text-brand-on-surface-variant">Standard shipping (3-5 days) available for all orders. Returns accepted within 30 days of delivery.</p> },
-          { id: 'legal', title: 'Legal & Privacy', content: <p className="py-4 text-brand-on-surface-variant">All designs and logos are properties of their respective owners. By purchasing, you agree to our Terms of Service.</p> },
         ].map(section => (
           <div key={section.id} className="border-b border-brand-surface-normal">
             <button

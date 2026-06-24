@@ -8,16 +8,6 @@ export async function GET() {
   try {
     await dbConnect();
     const banners = await (Banner as any).find().sort({ createdAt: -1 });
-    if (banners.length === 0) {
-      const defaultBanner = new Banner({
-        title: 'Wear Your Passion',
-        subtitle: 'Experience the game in peak performance gear. Engineered for the fans, designed for the pros.',
-        imageUrl: 'https://images.unsplash.com/photo-1541002442-9f5985aa8023',
-        buttonText: 'Shop Now'
-      });
-      await defaultBanner.save();
-      return NextResponse.json([defaultBanner]);
-    }
     return NextResponse.json(banners);
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
