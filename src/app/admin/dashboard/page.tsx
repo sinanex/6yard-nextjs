@@ -1118,6 +1118,22 @@ const AdminDashboard = () => {
                       </div>
                     );
                   })}
+                  
+                  {cloudinaryUsage.media_limits && (
+                    <div className="pt-4 border-t border-brand-surface-normal mt-4">
+                      <p className="text-[10px] font-bold text-brand-on-surface-variant opacity-60 mb-3 uppercase tracking-widest">Image Limits</p>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-brand-surface-low p-3 rounded-xl border border-brand-surface-normal">
+                          <p className="text-[9px] font-bold text-brand-on-surface-variant opacity-60 uppercase tracking-widest mb-1">Max File Size</p>
+                          <p className="font-h text-sm font-bold text-brand-on-surface">{(cloudinaryUsage.media_limits.image_max_size_bytes / (1024*1024)).toFixed(0)} MB</p>
+                        </div>
+                        <div className="bg-brand-surface-low p-3 rounded-xl border border-brand-surface-normal">
+                          <p className="text-[9px] font-bold text-brand-on-surface-variant opacity-60 uppercase tracking-widest mb-1">Max Resolution</p>
+                          <p className="font-h text-sm font-bold text-brand-on-surface">{(cloudinaryUsage.media_limits.image_max_px / 1000000).toFixed(0)} MP</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
