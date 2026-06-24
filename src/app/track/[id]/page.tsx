@@ -127,8 +127,8 @@ export default function TrackOrder() {
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
             <div className="relative z-10 flex flex-col md:flex-row justify-between gap-8">
               <div className="space-y-4">
-                <span className="font-sans font-black text-[10px] uppercase tracking-[0.3em] opacity-60">Shipment Status</span>
-                <h2 className="font-h text-[32px] font-bold leading-tight">{order.status || 'Processing'}</h2>
+                <span className="font-sans font-black text-xs uppercase tracking-widest opacity-60">Shipment Status</span>
+                <h2 className="font-h text-3xl font-bold leading-tight">{order.status || 'Processing'}</h2>
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
                     <Truck size={24} className="text-white" />
@@ -142,7 +142,7 @@ export default function TrackOrder() {
               <div className="self-end text-right">
                 <p className="font-sans text-xs text-white/80 mb-2 font-bold tracking-widest uppercase">Order ID: {order._id?.slice(-8).toUpperCase()}</p>
                 <div className="bg-white/10 px-4 py-3 rounded-xl border border-white/20 mt-4">
-                  <p className="font-sans text-[10px] text-white/60 uppercase tracking-widest font-bold mb-1">
+                  <p className="font-sans text-xs text-white/60 uppercase tracking-widest font-bold mb-1">
                     {order.paymentMethod === 'cod' ? 'To Pay on Delivery' : 'Paid Online'}
                   </p>
                   <p className="font-h text-2xl font-black text-white">
@@ -163,12 +163,12 @@ export default function TrackOrder() {
                     {item.image ? (
                       <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400">No Image</div>
+                      <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">No Image</div>
                     )}
                   </div>
                   <div className="flex-grow">
                     <h4 className="font-h text-lg font-bold text-brand-on-surface">{item.name}</h4>
-                    <p className="font-sans text-[10px] uppercase tracking-widest font-black text-brand-on-surface-variant opacity-60 mt-1">Size: {item.size} • Qty: {item.quantity}</p>
+                    <p className="font-sans text-xs uppercase tracking-widest font-black text-brand-on-surface-variant opacity-60 mt-1">Size: {item.size} • Qty: {item.quantity}</p>
                   </div>
                   <div className="text-right">
                     <p className="font-h font-black text-xl text-brand-primary">₹{(item.price * item.quantity).toFixed(2)}</p>
@@ -207,7 +207,7 @@ export default function TrackOrder() {
                   {/* Text */}
                   <div className="flex flex-col justify-center">
                     <p className={cn(
-                      "font-sans text-[10px] uppercase tracking-widest font-black mb-1",
+                      "font-sans text-xs uppercase tracking-widest font-black mb-1",
                       step.completed ? "text-brand-primary" : "text-brand-on-surface-variant opacity-40"
                     )}>
                       {step.dateStr}
@@ -219,7 +219,7 @@ export default function TrackOrder() {
                       {step.label}
                     </h4>
                     {step.active && (
-                      <span className="mt-1 inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-brand-primary">
+                      <span className="mt-1 inline-flex items-center gap-1 text-xs font-black uppercase tracking-widest text-brand-primary">
                         <span className="w-1.5 h-1.5 rounded-full bg-brand-primary animate-ping inline-block" />
                         In Progress
                       </span>
@@ -273,7 +273,7 @@ export default function TrackOrder() {
                 <MapPin size={22} />
               </div>
               <div>
-                <p className="font-sans font-black text-[10px] uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-1">Delivery Address</p>
+                <p className="font-sans font-black text-xs uppercase tracking-widest text-brand-on-surface-variant opacity-60 mb-1">Delivery Address</p>
                 <p className="font-h font-bold text-brand-on-surface">{order.shippingAddress?.name}</p>
                 <p className="font-sans text-xs text-brand-on-surface-variant mt-1 leading-relaxed">
                   {order.shippingAddress?.address}, {order.shippingAddress?.locality}, {order.shippingAddress?.city} - {order.shippingAddress?.pincode}

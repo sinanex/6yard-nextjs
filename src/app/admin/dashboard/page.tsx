@@ -2075,6 +2075,17 @@ const AdminDashboard = () => {
                       >
                         <Check size={16} />
                       </button>
+                      {order.trackingId && (
+                        <a
+                          href={`https://myspeedpost.com/?n=${order.trackingId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="bg-blue-50 text-blue-600 px-4 py-2.5 rounded-xl font-bold text-sm h-[42px] flex items-center justify-center shadow-md active:scale-95 transition-transform shrink-0 whitespace-nowrap"
+                          title="Track on Speed Post"
+                        >
+                          Track Order
+                        </a>
+                      )}
                     </div>
                   </div>
                   <p className="text-[10px] text-brand-on-surface-variant opacity-60 mt-3">* Changes to Status are saved automatically. Click the check button to save the Tracking ID.</p>
