@@ -159,14 +159,14 @@ const SearchableMultiDropdown = ({
           setIsOpen(!isOpen);
           setSearchTerm("");
         }}
-        className="w-full px-4 py-2 border rounded-lg focus-within:ring-1 focus-within:ring-black focus-within:border-black bg-white cursor-pointer flex justify-between items-center text-sm min-h-[42px]"
+        className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus-within:ring-2 focus-within:ring-brand-primary outline-none cursor-pointer flex justify-between items-center min-h-[44px] transition-all"
       >
         <div className="flex flex-wrap gap-1">
           {selectedValues.length === 0 ? (
             <span className="text-gray-400">{placeholder}</span>
           ) : (
             selectedValues.map(val => (
-              <span key={val} className="bg-gray-100 text-gray-800 text-xs font-bold px-2.5 py-0.5 rounded-full border">
+              <span key={val} className="bg-white text-brand-on-surface text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md shadow-sm border border-brand-surface-normal">
                 {val}
               </span>
             ))
@@ -176,14 +176,14 @@ const SearchableMultiDropdown = ({
       </div>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
-          <div className="p-2 border-b sticky top-0 bg-white">
+        <div className="absolute z-50 w-full mt-2 bg-white border border-brand-surface-normal rounded-xl shadow-xl max-h-60 overflow-y-auto">
+          <div className="p-3 border-b border-brand-surface-normal sticky top-0 bg-white z-10">
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search..."
-              className="w-full px-3 py-1.5 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-black focus:border-black"
+              className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:outline-none focus:ring-2 focus:ring-brand-primary text-sm font-sans"
               autoFocus
             />
           </div>
@@ -197,15 +197,15 @@ const SearchableMultiDropdown = ({
                   <div
                     key={idx}
                     onClick={() => toggleOption(option)}
-                    className="flex items-center gap-3 px-4 py-2 text-sm cursor-pointer hover:bg-gray-100 transition duration-150"
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm cursor-pointer hover:bg-brand-surface-low transition-colors"
                   >
                     <input
                       type="checkbox"
                       checked={isChecked}
                       onChange={() => { }}
-                      className="w-4 h-4 accent-black rounded cursor-pointer"
+                      className="w-4 h-4 accent-brand-primary rounded cursor-pointer"
                     />
-                    <span className="text-gray-700 font-medium">{option}</span>
+                    <span className="text-brand-on-surface font-h font-bold">{option}</span>
                   </div>
                 );
               })
