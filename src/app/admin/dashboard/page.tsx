@@ -1089,8 +1089,8 @@ const AdminDashboard = () => {
               );
             })()}
 
-            {/* Storage Usage */}
-            {cloudinaryUsage && (
+            {/* Storage Usage (Hidden for now) */}
+            {/* {cloudinaryUsage && (
               <div className="bg-white p-4 md:p-6 rounded-xl shadow-xl border border-brand-surface-normal">
                 <h3 className="font-h text-base font-bold mb-5 flex items-center gap-2">
                   <Cloud size={18} className="text-blue-500" /> Storage Usage
@@ -1136,7 +1136,7 @@ const AdminDashboard = () => {
                   )}
                 </div>
               </div>
-            )}
+            )} */}
           </div>
         );
       }
