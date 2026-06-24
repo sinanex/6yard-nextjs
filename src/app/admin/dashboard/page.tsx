@@ -2558,36 +2558,6 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
-              {/* Admin Security */}
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-brand-surface-normal">
-                <h3 className="font-h text-lg font-bold text-brand-on-surface mb-6 flex items-center gap-2">
-                  <SettingsIcon size={20} className="text-brand-primary" /> Admin Security
-                </h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-xs font-medium text-brand-on-surface-variant opacity-60 mb-1">Admin Username</label>
-                    <input
-                      type="text"
-                      value={settings.adminUsername}
-                      onChange={(e) => setSettings({ ...settings, adminUsername: e.target.value })}
-                      className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-brand-on-surface-variant opacity-60 mb-1">Admin Password</label>
-                    <input
-                      type="text"
-                      value={settings.adminPassword}
-                      onChange={(e) => setSettings({ ...settings, adminPassword: e.target.value })}
-                      className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none"
-                      placeholder="Leave blank to keep unchanged"
-                    />
-                    <p className="text-xs mt-1 text-orange-500">Note: Password is shown in plain text for configuration.</p>
-                  </div>
-                </div>
-              </div>
 
               {/* Sales Tags Configuration */}
               <div className="bg-white p-6 rounded-2xl border border-brand-surface-normal shadow-sm mb-6">
