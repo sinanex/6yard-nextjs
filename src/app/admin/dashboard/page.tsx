@@ -1807,84 +1807,122 @@ const AdminDashboard = () => {
           const orderIdStr = order._id.substring(order._id.length - 8);
           const totalAmount = order.totalAmount;
           const codAmount = order.paymentMethod === 'cod' ? totalAmount : 0;
-          const paymentType = order.paymentMethod === 'cod' ? 'COD - Surface' : 'Prepaid - Surface';
+          const paymentType = order.paymentMethod === 'cod' ? 'COD' : 'Prepaid';
           
-          const html = `
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-            <meta charset="UTF-8">
-            <title>Shipping Label</title>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/JsBarcode/3.11.5/JsBarcode.all.min.js"></script>
-            <style>
-              * { box-sizing: border-box; }
-              body {
-                font-family: Arial, Helvetica, sans-serif;
-                background: #e9e9e9;
-                margin: 0;
-                padding: 16px;
-                display: flex;
-                justify-content: center;
-              }
-              .label {
-                width: 400px;
-                background: #fff;
-                border: 2px solid #000;
-                border-radius: 6px;
-                padding: 10px 14px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.12);
-              }
-              .row { display: flex; justify-content: space-between; align-items: center; }
-              .hr { border: none; border-top: 1px solid #888; margin: 5px 0; }
-              .hr-tight { margin: 3px 0 5px; }
-              .header-row { align-items: center; margin-bottom: 0; }
-              .header-center { justify-content: center; }
-              .seller-name { font-size: 22px; font-weight: 800; letter-spacing: 0.5px; line-height: 1; margin: 0; }
-              .barcode-wrap { text-align: center; margin: 0; }
-              .barcode-wrap svg { width: 100%; height: auto; max-height: 60px; display: block; }
-              .ship-block { display: flex; }
-              .ship-left { flex: 1.5; padding-right: 8px; }
-              .ship-right { flex: 1; border-left: 1px solid #888; padding-left: 10px; }
-              .ship-to-label { font-size: 15px; margin-bottom: 1px; }
-              .ship-to-label b { font-size: 16px; }
-              .ship-addr-line { font-size: 14px; margin: 0; }
-              .ship-city { font-weight: 700; font-size: 14.5px; margin: 0; }
-              .ship-state { font-weight: 700; font-size: 14.5px; }
-              .ship-pin { font-weight: 700; font-size: 14.5px; margin-top: 1px; }
-              .cod-label { font-size: 14px; font-weight: 700; }
-              .cod-amount { font-size: 17px; font-weight: 700; margin-top: 1px; }
-              .date-label { font-size: 13px; font-weight: 700; margin-top: 3px; }
-              .date-value { font-size: 13.5px; margin-top: 0; }
-              .seller-block { display: flex; justify-content: space-between; align-items: center; }
-              .seller-info { font-size: 13px; max-width: 195px; line-height: 1.3; }
-              .seller-info b { font-size: 14px; }
-              .order-barcode-box { text-align: center; width: 155px; }
-              .order-num { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
-              .order-barcode-box svg { width: 100%; height: 42px; display: block; }
-              table.product-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 0; }
-              table.product-table th { text-align: left; font-weight: 700; padding-bottom: 1px; }
-              table.product-table th:nth-child(2),
-              table.product-table th:nth-child(3),
-              table.product-table th:nth-child(4) { text-align: right; }
-              table.product-table td { padding: 0; vertical-align: top; }
-              table.product-table td:nth-child(2),
-              table.product-table td:nth-child(3),
-              table.product-table td:nth-child(4) { text-align: right; }
-              .sku-line { color: #000; font-weight: 600; }
-              .footer { display: flex; justify-content: space-between; align-items: flex-end; font-size: 11px; margin-top: 4px; color: #222; }
-              .footer .return-addr { max-width: 320px; line-height: 1.3; }
-              .footer .page { font-weight: 600; white-space: nowrap; }
-              @media print {
-                body { background: #fff; padding: 0; }
-                .label { box-shadow: none; border-radius: 0; }
-              }
-            </style>
-            </head>
-            <body>
-            <div class="label">
-              <div class="row header-row header-center">
-                <div class="seller-name">6YARD</div>
+          const numberToWords = (num: number) => {
+            const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
+            const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+            const strNum = Math.floor(num).toString();
+            if (strNum.length > 9) return 'overflow';
+            let n: any = ('000000000' + strNum).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+            if (!n) return '';
+            let str = '';
+            str += (n[1] != 0) ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'Crore ' : '';
+            str += (n[2] != 0) ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'Lakh ' : '';
+            str += (n[3] != 0) ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'Thousand ' : '';
+            str += (n[4] != 0) ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + 'Hundred ' : '';
+            str += (n[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) + 'Rupees Only' : 'Rupees Only';
+            return str;
+          };
+
+          const invoiceHtml = `
+            <div class="invoice-container">
+              <div class="header">
+                <img src="${window.location.origin}/logo.png" class="logo" alt="6YARD Logo" onerror="this.style.display='none'" />
+                <div class="company-info">
+                  <strong>6YARD</strong><br>
+                  Afnan pk 6 yard, metro square manjeri opposite Ksfe<br>
+                  manjeri 676121 8590394491<br>
+                  Manjeri, Kerala, India, 676121
+                </div>
+                <div class="invoice-details">
+                  <strong>Tax Invoice #</strong> ${orderIdStr}<br>
+                  <strong>Date:</strong> ${new Date(order.createdAt).toLocaleDateString()}<br>
+                  <strong>Payment:</strong> ${paymentType}
+                </div>
               </div>
+              <div class="details-row">
+                <div class="order-info">
+                  <div class="info-title">Order ID:</div>
+                  <div>${order._id}</div>
+                  <div class="info-title" style="margin-top:10px;">Order Date:</div>
+                  <div>${new Date(order.createdAt).toLocaleDateString()}</div>
+                </div>
+                <div class="billing-info">
+                  <div class="info-title">Billing Address</div>
+                  <b>${order.shippingAddress?.name || 'Customer'}</b><br>
+                  ${order.shippingAddress?.address || ''}<br>
+                  ${order.shippingAddress?.locality || ''}<br>
+                  ${order.shippingAddress?.city || ''}, ${order.shippingAddress?.state || ''}<br>
+                  PIN - ${order.shippingAddress?.pincode || ''}<br>
+                  Phone: ${order.shippingAddress?.phone || order.user?.phone || ''}
+                </div>
+                <div class="shipping-info">
+                  <div class="info-title">Shipping Address</div>
+                  <b>${order.shippingAddress?.name || 'Customer'}</b><br>
+                  ${order.shippingAddress?.address || ''}<br>
+                  ${order.shippingAddress?.locality || ''}<br>
+                  ${order.shippingAddress?.city || ''}, ${order.shippingAddress?.state || ''}<br>
+                  PIN - ${order.shippingAddress?.pincode || ''}<br>
+                  Phone: ${order.shippingAddress?.phone || order.user?.phone || ''}
+                </div>
+              </div>
+              <table class="items-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th style="width: 40%">Title</th>
+                    <th class="right">Qty</th>
+                    <th class="right">Price (₹)</th>
+                    <th class="right">Total (₹)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${order.items.map((item: any) => `
+                    <tr>
+                      <td>Item</td>
+                      <td><b>${item.name}</b><br><span style="font-size:10px;color:#555;">Size: ${item.size}</span></td>
+                      <td class="right">${item.quantity}</td>
+                      <td class="right">${item.price.toFixed(2)}</td>
+                      <td class="right">${(item.price * item.quantity).toFixed(2)}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+              <div class="totals">
+                <table class="totals-table">
+                  <tr>
+                    <td>Total</td>
+                    <td class="right">${order.totalAmount.toFixed(2)}</td>
+                  </tr>
+                  <tr class="grand-total">
+                    <td>Grand Total</td>
+                    <td class="right">₹ ${order.totalAmount.toFixed(2)}</td>
+                  </tr>
+                  <tr>
+                    <td colspan="2" style="font-size:10px;text-align:right;border:none;">
+                      <i>${numberToWords(order.totalAmount)}</i>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+              <div class="footer">
+                Returns Policy: We try to deliver perfectly each and every time. But in the off-chance that you need to return the item, please do so with the original Brand box/price tag, original packing and invoice.
+                <br><br>
+                <i>This is a computer generated invoice. No signature required.</i>
+              </div>
+            </div>
+          `;
+
+          const shippingLabelHtml = `
+            <div class="shipping-label">
+              ${order.paymentMethod === 'cod' 
+                ? `<div class="cod-banner">CASH ON DELIVERY</div>
+                   <div class="amount-box">TO COLLECT: INR ${order.totalAmount}<br><span style="font-size:12px;font-weight:normal;">(${numberToWords(order.totalAmount)})</span></div>`
+                : `<div class="row header-row header-center">
+                     <img src="${window.location.origin}/logo.png" style="max-height: 40px;" alt="6YARD" onerror="this.style.display='none'" />
+                   </div>`
+              }
               <hr class="hr hr-tight">
               <div class="barcode-wrap">
                 <svg id="barcode-awb"></svg>
@@ -1901,18 +1939,19 @@ const AdminDashboard = () => {
                 </div>
                 <div class="ship-right">
                   <div class="cod-label">${paymentType}</div>
-                  <div class="cod-amount">INR ${codAmount}</div>
+                  <div class="cod-amount">INR ${order.totalAmount}</div>
                   <hr class="hr">
                   <div class="date-label">Date</div>
-                  <div class="date-value">${new Date(order.createdAt).toLocaleString()}</div>
+                  <div class="date-value">${new Date(order.createdAt).toLocaleDateString()}</div>
                 </div>
               </div>
               <hr class="hr">
               <div class="seller-block">
                 <div class="seller-info">
-                  <b>Seller:6YARD</b><br>
-                  Manjerithodi House, Mongam, kerala, 673642 ,
-                  Mongam, Kerala, India, 673642
+                  <b>Seller: 6YARD</b><br>
+                  Afnan pk 6 yard, metro square manjeri opposite Ksfe<br>
+                  manjeri 676121 8590394491<br>
+                  Manjeri, Kerala, India, 676121
                 </div>
                 <div class="order-barcode-box">
                   <div class="order-num">${orderIdStr}</div>
@@ -1925,7 +1964,6 @@ const AdminDashboard = () => {
                   <tr>
                     <th>Product Name &amp; Size</th>
                     <th>Qty.</th>
-                    <th>Price</th>
                     <th>Total</th>
                   </tr>
                 </thead>
@@ -1934,49 +1972,120 @@ const AdminDashboard = () => {
                     <tr>
                       <td class="sku-line">${item.name} (Size: ${item.size})</td>
                       <td>${item.quantity}</td>
-                      <td>${item.price}</td>
-                      <td>${item.price * item.quantity}</td>
+                      <td>${(item.price * item.quantity).toFixed(2)}</td>
                     </tr>
                   `).join('')}
                 </tbody>
               </table>
-              <hr class="hr">
-              <div class="footer">
-                <div class="return-addr">
-                  Return Address: Afnan pk 6 yard, metro square manjeri opposite Ksfe
-                  manjeri 676121 8590394491 , Manjeri, Kerala, India, 676121
-                </div>
-                <div class="page">Page 1 of 1</div>
-              </div>
             </div>
-            <script>
-              window.onload = function() {
-                JsBarcode("#barcode-awb", "${awb}", {
-                  format: "CODE128",
-                  displayValue: false,
-                  height: 70,
-                  width: 2.2,
-                  margin: 0,
-                  background: "#ffffff",
-                  lineColor: "#000000"
-                });
-                JsBarcode("#barcode-order", "${orderIdStr}", {
-                  format: "CODE128",
-                  displayValue: false,
-                  height: 42,
-                  width: 2.2,
-                  margin: 0,
-                  background: "#ffffff",
-                  lineColor: "#000000"
-                });
-                setTimeout(function() {
-                  window.print();
-                }, 500);
-              };
-            </script>
+          `;
+
+          const html = `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+            <meta charset="UTF-8">
+            <title>Print Label & Invoice</title>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/JsBarcode/3.11.5/JsBarcode.all.min.js"></script>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 0; padding: 20px; color: #000; font-size: 12px; }
+              .invoice-container { width: 100%; max-width: 800px; margin: 0 auto; }
+              .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
+              .logo { max-width: 150px; max-height: 50px; }
+              .company-info { font-size: 11px; line-height: 1.4; text-align: left; flex: 1; margin-left: 20px; }
+              .invoice-details { text-align: right; font-size: 12px; }
+              .details-row { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #000; padding-bottom: 15px; }
+              .order-info { width: 30%; line-height: 1.6; }
+              .billing-info, .shipping-info { width: 33%; line-height: 1.4; }
+              .info-title { font-weight: bold; margin-bottom: 5px; font-size: 13px; }
+              .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+              .items-table th { border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 8px 5px; text-align: left; font-weight: bold; }
+              .items-table td { padding: 10px 5px; vertical-align: top; }
+              .items-table th.right, .items-table td.right { text-align: right; }
+              .totals { display: flex; justify-content: flex-end; margin-top: 10px; border-top: 1px solid #ccc; padding-top: 10px; }
+              .totals-table { width: 300px; border-collapse: collapse; }
+              .totals-table td { padding: 5px; font-size: 14px; }
+              .totals-table td.right { text-align: right; }
+              .grand-total { border-top: 2px solid #000; border-bottom: 2px solid #000; font-weight: bold; font-size: 16px; }
+              .grand-total td { padding: 10px 5px; }
+              .footer { margin-top: 40px; font-size: 10px; line-height: 1.4; color: #555; border-top: 1px dashed #ccc; padding-top: 10px; text-align: center; }
+              .page-break { page-break-before: always; height: 1px; }
+
+              .shipping-label { width: 400px; border: 2px solid #000; padding: 15px; margin: 40px auto 0; box-sizing: border-box; }
+              .cod-banner { font-size: 24px; font-weight: 900; text-align: center; border-bottom: 3px solid #000; padding-bottom: 10px; margin-bottom: 15px; letter-spacing: 1px; }
+              .amount-box { text-align: center; font-size: 24px; font-weight: 900; padding: 10px; border: 3px dashed #000; margin: 15px 0; background: #fdfdfd; }
+              .row { display: flex; justify-content: space-between; align-items: center; }
+              .hr { border: none; border-top: 1px solid #888; margin: 5px 0; }
+              .hr-tight { margin: 3px 0 5px; }
+              .header-row { align-items: center; margin-bottom: 0; }
+              .header-center { justify-content: center; }
+              .barcode-wrap { text-align: center; margin: 0; }
+              .barcode-wrap svg { width: 100%; height: auto; max-height: 60px; display: block; }
+              .ship-block { display: flex; }
+              .ship-left { flex: 1.5; padding-right: 8px; }
+              .ship-right { flex: 1; border-left: 1px solid #888; padding-left: 10px; }
+              .ship-to-label { font-size: 15px; margin-bottom: 1px; }
+              .ship-to-label b { font-size: 16px; }
+              .ship-addr-line { font-size: 14px; margin: 0; }
+              .ship-city { font-weight: 700; font-size: 14.5px; margin: 0; }
+              .ship-state { font-weight: 700; font-size: 14.5px; }
+              .ship-pin { font-weight: 700; font-size: 14.5px; margin-top: 1px; }
+              .cod-label { font-size: 14px; font-weight: 700; }
+              .cod-amount { font-size: 17px; font-weight: 700; margin-top: 1px; }
+              .date-label { font-size: 13px; font-weight: 700; margin-top: 3px; }
+              .date-value { font-size: 13.5px; margin-top: 0; }
+              .seller-block { display: flex; justify-content: space-between; align-items: center; margin-top: 5px; }
+              .seller-info { font-size: 13px; max-width: 195px; line-height: 1.3; }
+              .seller-info b { font-size: 14px; }
+              .order-barcode-box { text-align: center; width: 155px; }
+              .order-num { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+              .order-barcode-box svg { width: 100%; height: 42px; display: block; }
+              table.product-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 5px; }
+              table.product-table th { text-align: left; font-weight: 700; padding-bottom: 1px; }
+              table.product-table th:nth-child(2), table.product-table th:nth-child(3) { text-align: right; }
+              table.product-table td { padding: 0; vertical-align: top; }
+              table.product-table td:nth-child(2), table.product-table td:nth-child(3) { text-align: right; }
+              .sku-line { color: #000; font-weight: 600; }
+              @media print {
+                body { padding: 0; }
+                .shipping-label { margin-top: 0; }
+              }
+            </style>
+            </head>
+            <body>
+              ${invoiceHtml}
+              <div class="page-break"></div>
+              ${shippingLabelHtml}
+
+              <script>
+                window.onload = function() {
+                  JsBarcode("#barcode-awb", "${awb}", {
+                    format: "CODE128",
+                    displayValue: false,
+                    height: 70,
+                    width: 2.2,
+                    margin: 0,
+                    background: "#ffffff",
+                    lineColor: "#000000"
+                  });
+                  JsBarcode("#barcode-order", "${orderIdStr}", {
+                    format: "CODE128",
+                    displayValue: false,
+                    height: 42,
+                    width: 2.2,
+                    margin: 0,
+                    background: "#ffffff",
+                    lineColor: "#000000"
+                  });
+                  setTimeout(function() {
+                    window.print();
+                  }, 800);
+                };
+              </script>
             </body>
             </html>
           `;
+
           printWindow.document.write(html);
           printWindow.document.close();
         };
