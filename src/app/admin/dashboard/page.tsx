@@ -1816,8 +1816,12 @@ const AdminDashboard = () => {
         };
 
         const handlePrintInvoice = () => {
-          const printWindow = window.open('', '_blank');
-          if (!printWindow) return;
+          const iframe = document.createElement('iframe');
+          iframe.style.position = 'absolute';
+          iframe.style.width = '0px';
+          iframe.style.height = '0px';
+          iframe.style.border = 'none';
+          document.body.appendChild(iframe);
 
           const orderIdStr = order._id.substring(order._id.length - 8);
           const paymentType = order.paymentMethod === 'cod' ? 'COD' : 'Prepaid';
@@ -1829,27 +1833,27 @@ const AdminDashboard = () => {
             <meta charset="UTF-8">
             <title>Invoice</title>
             <style>
-              body { font-family: Arial, sans-serif; margin: 0; padding: 10px; color: #000; font-size: 11px; }
+              body { font-family: Arial, sans-serif; margin: 0; padding: 20px; color: #000; font-size: 12px; }
               .invoice-container { width: 100%; max-width: 800px; margin: 0 auto; }
-              .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px; }
-              .logo { max-width: 130px; max-height: 40px; }
-              .company-info { font-size: 11px; line-height: 1.3; text-align: left; flex: 1; margin-left: 20px; }
-              .invoice-details { text-align: right; font-size: 11px; }
-              .details-row { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #000; padding-bottom: 5px; }
-              .order-info { width: 45%; line-height: 1.4; }
-              .shipping-info { width: 45%; line-height: 1.3; }
-              .info-title { font-weight: bold; margin-bottom: 3px; font-size: 12px; }
-              .items-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
-              .items-table th { border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 5px 3px; text-align: left; font-weight: bold; }
-              .items-table td { padding: 5px 3px; vertical-align: top; }
+              .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
+              .logo { max-width: 150px; max-height: 50px; }
+              .company-info { font-size: 11px; line-height: 1.4; text-align: left; flex: 1; margin-left: 20px; }
+              .invoice-details { text-align: right; font-size: 12px; }
+              .details-row { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #000; padding-bottom: 15px; }
+              .order-info { width: 45%; line-height: 1.6; }
+              .shipping-info { width: 45%; line-height: 1.4; }
+              .info-title { font-weight: bold; margin-bottom: 5px; font-size: 13px; }
+              .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+              .items-table th { border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 8px 5px; text-align: left; font-weight: bold; }
+              .items-table td { padding: 10px 5px; vertical-align: top; }
               .items-table th.right, .items-table td.right { text-align: right; }
-              .totals { display: flex; justify-content: flex-end; margin-top: 5px; border-top: 1px solid #ccc; padding-top: 5px; }
-              .totals-table { width: 250px; border-collapse: collapse; }
-              .totals-table td { padding: 3px; font-size: 12px; }
+              .totals { display: flex; justify-content: flex-end; margin-top: 10px; border-top: 1px solid #ccc; padding-top: 10px; }
+              .totals-table { width: 300px; border-collapse: collapse; }
+              .totals-table td { padding: 5px; font-size: 14px; }
               .totals-table td.right { text-align: right; }
-              .grand-total { border-top: 2px solid #000; border-bottom: 2px solid #000; font-weight: bold; font-size: 14px; }
-              .grand-total td { padding: 5px 3px; }
-              .footer { margin-top: 15px; font-size: 10px; line-height: 1.3; color: #555; border-top: 1px dashed #ccc; padding-top: 5px; text-align: center; }
+              .grand-total { border-top: 2px solid #000; border-bottom: 2px solid #000; font-weight: bold; font-size: 16px; }
+              .grand-total td { padding: 10px 5px; }
+              .footer { margin-top: 40px; font-size: 10px; line-height: 1.4; color: #555; border-top: 1px dashed #ccc; padding-top: 10px; text-align: center; }
               @media print {
                 body { padding: 0; }
               }
@@ -1932,6 +1936,7 @@ const AdminDashboard = () => {
             <script>
               window.onload = function() {
                 setTimeout(function() {
+                  window.focus();
                   window.print();
                 }, 500);
               };
@@ -1940,13 +1945,27 @@ const AdminDashboard = () => {
             </html>
           `;
 
-          printWindow.document.write(invoiceHtml);
-          printWindow.document.close();
+          const doc = iframe.contentWindow?.document;
+          if (doc) {
+            doc.open();
+            doc.write(invoiceHtml);
+            doc.close();
+          }
+
+          setTimeout(() => {
+            if (document.body.contains(iframe)) {
+              document.body.removeChild(iframe);
+            }
+          }, 10000);
         };
 
         const handlePrintCODLabel = () => {
-          const printWindow = window.open('', '_blank');
-          if (!printWindow) return;
+          const iframe = document.createElement('iframe');
+          iframe.style.position = 'absolute';
+          iframe.style.width = '0px';
+          iframe.style.height = '0px';
+          iframe.style.border = 'none';
+          document.body.appendChild(iframe);
 
           const awb = order.trackingId || 'NOT-SHIPPED';
           const orderIdStr = order._id.substring(order._id.length - 8);
@@ -1957,132 +1976,47 @@ const AdminDashboard = () => {
             <head>
             <meta charset="UTF-8">
             <title>COD Print Label</title>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/JsBarcode/3.11.5/JsBarcode.all.min.js"></script>
             <style>
-              body { font-family: Arial, sans-serif; margin: 0; padding: 5px; color: #000; font-size: 11px; display: flex; justify-content: center; }
-              .shipping-label { width: 380px; border: 2px solid #000; padding: 10px; box-sizing: border-box; }
-              .cod-banner { font-size: 20px; font-weight: 900; text-align: center; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 8px; letter-spacing: 1px; }
-              .amount-box { text-align: center; font-size: 20px; font-weight: 900; padding: 6px; border: 2px dashed #000; margin: 8px 0; background: #fdfdfd; }
-              .hr { border: none; border-top: 1px solid #888; margin: 3px 0; }
-              .hr-tight { margin: 2px 0 3px; }
-              .barcode-wrap { text-align: center; margin: 0; }
-              .barcode-wrap svg { width: 100%; height: auto; max-height: 50px; display: block; }
-              .ship-block { display: flex; }
-              .ship-left { flex: 1.5; padding-right: 5px; }
-              .ship-right { flex: 1; border-left: 1px solid #888; padding-left: 5px; }
-              .ship-to-label { font-size: 13px; margin-bottom: 1px; }
-              .ship-to-label b { font-size: 14px; }
-              .ship-addr-line { font-size: 12px; margin: 0; }
-              .ship-city { font-weight: 700; font-size: 13px; margin: 0; }
-              .ship-state { font-weight: 700; font-size: 13px; }
-              .ship-pin { font-weight: 700; font-size: 13px; margin-top: 1px; }
-              .cod-label { font-size: 13px; font-weight: 700; }
-              .cod-amount { font-size: 15px; font-weight: 700; margin-top: 1px; }
-              .date-label { font-size: 12px; font-weight: 700; margin-top: 2px; }
-              .date-value { font-size: 12px; margin-top: 0; }
-              .seller-block { display: flex; justify-content: space-between; align-items: center; margin-top: 3px; }
-              .seller-info { font-size: 11px; max-width: 195px; line-height: 1.2; }
-              .seller-info b { font-size: 12px; }
-              .order-barcode-box { text-align: center; width: 140px; }
-              .order-num { font-size: 14px; font-weight: 700; margin-bottom: 1px; }
-              .order-barcode-box svg { width: 100%; height: 35px; display: block; }
-              table.product-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 3px; }
-              table.product-table th { text-align: left; font-weight: 700; padding-bottom: 1px; }
-              table.product-table th:nth-child(2), table.product-table th:nth-child(3) { text-align: right; }
-              table.product-table td { padding: 0; vertical-align: top; }
-              table.product-table td:nth-child(2), table.product-table td:nth-child(3) { text-align: right; }
-              .sku-line { color: #000; font-weight: 600; }
+              body { font-family: Arial, sans-serif; margin: 0; padding: 0; color: #000; display: flex; justify-content: center; }
+              .shipping-label { width: 280px; padding: 10px; box-sizing: border-box; }
+              .title { font-size: 18px; font-weight: 900; text-align: center; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px; }
+              .amount-box { text-align: center; border: 2px solid #000; padding: 10px; margin-bottom: 15px; border-radius: 5px; }
+              .amount-num { font-size: 22px; font-weight: 900; }
+              .amount-words { font-size: 12px; margin-top: 5px; display: block; }
+              .section-title { font-size: 12px; font-weight: bold; border-bottom: 1px solid #000; margin-bottom: 5px; padding-bottom: 2px; text-transform: uppercase; }
+              .address-block { margin-bottom: 15px; font-size: 13px; line-height: 1.4; }
+              .address-block b { font-size: 14px; }
               @media print {
-                body { padding: 0; }
+                body { padding: 0; margin: 0; }
               }
             </style>
             </head>
             <body>
             <div class="shipping-label">
-              <div class="cod-banner">CASH ON DELIVERY</div>
-              <div class="amount-box">TO COLLECT: INR ${order.totalAmount}<br><span style="font-size:12px;font-weight:normal;">(${numberToWords(order.totalAmount)})</span></div>
-              <hr class="hr hr-tight">
-              <div class="barcode-wrap">
-                <svg id="barcode-awb"></svg>
+              <div class="title">CASH ON DELIVERY</div>
+              <div class="amount-box">
+                <div class="amount-num">INR ${order.totalAmount}</div>
+                <div class="amount-words">(${numberToWords(order.totalAmount)})</div>
               </div>
-              <hr class="hr">
-              <div class="ship-block">
-                <div class="ship-left">
-                  <div class="ship-to-label">Ship to - <b>${order.shippingAddress?.name || 'Customer'}</b></div>
-                  <div class="ship-addr-line">${order.shippingAddress?.address || ''} ${order.shippingAddress?.locality || ''}</div>
-                  <div class="ship-city">${order.shippingAddress?.city || ''}</div>
-                  <div class="ship-state">(${order.shippingAddress?.state || ''})</div>
-                  <div class="ship-pin">PIN - ${order.shippingAddress?.pincode || ''}</div>
-                  <div class="ship-pin">Phone: ${order.shippingAddress?.phone || order.user?.phone || ''}</div>
-                </div>
-                <div class="ship-right">
-                  <div class="cod-label">COD</div>
-                  <div class="cod-amount">INR ${order.totalAmount}</div>
-                  <hr class="hr">
-                  <div class="date-label">Date</div>
-                  <div class="date-value">${new Date(order.createdAt).toLocaleDateString()}</div>
-                </div>
+              <div class="section-title">Ship To</div>
+              <div class="address-block">
+                <b>${order.shippingAddress?.name || 'Customer'}</b><br>
+                ${order.shippingAddress?.address || ''} ${order.shippingAddress?.locality || ''}<br>
+                ${order.shippingAddress?.city || ''}, ${order.shippingAddress?.state || ''}<br>
+                PIN - ${order.shippingAddress?.pincode || ''}<br>
+                Phone: ${order.shippingAddress?.phone || order.user?.phone || ''}
               </div>
-              <hr class="hr">
-              <div class="seller-block">
-                <div class="seller-info">
-                  <b>Seller: 6YARD</b><br>
-                  Manjerithodi House, Mongam, kerala, 673642 ,<br>
-                  Mongam, Kerala, India, 673642
-                </div>
-                <div class="order-barcode-box">
-                  <div class="order-num">${orderIdStr}</div>
-                  <svg id="barcode-order"></svg>
-                </div>
-              </div>
-              <hr class="hr">
-              <table class="product-table">
-                <thead>
-                  <tr>
-                    <th>Product Name &amp; Size</th>
-                    <th>Qty.</th>
-                    <th>Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${order.items.map((item: any) => `
-                    <tr>
-                      <td class="sku-line">${item.name} (Size: ${item.size})</td>
-                      <td>${item.quantity}</td>
-                      <td>${(item.price * item.quantity).toFixed(2)}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-              <hr class="hr">
-              <div style="display: flex; justify-content: space-between; align-items: flex-end; font-size: 11px; margin-top: 4px; color: #222;">
-                <div style="max-width: 320px; line-height: 1.3;">
-                  <b>Return Address:</b> Afnan pk 6 yard, metro square manjeri opposite Ksfe manjeri 676121 8590394491 , Manjeri, Kerala, India, 676121
-                </div>
-                <div style="font-weight: 600; white-space: nowrap;">Page 1 of 1</div>
+              <div class="section-title">Seller Address</div>
+              <div class="address-block">
+                <b>6YARD</b><br>
+                Manjerithodi House, Mongam, kerala, 673642<br>
+                Mongam, Kerala, India, 673642
               </div>
             </div>
             <script>
               window.onload = function() {
-                JsBarcode("#barcode-awb", "${awb}", {
-                  format: "CODE128",
-                  displayValue: false,
-                  height: 70,
-                  width: 2.2,
-                  margin: 0,
-                  background: "#ffffff",
-                  lineColor: "#000000"
-                });
-                JsBarcode("#barcode-order", "${orderIdStr}", {
-                  format: "CODE128",
-                  displayValue: false,
-                  height: 42,
-                  width: 2.2,
-                  margin: 0,
-                  background: "#ffffff",
-                  lineColor: "#000000"
-                });
                 setTimeout(function() {
+                  window.focus();
                   window.print();
                 }, 500);
               };
@@ -2091,8 +2025,18 @@ const AdminDashboard = () => {
             </html>
           `;
 
-          printWindow.document.write(codLabelHtml);
-          printWindow.document.close();
+          const doc = iframe.contentWindow?.document;
+          if (doc) {
+            doc.open();
+            doc.write(codLabelHtml);
+            doc.close();
+          }
+
+          setTimeout(() => {
+            if (document.body.contains(iframe)) {
+              document.body.removeChild(iframe);
+            }
+          }, 10000);
         };
 
         return (
