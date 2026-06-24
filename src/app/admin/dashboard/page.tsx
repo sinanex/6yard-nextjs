@@ -960,30 +960,85 @@ const AdminDashboard = () => {
 
             {/* Out of Stock / Sold Out Products */}
             {(() => {
-              const outOfStockProducts = products.filter(p => {
+              // Navigate to products tab and load product for editing
+              const navigateToEdit = (product: any) => {
+                setIsEditMode(true);
+                setEditingProductId(product._id);
+                const productFormState = {
+                  name: product.name || '',
+                  description: product.description || '',
+                  brand: product.brand || '',
+                  team: product.team || '',
+                  category: product.category || '',
+                  subcategory: product.subcategory || '',
+                  price: product.price || '',
+                  discount_price: product.discount_price || '',
+                  stock: product.stock || 0,
+                  isAvailable: product.isAvailable !== undefined ? product.isAvailable : true,
+                  sizes: Array.isArray(product.sizes) ? product.sizes.join(', ') : product.sizes || '',
+                  sizeStocks: product.sizeStocks && product.sizeStocks.length > 0
+                    ? product.sizeStocks.map((s: any) => ({ size: s.size, stock: s.stock }))
+                    : [{ size: 'S', stock: '' }, { size: 'M', stock: '' }, { size: 'L', stock: '' }, { size: 'XL', stock: '' }, { size: 'XXL', stock: '' }],
+                  salesTag: product.salesTag || '',
+                  colors: Array.isArray(product.colors) ? product.colors.join(', ') : product.colors || '',
+                  customNameNumber: product.customNameNumber || false,
+                  tempImages: Array(5).fill(null),
+                  existingImages: [
+                    product.images?.[0] || null,
+                    product.images?.[1] || null,
+                    product.images?.[2] || null,
+                    product.images?.[3] || null,
+                    product.images?.[4] || null
+                  ]
+                };
+                setProductForms([productFormState]);
+                setActiveTab('products');
+              };
+
+              // Products where ALL sizes are sold out
+              const soldOutProducts = products.filter(p => {
                 if (p.sizeStocks && p.sizeStocks.length > 0) {
                   return p.sizeStocks.every((s: any) => !s.stock || Number(s.stock) <= 0);
                 }
                 return !p.stock || Number(p.stock) <= 0;
               });
+
+              // Products where SOME sizes are sold out (partial)
+              const partialOutProducts = products.filter(p => {
+                if (p.sizeStocks && p.sizeStocks.length > 0) {
+                  const hasSomeOut = p.sizeStocks.some((s: any) => !s.stock || Number(s.stock) <= 0);
+                  const hasAllOut = p.sizeStocks.every((s: any) => !s.stock || Number(s.stock) <= 0);
+                  return hasSomeOut && !hasAllOut;
+                }
+                return false;
+              });
+
+              const totalCount = soldOutProducts.length + partialOutProducts.length;
+
               return (
                 <div className="bg-white p-4 md:p-6 rounded-xl shadow-xl border border-brand-surface-normal">
                   <div className="flex items-center justify-between mb-5">
                     <h3 className="font-h text-base font-bold flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse inline-block"></span>
-                      Out of Stock / Sold Out Products
+                      Stock Alert
                     </h3>
                     <span className="bg-red-50 text-red-600 text-xs font-bold px-3 py-1 rounded-full border border-red-100">
-                      {outOfStockProducts.length} Products
+                      {totalCount} Products
                     </span>
                   </div>
-                  {outOfStockProducts.length === 0 ? (
-                    <p className="text-sm font-sans text-green-600 font-bold py-4 text-center">✅ All products are in stock!</p>
+
+                  {totalCount === 0 ? (
+                    <p className="text-sm font-sans text-green-600 font-bold py-4 text-center">✅ All products are fully in stock!</p>
                   ) : (
-                    <div className="space-y-3">
-                      {outOfStockProducts.map(product => (
-                        <div key={product._id} className="flex items-center gap-3 p-3 rounded-xl bg-red-50 border border-red-100">
-                          <div className="w-12 h-12 rounded-lg overflow-hidden bg-white flex-shrink-0 border border-red-100">
+                    <div className="space-y-2">
+                      {/* Fully Sold Out */}
+                      {soldOutProducts.map(product => (
+                        <div
+                          key={product._id}
+                          onClick={() => navigateToEdit(product)}
+                          className="flex items-center gap-3 p-3 rounded-xl bg-red-50 border border-red-100 cursor-pointer hover:bg-red-100 transition-colors active:scale-[0.99]"
+                        >
+                          <div className="w-11 h-11 rounded-lg overflow-hidden bg-white flex-shrink-0 border border-red-100">
                             {product.images?.[0] ? (
                               <img src={product.images[0]} className="w-full h-full object-cover" alt="" />
                             ) : (
@@ -992,11 +1047,41 @@ const AdminDashboard = () => {
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="font-h text-sm font-bold text-brand-on-surface line-clamp-1">{product.name}</p>
-                            <p className="font-sans text-xs text-brand-on-surface-variant opacity-60">{product.category}</p>
+                            <p className="font-sans text-xs text-red-500 font-bold mt-0.5">All sizes sold out</p>
                           </div>
-                          <span className="text-[10px] font-black uppercase tracking-widest text-red-600 bg-red-100 px-2.5 py-1 rounded-lg flex-shrink-0">Sold Out</span>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-white bg-red-500 px-2.5 py-1 rounded-lg">Sold Out</span>
+                            <Edit size={14} className="text-red-400" />
+                          </div>
                         </div>
                       ))}
+                      {/* Partially Out */}
+                      {partialOutProducts.map(product => {
+                        const outSizes = product.sizeStocks?.filter((s: any) => !s.stock || Number(s.stock) <= 0).map((s: any) => s.size) || [];
+                        return (
+                          <div
+                            key={product._id}
+                            onClick={() => navigateToEdit(product)}
+                            className="flex items-center gap-3 p-3 rounded-xl bg-orange-50 border border-orange-100 cursor-pointer hover:bg-orange-100 transition-colors active:scale-[0.99]"
+                          >
+                            <div className="w-11 h-11 rounded-lg overflow-hidden bg-white flex-shrink-0 border border-orange-100">
+                              {product.images?.[0] ? (
+                                <img src={product.images[0]} className="w-full h-full object-cover" alt="" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">?</div>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-h text-sm font-bold text-brand-on-surface line-clamp-1">{product.name}</p>
+                              <p className="font-sans text-xs text-orange-600 font-bold mt-0.5">Out: {outSizes.join(', ')}</p>
+                            </div>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              <span className="text-[10px] font-black uppercase tracking-widest text-orange-700 bg-orange-100 px-2.5 py-1 rounded-lg">Low Stock</span>
+                              <Edit size={14} className="text-orange-400" />
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
