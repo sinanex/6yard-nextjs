@@ -225,9 +225,10 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [orderSearchQuery, setOrderSearchQuery] = useState('');
-  const [orderFilterPayment, setOrderFilterPayment] = useState('all');
   const [orderFilterFromDate, setOrderFilterFromDate] = useState('');
   const [orderFilterToDate, setOrderFilterToDate] = useState('');
+  const [orderFilterPayment, setOrderFilterPayment] = useState('all');
+  const [orderFilterStatus, setOrderFilterStatus] = useState('all');
   const [settings, setSettings] = useState({
     processingTimeFrom: 2, processingTimeTo: 4,
     deliveryTimeFrom: 5, deliveryTimeTo: 7,
@@ -1602,6 +1603,10 @@ const AdminDashboard = () => {
           if (orderFilterPayment !== 'all') {
             matchesPayment = order.paymentMethod === orderFilterPayment;
           }
+          let matchesStatus = true;
+          if (orderFilterStatus !== 'all') {
+            matchesStatus = order.status === orderFilterStatus;
+          }
           let matchesDate = true;
           if (orderFilterFromDate || orderFilterToDate) {
             const orderDate = new Date(order.createdAt);
@@ -1617,7 +1622,7 @@ const AdminDashboard = () => {
               if (orderDate > to) matchesDate = false;
             }
           }
-          return matchesSearch && matchesPayment && matchesDate;
+          return matchesSearch && matchesPayment && matchesStatus && matchesDate;
         });
 
         return (
@@ -1633,7 +1638,7 @@ const AdminDashboard = () => {
               </div>
             </div>
 
-            <div className="bg-white p-4 rounded-lg shadow-sm border border-brand-surface-normal grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-brand-surface-normal grid grid-cols-1 md:grid-cols-5 gap-4">
               <div>
                 <label className="block text-xs font-bold text-brand-on-surface-variant opacity-60 mb-1">Search</label>
                 <div className="relative">
@@ -1655,6 +1660,15 @@ const AdminDashboard = () => {
                   <option value="all">All Methods</option>
                   <option value="online">Online Payment</option>
                   <option value="cod">Cash on Delivery</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-brand-on-surface-variant opacity-60 mb-1">Status</label>
+                <select value={orderFilterStatus} onChange={(e) => setOrderFilterStatus(e.target.value)} className="w-full px-3 py-2 bg-brand-surface rounded-md border-none focus:ring-2 focus:ring-brand-primary outline-none text-sm cursor-pointer">
+                  <option value="all">All Statuses</option>
+                  <option value="Processing">Processing</option>
+                  <option value="Shipped">Shipped</option>
+                  <option value="Delivered">Delivered</option>
                 </select>
               </div>
             </div>
