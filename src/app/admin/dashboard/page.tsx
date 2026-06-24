@@ -1212,7 +1212,7 @@ const AdminDashboard = () => {
                           <div className="bg-brand-surface-low text-center py-2 border-b border-brand-surface-normal font-bold text-brand-on-surface text-sm uppercase tracking-widest relative">
                             {sizeObj.size}
                             {sIdx >= 6 && (
-                              <button 
+                              <button
                                 onClick={() => {
                                   const updatedSizeStocks = [...form.sizeStocks];
                                   updatedSizeStocks.splice(sIdx, 1);
@@ -1224,16 +1224,16 @@ const AdminDashboard = () => {
                               </button>
                             )}
                           </div>
-                          <input 
-                            type="number" 
+                          <input
+                            type="number"
                             min="0"
-                            placeholder="Qty" 
+                            placeholder="Qty"
                             className="w-full text-center py-2 bg-transparent outline-none font-bold text-brand-primary"
                             value={sizeObj.stock}
                             onChange={(e) => {
-                               const updatedSizeStocks = [...form.sizeStocks];
-                               updatedSizeStocks[sIdx].stock = e.target.value;
-                               handleDirectFieldChange(index, 'sizeStocks', updatedSizeStocks);
+                              const updatedSizeStocks = [...form.sizeStocks];
+                              updatedSizeStocks[sIdx].stock = e.target.value;
+                              handleDirectFieldChange(index, 'sizeStocks', updatedSizeStocks);
                             }}
                           />
                         </div>
@@ -1355,7 +1355,7 @@ const AdminDashboard = () => {
                 <h2 className="font-h text-base font-bold text-brand-on-surface uppercase tracking-tight">Category Management</h2>
                 <p className="text-sm text-gray-500 text-brand-on-surface-variant opacity-60 mt-1">Organize your store hierarchy</p>
               </div>
-              <button 
+              <button
                 onClick={() => setShowAddCategory(!showAddCategory)}
                 className="bg-brand-primary text-white text-sm px-4 py-2 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-brand-primary/20 hover:bg-black transition-colors"
               >
@@ -1494,8 +1494,8 @@ const AdminDashboard = () => {
                         <p className="font-h text-sm font-bold text-brand-on-surface line-clamp-2">
                           {product.name}
                           {product.salesTag && (
-                            <span 
-                              className="ml-2 inline-block px-2 py-0.5 text-[10px] font-bold rounded-full text-white align-middle" 
+                            <span
+                              className="ml-2 inline-block px-2 py-0.5 text-[10px] font-bold rounded-full text-white align-middle"
                               style={{ backgroundColor: settings?.salesTags?.find((t: any) => t.name === product.salesTag)?.color || '#ff0000' }}
                             >
                               {product.salesTag}
@@ -1553,15 +1553,15 @@ const AdminDashboard = () => {
                                 stock: product.stock || 0,
                                 isAvailable: product.isAvailable !== undefined ? product.isAvailable : true,
                                 sizes: Array.isArray(product.sizes) ? product.sizes.join(', ') : product.sizes || '',
-                                sizeStocks: product.sizeStocks && product.sizeStocks.length > 0 
-                                  ? product.sizeStocks.map((s: any) => ({ size: s.size, stock: s.stock })) 
+                                sizeStocks: product.sizeStocks && product.sizeStocks.length > 0
+                                  ? product.sizeStocks.map((s: any) => ({ size: s.size, stock: s.stock }))
                                   : [
-                                      { size: 'S', stock: '' },
-                                      { size: 'M', stock: '' },
-                                      { size: 'L', stock: '' },
-                                      { size: 'XL', stock: '' },
-                                      { size: 'XXL', stock: '' }
-                                    ],
+                                    { size: 'S', stock: '' },
+                                    { size: 'M', stock: '' },
+                                    { size: 'L', stock: '' },
+                                    { size: 'XL', stock: '' },
+                                    { size: 'XXL', stock: '' }
+                                  ],
                                 salesTag: product.salesTag || '',
                                 colors: Array.isArray(product.colors) ? product.colors.join(', ') : product.colors || '',
                                 customNameNumber: product.customNameNumber || false,
@@ -1799,41 +1799,70 @@ const AdminDashboard = () => {
           );
         }
 
-        const handlePrintLabel = () => {
+        const numberToWords = (num: number) => {
+          const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
+          const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+          const strNum = Math.floor(num).toString();
+          if (strNum.length > 9) return 'overflow';
+          let n: any = ('000000000' + strNum).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+          if (!n) return '';
+          let str = '';
+          str += (n[1] != 0) ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'Crore ' : '';
+          str += (n[2] != 0) ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'Lakh ' : '';
+          str += (n[3] != 0) ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'Thousand ' : '';
+          str += (n[4] != 0) ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + 'Hundred ' : '';
+          str += (n[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) + 'Rupees Only' : 'Rupees Only';
+          return str;
+        };
+
+        const handlePrintInvoice = () => {
           const printWindow = window.open('', '_blank');
           if (!printWindow) return;
-          
-          const awb = order.trackingId || 'NOT-SHIPPED';
+
           const orderIdStr = order._id.substring(order._id.length - 8);
-          const totalAmount = order.totalAmount;
-          const codAmount = order.paymentMethod === 'cod' ? totalAmount : 0;
           const paymentType = order.paymentMethod === 'cod' ? 'COD' : 'Prepaid';
-          
-          const numberToWords = (num: number) => {
-            const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
-            const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
-            const strNum = Math.floor(num).toString();
-            if (strNum.length > 9) return 'overflow';
-            let n: any = ('000000000' + strNum).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
-            if (!n) return '';
-            let str = '';
-            str += (n[1] != 0) ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'Crore ' : '';
-            str += (n[2] != 0) ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'Lakh ' : '';
-            str += (n[3] != 0) ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'Thousand ' : '';
-            str += (n[4] != 0) ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + 'Hundred ' : '';
-            str += (n[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) + 'Rupees Only' : 'Rupees Only';
-            return str;
-          };
 
           const invoiceHtml = `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+            <meta charset="UTF-8">
+            <title>Tax Invoice</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 0; padding: 20px; color: #000; font-size: 12px; }
+              .invoice-container { width: 100%; max-width: 800px; margin: 0 auto; }
+              .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
+              .logo { max-width: 150px; max-height: 50px; }
+              .company-info { font-size: 11px; line-height: 1.4; text-align: left; flex: 1; margin-left: 20px; }
+              .invoice-details { text-align: right; font-size: 12px; }
+              .details-row { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #000; padding-bottom: 15px; }
+              .order-info { width: 45%; line-height: 1.6; }
+              .shipping-info { width: 45%; line-height: 1.4; }
+              .info-title { font-weight: bold; margin-bottom: 5px; font-size: 13px; }
+              .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+              .items-table th { border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 8px 5px; text-align: left; font-weight: bold; }
+              .items-table td { padding: 10px 5px; vertical-align: top; }
+              .items-table th.right, .items-table td.right { text-align: right; }
+              .totals { display: flex; justify-content: flex-end; margin-top: 10px; border-top: 1px solid #ccc; padding-top: 10px; }
+              .totals-table { width: 300px; border-collapse: collapse; }
+              .totals-table td { padding: 5px; font-size: 14px; }
+              .totals-table td.right { text-align: right; }
+              .grand-total { border-top: 2px solid #000; border-bottom: 2px solid #000; font-weight: bold; font-size: 16px; }
+              .grand-total td { padding: 10px 5px; }
+              .footer { margin-top: 40px; font-size: 10px; line-height: 1.4; color: #555; border-top: 1px dashed #ccc; padding-top: 10px; text-align: center; }
+              @media print {
+                body { padding: 0; }
+              }
+            </style>
+            </head>
+            <body>
             <div class="invoice-container">
               <div class="header">
                 <img src="${window.location.origin}/logo.png" class="logo" alt="6YARD Logo" onerror="this.style.display='none'" />
                 <div class="company-info">
-                  <strong>6YARD</strong><br>
-                  Afnan pk 6 yard, metro square manjeri opposite Ksfe<br>
-                  manjeri 676121 8590394491<br>
-                  Manjeri, Kerala, India, 676121
+                  <strong>Seller: 6YARD</strong><br>
+                  Manjerithodi House, Mongam, kerala, 673642<br>
+                  Mongam, Kerala, India, 673642
                 </div>
                 <div class="invoice-details">
                   <strong>Tax Invoice #</strong> ${orderIdStr}<br>
@@ -1847,15 +1876,6 @@ const AdminDashboard = () => {
                   <div>${order._id}</div>
                   <div class="info-title" style="margin-top:10px;">Order Date:</div>
                   <div>${new Date(order.createdAt).toLocaleDateString()}</div>
-                </div>
-                <div class="billing-info">
-                  <div class="info-title">Billing Address</div>
-                  <b>${order.shippingAddress?.name || 'Customer'}</b><br>
-                  ${order.shippingAddress?.address || ''}<br>
-                  ${order.shippingAddress?.locality || ''}<br>
-                  ${order.shippingAddress?.city || ''}, ${order.shippingAddress?.state || ''}<br>
-                  PIN - ${order.shippingAddress?.pincode || ''}<br>
-                  Phone: ${order.shippingAddress?.phone || order.user?.phone || ''}
                 </div>
                 <div class="shipping-info">
                   <div class="info-title">Shipping Address</div>
@@ -1909,116 +1929,47 @@ const AdminDashboard = () => {
               <div class="footer">
                 Returns Policy: We try to deliver perfectly each and every time. But in the off-chance that you need to return the item, please do so with the original Brand box/price tag, original packing and invoice.
                 <br><br>
+                <b>Return Address:</b> Afnan pk 6 yard, metro square manjeri opposite Ksfe manjeri 676121 8590394491 , Manjeri, Kerala, India, 676121
+                <br><br>
                 <i>This is a computer generated invoice. No signature required.</i>
               </div>
             </div>
+            <script>
+              window.onload = function() {
+                setTimeout(function() {
+                  window.print();
+                }, 500);
+              };
+            </script>
+            </body>
+            </html>
           `;
 
-          const shippingLabelHtml = `
-            <div class="shipping-label">
-              ${order.paymentMethod === 'cod' 
-                ? `<div class="cod-banner">CASH ON DELIVERY</div>
-                   <div class="amount-box">TO COLLECT: INR ${order.totalAmount}<br><span style="font-size:12px;font-weight:normal;">(${numberToWords(order.totalAmount)})</span></div>`
-                : `<div class="row header-row header-center">
-                     <img src="${window.location.origin}/logo.png" style="max-height: 40px;" alt="6YARD" onerror="this.style.display='none'" />
-                   </div>`
-              }
-              <hr class="hr hr-tight">
-              <div class="barcode-wrap">
-                <svg id="barcode-awb"></svg>
-              </div>
-              <hr class="hr">
-              <div class="ship-block">
-                <div class="ship-left">
-                  <div class="ship-to-label">Ship to - <b>${order.shippingAddress?.name || 'Customer'}</b></div>
-                  <div class="ship-addr-line">${order.shippingAddress?.address || ''} ${order.shippingAddress?.locality || ''}</div>
-                  <div class="ship-city">${order.shippingAddress?.city || ''}</div>
-                  <div class="ship-state">(${order.shippingAddress?.state || ''})</div>
-                  <div class="ship-pin">PIN - ${order.shippingAddress?.pincode || ''}</div>
-                  <div class="ship-pin">Phone: ${order.shippingAddress?.phone || order.user?.phone || ''}</div>
-                </div>
-                <div class="ship-right">
-                  <div class="cod-label">${paymentType}</div>
-                  <div class="cod-amount">INR ${order.totalAmount}</div>
-                  <hr class="hr">
-                  <div class="date-label">Date</div>
-                  <div class="date-value">${new Date(order.createdAt).toLocaleDateString()}</div>
-                </div>
-              </div>
-              <hr class="hr">
-              <div class="seller-block">
-                <div class="seller-info">
-                  <b>Seller: 6YARD</b><br>
-                  Afnan pk 6 yard, metro square manjeri opposite Ksfe<br>
-                  manjeri 676121 8590394491<br>
-                  Manjeri, Kerala, India, 676121
-                </div>
-                <div class="order-barcode-box">
-                  <div class="order-num">${orderIdStr}</div>
-                  <svg id="barcode-order"></svg>
-                </div>
-              </div>
-              <hr class="hr">
-              <table class="product-table">
-                <thead>
-                  <tr>
-                    <th>Product Name &amp; Size</th>
-                    <th>Qty.</th>
-                    <th>Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${order.items.map((item: any) => `
-                    <tr>
-                      <td class="sku-line">${item.name} (Size: ${item.size})</td>
-                      <td>${item.quantity}</td>
-                      <td>${(item.price * item.quantity).toFixed(2)}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-          `;
+          printWindow.document.write(invoiceHtml);
+          printWindow.document.close();
+        };
 
-          const html = `
+        const handlePrintCODLabel = () => {
+          const printWindow = window.open('', '_blank');
+          if (!printWindow) return;
+
+          const awb = order.trackingId || 'NOT-SHIPPED';
+          const orderIdStr = order._id.substring(order._id.length - 8);
+
+          const codLabelHtml = `
             <!DOCTYPE html>
             <html lang="en">
             <head>
             <meta charset="UTF-8">
-            <title>Print Label & Invoice</title>
+            <title>COD Print Label</title>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/JsBarcode/3.11.5/JsBarcode.all.min.js"></script>
             <style>
-              body { font-family: Arial, sans-serif; margin: 0; padding: 20px; color: #000; font-size: 12px; }
-              .invoice-container { width: 100%; max-width: 800px; margin: 0 auto; }
-              .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
-              .logo { max-width: 150px; max-height: 50px; }
-              .company-info { font-size: 11px; line-height: 1.4; text-align: left; flex: 1; margin-left: 20px; }
-              .invoice-details { text-align: right; font-size: 12px; }
-              .details-row { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #000; padding-bottom: 15px; }
-              .order-info { width: 30%; line-height: 1.6; }
-              .billing-info, .shipping-info { width: 33%; line-height: 1.4; }
-              .info-title { font-weight: bold; margin-bottom: 5px; font-size: 13px; }
-              .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-              .items-table th { border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 8px 5px; text-align: left; font-weight: bold; }
-              .items-table td { padding: 10px 5px; vertical-align: top; }
-              .items-table th.right, .items-table td.right { text-align: right; }
-              .totals { display: flex; justify-content: flex-end; margin-top: 10px; border-top: 1px solid #ccc; padding-top: 10px; }
-              .totals-table { width: 300px; border-collapse: collapse; }
-              .totals-table td { padding: 5px; font-size: 14px; }
-              .totals-table td.right { text-align: right; }
-              .grand-total { border-top: 2px solid #000; border-bottom: 2px solid #000; font-weight: bold; font-size: 16px; }
-              .grand-total td { padding: 10px 5px; }
-              .footer { margin-top: 40px; font-size: 10px; line-height: 1.4; color: #555; border-top: 1px dashed #ccc; padding-top: 10px; text-align: center; }
-              .page-break { page-break-before: always; height: 1px; }
-
-              .shipping-label { width: 400px; border: 2px solid #000; padding: 15px; margin: 40px auto 0; box-sizing: border-box; }
+              body { font-family: Arial, sans-serif; margin: 0; padding: 20px; color: #000; font-size: 12px; display: flex; justify-content: center; }
+              .shipping-label { width: 400px; border: 2px solid #000; padding: 15px; box-sizing: border-box; }
               .cod-banner { font-size: 24px; font-weight: 900; text-align: center; border-bottom: 3px solid #000; padding-bottom: 10px; margin-bottom: 15px; letter-spacing: 1px; }
               .amount-box { text-align: center; font-size: 24px; font-weight: 900; padding: 10px; border: 3px dashed #000; margin: 15px 0; background: #fdfdfd; }
-              .row { display: flex; justify-content: space-between; align-items: center; }
               .hr { border: none; border-top: 1px solid #888; margin: 5px 0; }
               .hr-tight { margin: 3px 0 5px; }
-              .header-row { align-items: center; margin-bottom: 0; }
-              .header-center { justify-content: center; }
               .barcode-wrap { text-align: center; margin: 0; }
               .barcode-wrap svg { width: 100%; height: auto; max-height: 60px; display: block; }
               .ship-block { display: flex; }
@@ -2048,203 +1999,270 @@ const AdminDashboard = () => {
               .sku-line { color: #000; font-weight: 600; }
               @media print {
                 body { padding: 0; }
-                .shipping-label { margin-top: 0; }
               }
             </style>
             </head>
             <body>
-              ${invoiceHtml}
-              <div class="page-break"></div>
-              ${shippingLabelHtml}
-
-              <script>
-                window.onload = function() {
-                  JsBarcode("#barcode-awb", "${awb}", {
-                    format: "CODE128",
-                    displayValue: false,
-                    height: 70,
-                    width: 2.2,
-                    margin: 0,
-                    background: "#ffffff",
-                    lineColor: "#000000"
-                  });
-                  JsBarcode("#barcode-order", "${orderIdStr}", {
-                    format: "CODE128",
-                    displayValue: false,
-                    height: 42,
-                    width: 2.2,
-                    margin: 0,
-                    background: "#ffffff",
-                    lineColor: "#000000"
-                  });
-                  setTimeout(function() {
-                    window.print();
-                  }, 800);
-                };
-              </script>
+            <div class="shipping-label">
+              <div class="cod-banner">CASH ON DELIVERY</div>
+              <div class="amount-box">TO COLLECT: INR ${order.totalAmount}<br><span style="font-size:12px;font-weight:normal;">(${numberToWords(order.totalAmount)})</span></div>
+              <hr class="hr hr-tight">
+              <div class="barcode-wrap">
+                <svg id="barcode-awb"></svg>
+              </div>
+              <hr class="hr">
+              <div class="ship-block">
+                <div class="ship-left">
+                  <div class="ship-to-label">Ship to - <b>${order.shippingAddress?.name || 'Customer'}</b></div>
+                  <div class="ship-addr-line">${order.shippingAddress?.address || ''} ${order.shippingAddress?.locality || ''}</div>
+                  <div class="ship-city">${order.shippingAddress?.city || ''}</div>
+                  <div class="ship-state">(${order.shippingAddress?.state || ''})</div>
+                  <div class="ship-pin">PIN - ${order.shippingAddress?.pincode || ''}</div>
+                  <div class="ship-pin">Phone: ${order.shippingAddress?.phone || order.user?.phone || ''}</div>
+                </div>
+                <div class="ship-right">
+                  <div class="cod-label">COD</div>
+                  <div class="cod-amount">INR ${order.totalAmount}</div>
+                  <hr class="hr">
+                  <div class="date-label">Date</div>
+                  <div class="date-value">${new Date(order.createdAt).toLocaleDateString()}</div>
+                </div>
+              </div>
+              <hr class="hr">
+              <div class="seller-block">
+                <div class="seller-info">
+                  <b>Seller: 6YARD</b><br>
+                  Manjerithodi House, Mongam, kerala, 673642 ,<br>
+                  Mongam, Kerala, India, 673642
+                </div>
+                <div class="order-barcode-box">
+                  <div class="order-num">${orderIdStr}</div>
+                  <svg id="barcode-order"></svg>
+                </div>
+              </div>
+              <hr class="hr">
+              <table class="product-table">
+                <thead>
+                  <tr>
+                    <th>Product Name &amp; Size</th>
+                    <th>Qty.</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${order.items.map((item: any) => `
+                    <tr>
+                      <td class="sku-line">${item.name} (Size: ${item.size})</td>
+                      <td>${item.quantity}</td>
+                      <td>${(item.price * item.quantity).toFixed(2)}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+              <hr class="hr">
+              <div style="display: flex; justify-content: space-between; align-items: flex-end; font-size: 11px; margin-top: 4px; color: #222;">
+                <div style="max-width: 320px; line-height: 1.3;">
+                  <b>Return Address:</b> Afnan pk 6 yard, metro square manjeri opposite Ksfe manjeri 676121 8590394491 , Manjeri, Kerala, India, 676121
+                </div>
+                <div style="font-weight: 600; white-space: nowrap;">Page 1 of 1</div>
+              </div>
+            </div>
+            <script>
+              window.onload = function() {
+                JsBarcode("#barcode-awb", "${awb}", {
+                  format: "CODE128",
+                  displayValue: false,
+                  height: 70,
+                  width: 2.2,
+                  margin: 0,
+                  background: "#ffffff",
+                  lineColor: "#000000"
+                });
+                JsBarcode("#barcode-order", "${orderIdStr}", {
+                  format: "CODE128",
+                  displayValue: false,
+                  height: 42,
+                  width: 2.2,
+                  margin: 0,
+                  background: "#ffffff",
+                  lineColor: "#000000"
+                });
+                setTimeout(function() {
+                  window.print();
+                }, 500);
+              };
+            </script>
             </body>
             </html>
           `;
 
-          printWindow.document.write(html);
+          printWindow.document.write(codLabelHtml);
           printWindow.document.close();
         };
 
         return (
           <div className="space-y-6 max-w-5xl mx-auto">
-             {/* Header */}
-             <div className="flex justify-between items-center bg-white p-4 md:p-6 rounded-xl shadow-sm border border-brand-surface-normal">
-               <div className="flex items-center gap-4">
-                 <button onClick={() => setActiveTab('orders')} className="p-2 hover:bg-brand-surface rounded-lg transition-colors font-bold text-brand-on-surface-variant flex items-center gap-2">
-                   &larr; Back
-                 </button>
-                 <div>
-                   <h2 className="font-h text-xl font-bold text-brand-on-surface">Order #{order._id.substring(order._id.length - 8)}</h2>
-                   <p className="text-sm text-brand-on-surface-variant opacity-60 font-sans font-bold">{new Date(order.createdAt).toLocaleString()}</p>
-                 </div>
-               </div>
-               <button onClick={handlePrintLabel} className="bg-brand-primary text-white text-sm px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-brand-primary/20 flex items-center gap-2 transition-transform active:scale-95">
-                 <Printer size={16} />
-                 Print Label
-               </button>
-             </div>
+            {/* Header */}
+            <div className="flex justify-between items-center bg-white p-4 md:p-6 rounded-xl shadow-sm border border-brand-surface-normal">
+              <div className="flex items-center gap-4">
+                <button onClick={() => setActiveTab('orders')} className="p-2 hover:bg-brand-surface rounded-lg transition-colors font-bold text-brand-on-surface-variant flex items-center gap-2">
+                  &larr; Back
+                </button>
+                <div>
+                  <h2 className="font-h text-xl font-bold text-brand-on-surface">Order #{order._id.substring(order._id.length - 8)}</h2>
+                  <p className="text-sm text-brand-on-surface-variant opacity-60 font-sans font-bold">{new Date(order.createdAt).toLocaleString()}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <button onClick={handlePrintInvoice} className="bg-brand-primary text-white text-sm px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-brand-primary/20 flex items-center gap-2 transition-transform active:scale-95">
+                  <Printer size={16} />
+                  Print Invoice
+                </button>
+                {order.paymentMethod === 'cod' && (
+                  <button onClick={handlePrintCODLabel} className="bg-brand-surface-low text-brand-primary border border-brand-primary/20 text-sm px-5 py-2.5 rounded-xl font-bold shadow-sm flex items-center gap-2 transition-transform active:scale-95 hover:bg-brand-surface">
+                    <Printer size={16} />
+                    Cash on Delivery Print
+                  </button>
+                )}
+              </div>
+            </div>
 
-             {/* Content Grid */}
-             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-               {/* Left Column: Items and Update Status */}
-               <div className="md:col-span-2 space-y-6">
-                 {/* Update Status & Tracking */}
-                 <div className="bg-white p-5 rounded-xl shadow-sm border border-brand-surface-normal">
-                   <h3 className="font-h text-base font-bold mb-4">Update Order</h3>
-                   <div className="flex flex-col md:flex-row gap-4 items-end">
-                     <div className="flex-1">
-                       <label className="block text-xs font-bold text-brand-on-surface-variant opacity-60 mb-1">Status</label>
-                       <select
-                          value={order.status}
-                          onChange={async (e) => {
-                            const newStatus = e.target.value;
+            {/* Content Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Left Column: Items and Update Status */}
+              <div className="md:col-span-2 space-y-6">
+                {/* Update Status & Tracking */}
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-brand-surface-normal">
+                  <h3 className="font-h text-base font-bold mb-4">Update Order</h3>
+                  <div className="flex flex-col md:flex-row gap-4 items-end">
+                    <div className="flex-1">
+                      <label className="block text-xs font-bold text-brand-on-surface-variant opacity-60 mb-1">Status</label>
+                      <select
+                        value={order.status}
+                        onChange={async (e) => {
+                          const newStatus = e.target.value;
+                          const token = localStorage.getItem('adminToken');
+                          await fetch(`${API_BASE_URL}/api/orders/${order._id}/status`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                            body: JSON.stringify({ status: newStatus })
+                          });
+                          fetchOrders();
+                        }}
+                        className="w-full px-4 py-2.5 rounded-xl border border-brand-surface-normal outline-none focus:ring-2 focus:ring-brand-primary appearance-none cursor-pointer text-sm font-bold"
+                      >
+                        <option value="Processing">Processing</option>
+                        <option value="Shipped">Shipped</option>
+                        <option value="Delivered">Delivered</option>
+                      </select>
+                    </div>
+                    <div className="flex-1 flex gap-2 items-end">
+                      <div className="flex-1">
+                        <label className="block text-xs font-bold text-brand-on-surface-variant opacity-60 mb-1">Tracking ID</label>
+                        <input
+                          id={`tracking-input-${order._id}`}
+                          type="text"
+                          placeholder="Enter Tracking ID..."
+                          defaultValue={order.trackingId || ''}
+                          className="w-full px-4 py-2.5 rounded-xl border border-brand-surface-normal outline-none focus:ring-2 focus:ring-brand-primary text-sm font-mono font-bold"
+                        />
+                      </div>
+                      <button
+                        onClick={async () => {
+                          const val = (document.getElementById(`tracking-input-${order._id}`) as HTMLInputElement)?.value;
+                          if (val !== undefined && val !== order.trackingId) {
                             const token = localStorage.getItem('adminToken');
                             await fetch(`${API_BASE_URL}/api/orders/${order._id}/status`, {
                               method: 'PUT',
                               headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                              body: JSON.stringify({ status: newStatus })
+                              body: JSON.stringify({ status: order.status, trackingId: val })
                             });
                             fetchOrders();
-                          }}
-                          className="w-full px-4 py-2.5 rounded-xl border border-brand-surface-normal outline-none focus:ring-2 focus:ring-brand-primary appearance-none cursor-pointer text-sm font-bold"
-                        >
-                          <option value="Processing">Processing</option>
-                          <option value="Shipped">Shipped</option>
-                          <option value="Delivered">Delivered</option>
-                        </select>
-                     </div>
-                     <div className="flex-1 flex gap-2 items-end">
-                       <div className="flex-1">
-                         <label className="block text-xs font-bold text-brand-on-surface-variant opacity-60 mb-1">Tracking ID</label>
-                         <input
-                            id={`tracking-input-${order._id}`}
-                            type="text"
-                            placeholder="Enter Tracking ID..."
-                            defaultValue={order.trackingId || ''}
-                            className="w-full px-4 py-2.5 rounded-xl border border-brand-surface-normal outline-none focus:ring-2 focus:ring-brand-primary text-sm font-mono font-bold"
-                          />
-                       </div>
-                       <button
-                         onClick={async () => {
-                           const val = (document.getElementById(`tracking-input-${order._id}`) as HTMLInputElement)?.value;
-                           if (val !== undefined && val !== order.trackingId) {
-                             const token = localStorage.getItem('adminToken');
-                             await fetch(`${API_BASE_URL}/api/orders/${order._id}/status`, {
-                               method: 'PUT',
-                               headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                               body: JSON.stringify({ status: order.status, trackingId: val })
-                             });
-                             fetchOrders();
-                           }
-                         }}
-                         className="bg-brand-primary text-white px-4 py-2.5 rounded-xl font-bold text-sm h-[42px] flex items-center justify-center shadow-md active:scale-95 transition-transform"
-                         title="Save Tracking ID"
-                       >
-                         <Check size={16} />
-                       </button>
-                     </div>
-                   </div>
-                   <p className="text-[10px] text-brand-on-surface-variant opacity-60 mt-3">* Changes to Status are saved automatically. Click the check button to save the Tracking ID.</p>
-                 </div>
+                          }
+                        }}
+                        className="bg-brand-primary text-white px-4 py-2.5 rounded-xl font-bold text-sm h-[42px] flex items-center justify-center shadow-md active:scale-95 transition-transform"
+                        title="Save Tracking ID"
+                      >
+                        <Check size={16} />
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-brand-on-surface-variant opacity-60 mt-3">* Changes to Status are saved automatically. Click the check button to save the Tracking ID.</p>
+                </div>
 
-                 {/* Order Items */}
-                 <div className="bg-white rounded-xl shadow-sm border border-brand-surface-normal overflow-hidden">
-                   <div className="p-4 border-b border-brand-surface-normal bg-brand-surface-low">
-                     <h3 className="font-h text-base font-bold">Order Items ({order.items.length})</h3>
-                   </div>
-                   <div className="divide-y divide-brand-surface-normal">
-                     {order.items.map((item: any, idx: number) => (
-                       <div key={idx} className="p-4 flex gap-4 items-center hover:bg-brand-surface-low/30 transition-colors">
-                         <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-lg bg-brand-surface-normal" />
-                         <div className="flex-1">
-                           <h4 className="font-h font-bold text-brand-on-surface">{item.name}</h4>
-                           <div className="flex gap-3 mt-1 text-xs font-bold text-brand-on-surface-variant opacity-80">
-                             <span>Size: {item.size}</span>
-                             <span>Qty: {item.quantity}</span>
-                           </div>
-                         </div>
-                         <div className="text-right font-h font-bold text-brand-on-surface">
-                           ₹{item.price * item.quantity}
-                         </div>
-                       </div>
-                     ))}
-                   </div>
-                 </div>
-               </div>
+                {/* Order Items */}
+                <div className="bg-white rounded-xl shadow-sm border border-brand-surface-normal overflow-hidden">
+                  <div className="p-4 border-b border-brand-surface-normal bg-brand-surface-low">
+                    <h3 className="font-h text-base font-bold">Order Items ({order.items.length})</h3>
+                  </div>
+                  <div className="divide-y divide-brand-surface-normal">
+                    {order.items.map((item: any, idx: number) => (
+                      <div key={idx} className="p-4 flex gap-4 items-center hover:bg-brand-surface-low/30 transition-colors">
+                        <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-lg bg-brand-surface-normal" />
+                        <div className="flex-1">
+                          <h4 className="font-h font-bold text-brand-on-surface">{item.name}</h4>
+                          <div className="flex gap-3 mt-1 text-xs font-bold text-brand-on-surface-variant opacity-80">
+                            <span>Size: {item.size}</span>
+                            <span>Qty: {item.quantity}</span>
+                          </div>
+                        </div>
+                        <div className="text-right font-h font-bold text-brand-on-surface">
+                          ₹{item.price * item.quantity}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
 
-               {/* Right Column: Customer & Summary */}
-               <div className="space-y-6">
-                 {/* Customer Details */}
-                 <div className="bg-white p-5 rounded-xl shadow-sm border border-brand-surface-normal">
-                   <h3 className="font-h text-base font-bold mb-4">Customer Details</h3>
-                   <div className="space-y-4">
-                     <div>
-                       <p className="text-[10px] uppercase tracking-widest font-bold text-brand-on-surface-variant opacity-60 mb-0.5">Name</p>
-                       <p className="font-sans font-bold text-sm text-brand-on-surface">{order.shippingAddress?.name || 'N/A'}</p>
-                     </div>
-                     <div>
-                       <p className="text-[10px] uppercase tracking-widest font-bold text-brand-on-surface-variant opacity-60 mb-0.5">Phone</p>
-                       <p className="font-sans font-bold text-sm text-brand-on-surface">{order.shippingAddress?.phone || order.user?.phone || 'N/A'}</p>
-                     </div>
-                     <div>
-                       <p className="text-[10px] uppercase tracking-widest font-bold text-brand-on-surface-variant opacity-60 mb-0.5">Shipping Address</p>
-                       <p className="font-sans font-bold text-sm text-brand-on-surface leading-relaxed mt-1">
-                         {order.shippingAddress?.locality}<br/>
-                         {order.shippingAddress?.address}<br/>
-                         {order.shippingAddress?.city}, {order.shippingAddress?.state}<br/>
-                         {order.shippingAddress?.pincode}
-                       </p>
-                     </div>
-                   </div>
-                 </div>
+              {/* Right Column: Customer & Summary */}
+              <div className="space-y-6">
+                {/* Customer Details */}
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-brand-surface-normal">
+                  <h3 className="font-h text-base font-bold mb-4">Customer Details</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-widest font-bold text-brand-on-surface-variant opacity-60 mb-0.5">Name</p>
+                      <p className="font-sans font-bold text-sm text-brand-on-surface">{order.shippingAddress?.name || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-widest font-bold text-brand-on-surface-variant opacity-60 mb-0.5">Phone</p>
+                      <p className="font-sans font-bold text-sm text-brand-on-surface">{order.shippingAddress?.phone || order.user?.phone || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-widest font-bold text-brand-on-surface-variant opacity-60 mb-0.5">Shipping Address</p>
+                      <p className="font-sans font-bold text-sm text-brand-on-surface leading-relaxed mt-1">
+                        {order.shippingAddress?.locality}<br />
+                        {order.shippingAddress?.address}<br />
+                        {order.shippingAddress?.city}, {order.shippingAddress?.state}<br />
+                        {order.shippingAddress?.pincode}
+                      </p>
+                    </div>
+                  </div>
+                </div>
 
-                 {/* Payment Summary */}
-                 <div className="bg-white p-5 rounded-xl shadow-sm border border-brand-surface-normal">
-                   <h3 className="font-h text-base font-bold mb-4">Payment Summary</h3>
-                   <div className="space-y-3 font-sans font-bold text-sm">
-                     <div className="flex justify-between text-brand-on-surface-variant opacity-80">
-                       <span>Subtotal</span>
-                       <span>₹{order.totalAmount}</span>
-                     </div>
-                     <div className="flex justify-between text-brand-on-surface-variant opacity-80">
-                       <span>Method</span>
-                       <span className={cn("uppercase", order.paymentMethod === 'cod' ? "text-orange-600" : "text-green-600")}>
-                         {order.paymentMethod === 'cod' ? 'CASH ON DELIVERY' : 'ONLINE PAID'}
-                       </span>
-                     </div>
-                     <div className="pt-3 border-t border-brand-surface-normal flex justify-between text-base text-brand-on-surface">
-                       <span>Total</span>
-                       <span>₹{order.totalAmount}</span>
-                     </div>
-                   </div>
-                 </div>
-               </div>
-             </div>
+                {/* Payment Summary */}
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-brand-surface-normal">
+                  <h3 className="font-h text-base font-bold mb-4">Payment Summary</h3>
+                  <div className="space-y-3 font-sans font-bold text-sm">
+                    <div className="flex justify-between text-brand-on-surface-variant opacity-80">
+                      <span>Subtotal</span>
+                      <span>₹{order.totalAmount}</span>
+                    </div>
+                    <div className="flex justify-between text-brand-on-surface-variant opacity-80">
+                      <span>Method</span>
+                      <span className={cn("uppercase", order.paymentMethod === 'cod' ? "text-orange-600" : "text-green-600")}>
+                        {order.paymentMethod === 'cod' ? 'CASH ON DELIVERY' : 'ONLINE PAID'}
+                      </span>
+                    </div>
+                    <div className="pt-3 border-t border-brand-surface-normal flex justify-between text-base text-brand-on-surface">
+                      <span>Total</span>
+                      <span>₹{order.totalAmount}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         );
       }
@@ -2721,9 +2739,9 @@ const AdminDashboard = () => {
                   <button
                     type="button"
                     onClick={() => {
-                      setSettings({ 
-                        ...settings, 
-                        salesTags: [...(settings.salesTags || []), { name: 'New Tag', color: '#ff0000' }] 
+                      setSettings({
+                        ...settings,
+                        salesTags: [...(settings.salesTags || []), { name: 'New Tag', color: '#ff0000' }]
                       });
                     }}
                     className="flex items-center gap-2 text-brand-primary hover:text-brand-primary-hover font-bold text-sm uppercase tracking-widest mt-2"
