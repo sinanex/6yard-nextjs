@@ -4,12 +4,24 @@ import Order from '@/models/Order';
 import User from '@/models/User';
 import { verifyAuth } from '@/lib/auth';
 import Product from '@/models/Product';
+import crypto from 'crypto';
 
 export async function POST(req: NextRequest) {
   try {
     await dbConnect();
     const auth = verifyAuth(req);
-    const { items, shippingAddress, paymentMethod, totalAmount, shippingCharge, subtotal, advancePaid, razorpayPaymentId } = await req.json();
+    const { items, shippingAddress, paymentMethod, totalAmount, shippingCharge, subtotal, advancePaid, razorpayPaymentId, razorpayOrderId, razorpaySignature } = await req.json();
+
+    if (paymentMethod === 'online' && razorpayPaymentId && razorpayOrderId && razorpaySignature) {
+      const generatedSignature = crypto
+        .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET || '')
+        .update(razorpayOrderId + '|' + razorpayPaymentId)
+        .digest('hex');
+
+      if (generatedSignature !== razorpaySignature) {
+        return NextResponse.json({ message: 'Invalid payment signature' }, { status: 400 });
+      }
+    }
 
     const newOrder = new Order({
       user: auth.user.userId,
@@ -38,13 +50,18 @@ export async function POST(req: NextRequest) {
         };
 
         if (size) {
-          // If the product has a sizeStock entry for this size, decrement it
-          // We can just use arrayFilters in mongoose to decrement specific sizeStock
-          await Product.updateOne(
-            { _id: prodId },
+          // Try to update both total stock and the specific size stock
+          const updateResult = await Product.updateOne(
+            { _id: prodId, "sizeStocks.size": size },
             { $inc: { stock: -qty, "sizeStocks.$[elem].stock": -qty } },
             { arrayFilters: [{ "elem.size": size }] }
           );
+
+          // If modifiedCount is 0, it means either the product wasn't found or sizeStocks doesn't have the size
+          // In that case, just fallback to decrementing the total stock
+          if (updateResult.modifiedCount === 0) {
+            await Product.updateOne({ _id: prodId }, { $inc: { stock: -qty } });
+          }
         } else {
           // No size specified, just decrement total stock
           await Product.updateOne({ _id: prodId }, { $inc: { stock: -qty } });

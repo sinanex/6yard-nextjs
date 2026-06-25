@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Send, CheckCircle2 } from 'lucide-react';
+import { Send, CheckCircle2, Package } from 'lucide-react';
 import { motion } from 'motion/react';
 import { } from 'next/navigation';
 import Link from 'next/link';
@@ -69,6 +69,10 @@ export default function Success() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
+            <Link href="/orders" className="w-full sm:w-auto bg-brand-surface-low border-2 border-brand-primary text-brand-primary px-8 py-4 rounded-xl font-sans font-bold text-sm uppercase tracking-widest hover:bg-brand-primary hover:text-white active:scale-95 transition-all flex items-center justify-center gap-2">
+              <Package size={18} />
+              Manage Order
+            </Link>
             <Link href="/" className="w-full sm:w-auto bg-brand-primary text-white px-8 py-4 rounded-xl font-sans font-bold text-sm uppercase tracking-widest hover:bg-brand-primary-hover active:scale-95 transition-all flex items-center justify-center gap-2">
               <Send size={18} />
               Continue Shopping

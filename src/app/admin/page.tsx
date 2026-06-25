@@ -3,8 +3,10 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { API_BASE_URL } from '@/config';
+import { useSnackbar } from '@/context/SnackbarContext';
 
 const AdminLogin = () => {
+  const { showSnackbar } = useSnackbar();
   const [username, setUsername] = useState('admin');
   const [password, setPassword] = useState('admin');
   const [error, setError] = useState('');
@@ -25,7 +27,7 @@ const AdminLogin = () => {
 
       if (response.ok) {
         localStorage.setItem('adminToken', data.token);
-        alert('Admin login successful!');
+        showSnackbar('Success', 'Admin login successful!', 'success');
         navigate.push('/admin/dashboard');
       } else {
         setError(data.message || 'Invalid username or password');

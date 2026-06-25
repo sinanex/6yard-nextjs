@@ -4,6 +4,7 @@ import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 import { Product } from '@/types';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface ProductCardProps {
   product: Product;
@@ -24,10 +25,13 @@ export default function ProductCard({ product, isSelectable, isSelected, onSelec
     >
       <Link href={`/product/${product.id}`}>
         <div className="relative aspect-[3/4] bg-brand-surface-normal rounded-2xl overflow-hidden mb-4 shadow-sm group-hover:shadow-xl group-hover:-translate-y-1 transition-all duration-300">
-          <img
+          <Image
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
             src={product.image}
             alt={product.name}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+            priority={false}
           />
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all" />
 

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useSnackbar } from './SnackbarContext';
 
 export interface CartItem {
   _id?: string;
@@ -25,6 +26,7 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
+  const { showSnackbar } = useSnackbar();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -65,9 +67,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
       item => item.product._id === product._id && item.size === size
     );
 
+    const sizeStockInfo = product?.sizeStocks?.find((s: any) => s.size === size);
+    const maxStock = sizeStockInfo ? Number(sizeStockInfo.stock) : (product?.stock !== undefined ? Number(product.stock) : 10);
+
     if (existingIndex >= 0) {
-      currentCart[existingIndex].quantity += quantity;
+      const newQuantity = currentCart[existingIndex].quantity + quantity;
+      if (newQuantity > maxStock) {
+        showSnackbar("Limit Reached", `Only ${maxStock} items available in size ${size}`, "warning");
+        currentCart[existingIndex].quantity = maxStock;
+      } else {
+        currentCart[existingIndex].quantity = newQuantity;
+      }
     } else {
+      if (quantity > maxStock) {
+        showSnackbar("Limit Reached", `Only ${maxStock} items available in size ${size}`, "warning");
+        quantity = maxStock;
+      }
       // Generate a fake ID for local items
       currentCart.push({
         _id: `local_${Date.now()}_${Math.random()}`,
@@ -82,8 +97,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const updateQuantity = async (itemId: string, quantity: number) => {
     if (quantity < 1) return;
-    const currentCart = cartItems.map(item =>
-      item._id === itemId ? { ...item, quantity } : item
+    const item = cartItems.find(i => i._id === itemId);
+    if (!item) return;
+
+    const sizeStockInfo = item.product?.sizeStocks?.find((s: any) => s.size === item.size);
+    const maxStock = sizeStockInfo ? Number(sizeStockInfo.stock) : (item.product?.stock !== undefined ? Number(item.product.stock) : 10);
+
+    if (quantity > maxStock) {
+      showSnackbar("Limit Reached", `Only ${maxStock} items available in size ${item.size}`, "warning");
+      quantity = maxStock;
+    }
+
+    const currentCart = cartItems.map(i =>
+      i._id === itemId ? { ...i, quantity } : i
     );
     setCartItems(currentCart);
     saveToLocalStorage(currentCart);

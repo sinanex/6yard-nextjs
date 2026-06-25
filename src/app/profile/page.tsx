@@ -1,14 +1,16 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Settings, ShoppingBag, CreditCard, MapPin, Heart, LogOut, ChevronRight, Bell, ShieldCheck, User as UserIcon, Edit2 } from 'lucide-react';
+import { Settings, ShoppingBag, ShoppingCart, CreditCard, MapPin, Heart, LogOut, ChevronRight, Bell, ShieldCheck, User as UserIcon, Edit2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { API_BASE_URL } from '@/config';
+import { useSnackbar } from '@/context/SnackbarContext';
 
 export default function Profile() {
+  const { showSnackbar } = useSnackbar();
   const navigate = useRouter();
   const [user, setUser] = useState<any>(null);
   const [isEditingName, setIsEditingName] = useState(false);
@@ -54,7 +56,7 @@ export default function Profile() {
         setIsEditingName(false);
       }
     } catch (err) {
-      alert("Failed to update name");
+      showSnackbar("Error", "Failed to update name", "error");
     }
   };
 
@@ -74,9 +76,7 @@ export default function Profile() {
 
   const menuItems = [
     { icon: ShoppingBag, label: 'My Orders', path: '/orders', color: 'text-blue-500' },
-    { icon: Heart, label: 'Wishlist', path: '/wishlist', color: 'text-red-500' },
-    { icon: MapPin, label: 'Addresses', path: '/cart', color: 'text-orange-500' }, // Redirect to cart for address mgmt for now
-    { icon: Settings, label: 'Settings', path: '/profile', color: 'text-zinc-500' },
+    { icon: ShoppingCart, label: 'My Cart', path: '/cart', color: 'text-orange-500' },
   ];
 
   return (
@@ -122,20 +122,6 @@ export default function Profile() {
                 </p>
               </>
             )}
-            <p className="font-sans text-[10px] uppercase font-black text-brand-primary tracking-[0.2em] mt-4 bg-brand-primary/5 px-4 py-1.5 rounded-full">
-              Elite Member
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 mt-10">
-            <div className="text-center p-4 bg-brand-surface-low rounded-2xl">
-              <p className="font-h text-xl font-bold text-brand-on-surface">{user?.cart?.length || 0}</p>
-              <p className="font-sans text-[10px] uppercase font-black text-brand-on-surface-variant tracking-widest opacity-40">Cart Items</p>
-            </div>
-            <div className="text-center p-4 bg-brand-surface-low rounded-2xl">
-              <p className="font-h text-xl font-bold text-brand-on-surface">{user?.addresses?.length || 0}</p>
-              <p className="font-sans text-[10px] uppercase font-black text-brand-on-surface-variant tracking-widest opacity-40">Addresses</p>
-            </div>
           </div>
         </section>
 

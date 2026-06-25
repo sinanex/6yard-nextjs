@@ -1,16 +1,20 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, ChevronRight, ShieldCheck, Truck, CreditCard, MapPin, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ShieldCheck, Truck, CreditCard, MapPin, CheckCircle2, QrCode } from 'lucide-react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/lib/utils';
 import { API_BASE_URL } from '@/config';
+import { useCart } from '@/context/CartContext';
+import { useSnackbar } from '@/context/SnackbarContext';
 
 function CheckoutContent() {
+  const { showSnackbar } = useSnackbar();
   const location = { pathname: usePathname(), search: useSearchParams() ? "?" + useSearchParams().toString() : "" };
   const navigate = useRouter();
+  const { clearCart } = useCart();
 
   const [checkoutState, setCheckoutState] = useState<any>(null);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -19,7 +23,7 @@ function CheckoutContent() {
   useEffect(() => {
     const state = localStorage.getItem('checkoutState');
     if (state) setCheckoutState(JSON.parse(state));
-    
+
     fetch(`${API_BASE_URL}/api/settings`)
       .then(res => res.json())
       .then(data => setSettings(data))
@@ -34,7 +38,12 @@ function CheckoutContent() {
 
   const [paymentMethod, setPaymentMethod] = useState('online');
   const [showMockRazorpay, setShowMockRazorpay] = useState(false);
-  const payableAmount = paymentMethod === 'cod' ? (settings?.codDeliveryAmount || 60) : (checkoutState?.summary?.total || 0);
+
+  // Compute dynamic shipping and total
+  const codAmount = settings?.codDeliveryAmount || 100;
+  const dynamicShippingCost = paymentMethod === 'online' ? 0 : codAmount;
+  const dynamicTotal = summary.subtotal + dynamicShippingCost;
+  const payableAmount = paymentMethod === 'cod' ? codAmount : dynamicTotal;
 
   // Redirect if no data (e.g., direct URL access)
   React.useEffect(() => {
@@ -45,7 +54,7 @@ function CheckoutContent() {
 
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const placeOrder = async (razorpayPaymentId?: string) => {
+  const placeOrder = async (paymentDetails?: any) => {
     const token = localStorage.getItem('userToken');
     if (!token) return;
 
@@ -61,10 +70,12 @@ function CheckoutContent() {
         })),
         shippingAddress: address,
         paymentMethod: paymentMethod,
-        totalAmount: summary.total,
-        shippingCharge: summary.shippingCost,
+        totalAmount: dynamicTotal,
+        shippingCharge: dynamicShippingCost,
         subtotal: summary.subtotal,
-        razorpayPaymentId,
+        razorpayPaymentId: paymentDetails?.razorpayPaymentId,
+        razorpayOrderId: paymentDetails?.razorpayOrderId,
+        razorpaySignature: paymentDetails?.razorpaySignature,
         advancePaid: paymentMethod === 'cod' ? (settings?.codDeliveryAmount || 60) : summary.total
       };
 
@@ -81,13 +92,15 @@ function CheckoutContent() {
         const orderData = await response.json();
         localStorage.setItem('lastOrder', JSON.stringify(orderData));
         localStorage.removeItem('checkoutState');
+        clearCart();
+        showSnackbar("Success", "Order placed successfully!", "success");
         navigate.push('/success');
       } else {
-        alert("Failed to place order");
+        showSnackbar("Error", "Failed to place order", "error");
         setIsProcessing(false);
       }
     } catch (err) {
-      alert("Connection error");
+      showSnackbar("Error", "Connection error", "error");
       setIsProcessing(false);
     }
   };
@@ -106,7 +119,7 @@ function CheckoutContent() {
     setIsProcessing(true);
 
     const res = await loadRazorpay();
-    const key = process.env.NEXT_PUBLIC_RAZORPAY_KEY || '';
+    const key = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '';
 
     // If no real Razorpay key exists, or script failed to load, open our mock demo
     if (!res || !key) {
@@ -114,28 +127,64 @@ function CheckoutContent() {
       return;
     }
 
-    // Real Razorpay Integration
-    const options = {
-      key: key,
-      amount: payableAmount * 100, // Amount in paise
-      currency: "INR",
-      name: "6YARD",
-      description: paymentMethod === 'cod' ? "Advance Payment for COD" : "Order Payment",
-      handler: function (response: any) {
-        placeOrder(response.razorpay_payment_id);
-      },
-      prefill: {
-        name: address.name,
-        contact: address.phone
-      },
-      theme: { color: "#FF3366" }
-    };
-    const paymentObject = new (window as any).Razorpay(options);
-    paymentObject.on('payment.failed', function (response: any) {
-      alert("Payment failed");
+    try {
+      const token = localStorage.getItem('userToken');
+      // Create order on backend
+      const orderRes = await fetch(`${API_BASE_URL}/api/razorpay/order`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ amount: payableAmount })
+      });
+
+      if (!orderRes.ok) {
+        showSnackbar("Error", "Failed to initialize payment", "error");
+        setIsProcessing(false);
+        return;
+      }
+
+      const orderData = await orderRes.json();
+
+      // Real Razorpay Integration
+      const options = {
+        key: key,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "6YARD",
+        description: paymentMethod === 'cod' ? "Advance Payment for COD" : "Order Payment",
+        image: "/logo.png",
+        order_id: orderData.id,
+        handler: function (response: any) {
+          placeOrder({
+            razorpayPaymentId: response.razorpay_payment_id,
+            razorpayOrderId: response.razorpay_order_id,
+            razorpaySignature: response.razorpay_signature
+          });
+        },
+        prefill: {
+          name: address.name,
+          contact: address.phone
+        },
+        theme: { color: "#000000" }, // Black theme as requested
+        modal: {
+          ondismiss: function () {
+            showSnackbar("Cancelled", "Payment cancelled", "error");
+            setIsProcessing(false);
+          }
+        }
+      };
+      const paymentObject = new (window as any).Razorpay(options);
+      paymentObject.on('payment.failed', function (response: any) {
+        showSnackbar("Error", "Payment failed", "error");
+        setIsProcessing(false);
+      });
+      paymentObject.open();
+    } catch (error) {
+      showSnackbar("Error", "Something went wrong", "error");
       setIsProcessing(false);
-    });
-    paymentObject.open();
+    }
   };
 
   if (!isLoaded || !address) return null;
@@ -166,7 +215,7 @@ function CheckoutContent() {
                   </span>
                   Shipping Address
                 </h2>
-                <button onClick={() => navigate.push('/cart')} className="text-brand-primary font-bold text-xs uppercase tracking-widest hover:underline">
+                <button onClick={() => navigate.push('/cart?changeAddress=true')} className="text-brand-primary font-bold text-xs uppercase tracking-widest hover:underline">
                   Change
                 </button>
               </div>
@@ -198,7 +247,7 @@ function CheckoutContent() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
-                  { id: 'online', name: 'Online Payment', icon: CreditCard, subtitle: 'Pay via UPI, Cards, Netbanking' },
+                  { id: 'online', name: 'Online Payment', icon: QrCode, subtitle: 'Pay via UPI, QR Code, Cards, Netbanking' },
                   { id: 'cod', name: 'Cash on Delivery', icon: Truck, subtitle: `Requires ₹${settings?.codDeliveryAmount || 60} Advance` },
                 ].map((method) => (
                   <div
@@ -213,7 +262,10 @@ function CheckoutContent() {
                       {paymentMethod === method.id && <div className="w-2.5 h-2.5 rounded-full bg-brand-primary" />}
                     </div>
                     <div>
-                      <span className="font-sans font-bold text-brand-on-surface block mb-1">{method.name}</span>
+                      <span className="font-sans font-bold text-brand-on-surface block mb-1 flex items-center gap-2">
+                        {method.id === 'online' && <QrCode size={16} className="text-brand-primary" />}
+                        {method.name}
+                      </span>
                       <span className="font-sans text-xs text-brand-on-surface-variant">{method.subtitle}</span>
                     </div>
                   </div>
@@ -267,14 +319,14 @@ function CheckoutContent() {
                 </div>
                 <div className="flex justify-between items-center text-brand-on-surface-variant">
                   <span>Shipping</span>
-                  <span className={cn("font-bold uppercase tracking-widest text-xs", summary.shippingCost === 0 ? "text-green-600" : "text-brand-on-surface")}>
-                    {summary.shippingCost === 0 ? 'FREE' : `₹${summary.shippingCost.toFixed(2)}`}
+                  <span className={cn("font-bold uppercase tracking-widest text-xs", dynamicShippingCost === 0 ? "text-green-600" : "text-brand-on-surface")}>
+                    {dynamicShippingCost === 0 ? 'FREE' : `₹${dynamicShippingCost.toFixed(2)}`}
                   </span>
                 </div>
                 <div className="h-px bg-brand-surface-normal my-2" />
                 <div className="flex justify-between items-center pt-2">
                   <span className="font-h text-lg font-bold text-brand-on-surface">Total</span>
-                  <span className="font-h text-2xl font-black text-brand-primary">₹{summary.total.toFixed(2)}</span>
+                  <span className="font-h text-2xl font-black text-brand-primary">₹{dynamicTotal.toFixed(2)}</span>
                 </div>
               </div>
 
@@ -318,6 +370,7 @@ function CheckoutContent() {
               onClick={() => {
                 setShowMockRazorpay(false);
                 setIsProcessing(false);
+                showSnackbar("Cancelled", "Payment cancelled", "error");
               }}
             />
             <motion.div
@@ -342,7 +395,7 @@ function CheckoutContent() {
                   onClick={() => {
                     setShowMockRazorpay(false);
                     // Simulate success
-                    placeOrder('pay_mock_' + Math.random().toString(36).substr(2, 9));
+                    placeOrder({ razorpayPaymentId: 'pay_mock_' + Math.random().toString(36).substr(2, 9) });
                   }}
                   className="w-full bg-[#3399cc] text-white py-4 rounded-lg font-bold hover:bg-[#2880b0] transition-colors"
                 >
@@ -352,6 +405,7 @@ function CheckoutContent() {
                   onClick={() => {
                     setShowMockRazorpay(false);
                     setIsProcessing(false);
+                    showSnackbar("Cancelled", "Payment cancelled", "error");
                   }}
                   className="w-full text-gray-500 text-sm font-semibold hover:text-gray-700"
                 >

@@ -11,8 +11,10 @@ import { API_BASE_URL } from '@/config';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/context/CartContext';
 import AuthModal from '@/components/AuthModal';
+import { useSnackbar } from '@/context/SnackbarContext';
 
 export default function Cart() {
+  const { showSnackbar } = useSnackbar();
   const navigate = useRouter();
   const { cartItems, loading, updateQuantity, removeFromCart, totalAmount: cartTotal } = useCart();
   const [showAddressOverlay, setShowAddressOverlay] = useState(false);
@@ -74,6 +76,12 @@ export default function Cart() {
       .then(res => res.json())
       .then(data => setSettings(data))
       .catch(err => console.error("Error fetching settings:", err));
+
+    // Open address overlay if coming from checkout change option
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('changeAddress') === 'true') {
+      setShowAddressOverlay(true);
+    }
   }, []);
 
   const handleUpdateQuantity = async (itemId: string, newQuantity: number) => {
@@ -116,7 +124,7 @@ export default function Cart() {
         setIsEditingAddressId(null);
       }
     } catch (err) {
-      alert("Failed to save address");
+      showSnackbar("Error", "Failed to save address", "error");
     }
   };
 
@@ -149,9 +157,8 @@ export default function Cart() {
   };
 
   const subtotal = cartTotal;
-
-  const shippingCost = cartItems.length > 0 ? (settings?.codDeliveryAmount || 100) : 0;
-  const total = subtotal + shippingCost;
+  const shippingCost = 0;
+  const total = subtotal;
 
   if (loading) {
     return (
@@ -319,12 +326,6 @@ export default function Cart() {
                   <span className="font-medium text-brand-on-surface">₹{subtotal.toFixed(2)}</span>
                 </div>
 
-                <div className="flex justify-between items-center text-xs md:text-sm text-brand-on-surface-variant">
-                  <span>Shipping</span>
-                  <span className="font-bold text-xs uppercase tracking-widest text-brand-on-surface">
-                    ₹{shippingCost.toFixed(2)}
-                  </span>
-                </div>
 
                 <div className="h-px bg-brand-surface-normal my-2" />
 

@@ -11,6 +11,7 @@ import { API_BASE_URL } from '@/config';
 import { Product } from '@/types';
 import AuthModal from '@/components/AuthModal';
 import { useCart } from '@/context/CartContext';
+import { useSnackbar } from '@/context/SnackbarContext';
 
 const PRODUCT_IMAGES = [
   'https://lh3.googleusercontent.com/aida-public/AB6AXuAQ38GlBp8aAxQiOSE483yc-jVtTv1lt7uPjbJPMqq3BnoBXAnwpLhriKduHt78pWPxt4xoy1fHnfGwE-Z4nwkIhmuD6SKOzj8fAilcBGsvR72hRYVnuhnY_jmPdmyIXyqjEgTmkBI6H39e7RH1PlUPj0lLJ2YJdi5szTSKj2rXwdus87pu3lNAOKiOpjwDco5G41Z4R5-DruwUZz3q6YoKdx9EFu5vVb-j5u6CZEBZVgEpiSLB8z4V6aRuzIXd4KsBh6xpiqKxvXQ',
@@ -103,9 +104,10 @@ const DeliveryTimeline = ({ settings }: { settings: any }) => {
 };
 
 export default function ProductDetail() {
+  const { showSnackbar } = useSnackbar();
   const { id } = useParams() as { id: string };
   const navigate = useRouter();
-  const [selectedSize, setSelectedSize] = useState('M');
+  const [selectedSize, setSelectedSize] = useState('');
   const [activeImage, setActiveImage] = useState(0);
   const [openAccordion, setOpenAccordion] = useState<string | null>('description');
   const [isAdding, setIsAdding] = useState(false);
@@ -193,7 +195,7 @@ export default function ProductDetail() {
       setReviewImages([]);
       setShowReviewForm(false);
     } catch (err) {
-      alert("Failed to submit review. Please try again.");
+      showSnackbar("Error", "Failed to submit review. Please try again.", "error");
     } finally {
       setIsSubmittingReview(false);
     }
@@ -330,7 +332,8 @@ export default function ProductDetail() {
         setProduct(productData);
         if (settingsData) setSettings(settingsData);
         if (productData.sizes && productData.sizes.length > 0) {
-          setSelectedSize(productData.sizes[0]);
+          // Do not auto-select size to force user to choose
+          // setSelectedSize(productData.sizes[0]);
         }
         if (productData.reviews) {
           setReviewsList(productData.reviews);
@@ -358,6 +361,10 @@ export default function ProductDetail() {
 
   const handleAddToCart = async (skipAuthCheck = false) => {
     if (!product) return;
+    if (!selectedSize) {
+      showSnackbar("Warning", "Please select size", "warning");
+      return;
+    }
 
     if (!skipAuthCheck && typeof window !== 'undefined') {
       const token = localStorage.getItem('userToken');
@@ -373,7 +380,7 @@ export default function ProductDetail() {
       await addToCart(product, selectedSize, 1);
       navigate.push('/cart');
     } catch (err) {
-      alert('Failed to add to cart');
+      showSnackbar("Error", "Failed to add to cart", "error");
     } finally {
       setIsAdding(false);
     }
@@ -381,6 +388,10 @@ export default function ProductDetail() {
 
   const handleBuyNow = async (skipAuthCheck = false) => {
     if (!product) return;
+    if (!selectedSize) {
+      showSnackbar("Warning", "Please select size", "warning");
+      return;
+    }
 
     if (!skipAuthCheck && typeof window !== 'undefined') {
       const token = localStorage.getItem('userToken');
@@ -396,7 +407,7 @@ export default function ProductDetail() {
       await addToCart(product, selectedSize, 1);
       navigate.push('/checkout');
     } catch (err) {
-      alert('Failed to process order');
+      showSnackbar("Error", "Failed to process order", "error");
     } finally {
       setIsBuying(false);
     }
@@ -612,7 +623,7 @@ export default function ProductDetail() {
             <button
               onClick={() => handleAddToCart()}
               disabled={isAdding || isBuying}
-              className="w-full bg-white border-2 border-brand-surface-normal hover:border-brand-primary text-brand-on-surface font-sans font-bold py-5 rounded-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed">
+              className="w-full bg-white border-2 border-brand-surface-normal hover:border-brand-primary text-brand-on-surface font-sans font-bold py-5 rounded-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
               <AnimatePresence mode="wait">
                 {isAdding ? (
                   <motion.div

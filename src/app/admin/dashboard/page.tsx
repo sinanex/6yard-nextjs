@@ -34,6 +34,7 @@ import { useRouter } from 'next/navigation';
 import { API_BASE_URL } from '@/config';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
+import { useSnackbar } from '@/context/SnackbarContext';
 
 // Premium Searchable Dropdown Component
 const SearchableDropdown = ({
@@ -218,6 +219,7 @@ const SearchableMultiDropdown = ({
 };
 
 const AdminDashboard = () => {
+  const { showSnackbar } = useSnackbar();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -409,13 +411,13 @@ const AdminDashboard = () => {
         body: JSON.stringify(settings)
       });
       if (response.ok) {
-        alert('Settings saved successfully!');
+        showSnackbar('Success', 'Settings saved successfully!', 'success');
       } else {
-        alert('Failed to save settings');
+        showSnackbar('Error', 'Failed to save settings', 'error');
       }
     } catch (error) {
       console.error('Error saving settings:', error);
-      alert('Error saving settings');
+      showSnackbar('Error', 'Error saving settings', 'error');
     }
   };
 
@@ -460,7 +462,7 @@ const AdminDashboard = () => {
       });
 
       if (response.ok) {
-        alert(isBannerEditMode ? 'Banner updated successfully!' : 'Banner added successfully!');
+        showSnackbar('Success', isBannerEditMode ? 'Banner updated successfully!' : 'Banner added successfully!', 'success');
         setBannerImage(null);
         setIsBannerEditMode(false);
         setEditingBannerId(null);
@@ -468,11 +470,11 @@ const AdminDashboard = () => {
         fetchBanner();
       } else {
         const data = await response.json();
-        alert(data.message || 'Failed to save banner');
+        showSnackbar('Error', data.message || 'Failed to save banner', 'error');
       }
     } catch (error) {
       console.error('Error saving banner:', error);
-      alert('Error saving banner');
+      showSnackbar('Error', 'Error saving banner', 'error');
     } finally {
       setLoading(false);
     }
@@ -489,11 +491,11 @@ const AdminDashboard = () => {
         }
       });
       if (response.ok) {
-        alert('Banner deleted successfully!');
+        showSnackbar('Success', 'Banner deleted successfully!', 'success');
         fetchBanner();
       }
     } catch (error) {
-      alert('Delete failed');
+      showSnackbar('Error', 'Delete failed', 'error');
     }
   };
 
@@ -562,20 +564,20 @@ const AdminDashboard = () => {
         setNewCategoryImage(null);
         setShowAddCategory(false);
         fetchCategories();
-        alert('Category created successfully!');
+        showSnackbar('Success', 'Category created successfully!', 'success');
       } else {
-        alert(data.message || 'Failed to create category');
+        showSnackbar('Error', data.message || 'Failed to create category', 'error');
       }
     } catch (error) {
       console.error('Error creating category:', error);
-      alert('Error creating category');
+      showSnackbar('Error', 'Error creating category', 'error');
     }
   };
 
   const handleCreateSubcategory = async (e) => {
     e.preventDefault();
     if (!selectedParentCategoryId || !newSubcategoryName.trim()) {
-      alert('Please select a parent category and enter a subcategory name');
+      showSnackbar('Warning', 'Please select a parent category and enter a subcategory name', 'warning');
       return;
     }
 
@@ -594,13 +596,13 @@ const AdminDashboard = () => {
       if (response.ok) {
         setNewSubcategoryName('');
         fetchCategories();
-        alert('Subcategory created successfully!');
+        showSnackbar('Success', 'Subcategory created successfully!', 'success');
       } else {
-        alert(data.message || 'Failed to create subcategory');
+        showSnackbar('Error', data.message || 'Failed to create subcategory', 'error');
       }
     } catch (error) {
       console.error('Error creating subcategory:', error);
-      alert('Error creating subcategory');
+      showSnackbar('Error', 'Error creating subcategory', 'error');
     }
   };
 
@@ -619,13 +621,13 @@ const AdminDashboard = () => {
       const data = await response.json();
       if (response.ok) {
         fetchCategories();
-        alert('Category deleted successfully!');
+        showSnackbar('Success', 'Category deleted successfully!', 'success');
       } else {
-        alert(data.message || 'Failed to delete category');
+        showSnackbar('Error', data.message || 'Failed to delete category', 'error');
       }
     } catch (error) {
       console.error('Error deleting category:', error);
-      alert('Error deleting category');
+      showSnackbar('Error', 'Error deleting category', 'error');
     }
   };
 
@@ -644,13 +646,13 @@ const AdminDashboard = () => {
       const data = await response.json();
       if (response.ok) {
         fetchCategories();
-        alert('Subcategory deleted successfully!');
+        showSnackbar('Success', 'Subcategory deleted successfully!', 'success');
       } else {
-        alert(data.message || 'Failed to delete subcategory');
+        showSnackbar('Error', data.message || 'Failed to delete subcategory', 'error');
       }
     } catch (error) {
       console.error('Error deleting subcategory:', error);
-      alert('Error deleting subcategory');
+      showSnackbar('Error', 'Error deleting subcategory', 'error');
     }
   };
 
@@ -711,7 +713,7 @@ const AdminDashboard = () => {
     for (let i = 0; i < productForms.length; i++) {
       const f = productForms[i];
       if (!f.name || !f.category || f.category.length === 0 || !f.price) {
-        alert(`Please fill in all required fields (Product Name, Category, Price) for Product #${i + 1}!`);
+        showSnackbar('Warning', `Please fill in all required fields (Product Name, Category, Price) for Product #${i + 1}!`, 'warning');
         return;
       }
     }
@@ -771,7 +773,7 @@ const AdminDashboard = () => {
       }
     }
 
-    alert(`Successfully added ${successCount} products!`);
+    showSnackbar('Success', `Successfully added ${successCount} products!`, 'success');
     setProductForms([initialProductState]);
     fetchProducts();
     setActiveTab('orders');
@@ -783,7 +785,7 @@ const AdminDashboard = () => {
 
     const form = productForms[0];
     if (!form.name || !form.category || form.category.length === 0 || !form.price) {
-      alert('Please fill in all required fields (Product Name, Category, Price)!');
+      showSnackbar('Warning', 'Please fill in all required fields (Product Name, Category, Price)!', 'warning');
       return;
     }
 
@@ -846,7 +848,7 @@ const AdminDashboard = () => {
       });
 
       if (response.ok) {
-        alert('Product updated successfully!');
+        showSnackbar('Success', 'Product updated successfully!', 'success');
         setIsEditMode(false);
         setEditingProductId(null);
         setProductForms([initialProductState]);
@@ -854,11 +856,11 @@ const AdminDashboard = () => {
         setActiveTab('orders');
       } else {
         const data = await response.json();
-        alert(data.message || 'Failed to update product');
+        showSnackbar('Error', data.message || 'Failed to update product', 'error');
       }
     } catch (error) {
       console.error('Update failed:', error);
-      alert('Error updating product');
+      showSnackbar('Error', 'Error updating product', 'error');
     } finally {
       setLoading(false);
     }
@@ -887,7 +889,7 @@ const AdminDashboard = () => {
         setProducts(products.filter(p => p._id !== id));
       }
     } catch (error) {
-      alert('Delete failed');
+      showSnackbar('Error', 'Delete failed', 'error');
     }
   };
 
@@ -1986,7 +1988,7 @@ const AdminDashboard = () => {
         };
 
         const handlePrintCODLabel = () => {
-          alert('Coming Soon');
+          showSnackbar('Info', 'Coming Soon', 'info');
         };
 
         return (
@@ -2066,8 +2068,8 @@ const AdminDashboard = () => {
                               headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                               body: JSON.stringify({ status: order.status, trackingId: val })
                             });
-                            alert('Updated');
-                            fetchOrders();
+                             showSnackbar('Success', 'Updated', 'success');
+                             fetchOrders();
                           }
                         }}
                         className="bg-brand-primary text-white px-4 py-2.5 rounded-xl font-bold text-sm h-[42px] flex items-center justify-center shadow-md active:scale-95 transition-transform"
